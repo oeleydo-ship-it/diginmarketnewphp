@@ -28,6 +28,13 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\RefundRequestController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\Admin\RefundReviewController;
+use App\Http\Controllers\Admin\OperationsDashboardController;
+use App\Http\Controllers\Admin\UserDirectoryController;
+use App\Http\Controllers\Admin\OrderDirectoryController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [MarketplaceProductController::class, 'index'])->name('products.index');
@@ -35,6 +42,7 @@ Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->n
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
@@ -45,7 +53,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-    Route::view('/admin', 'admin.dashboard')->middleware('role:administrator')->name('admin.dashboard');
+    Route::get('/admin', OperationsDashboardController::class)->middleware('role:administrator')->name('admin.dashboard');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/authors/{sellerProfile}/follow', [SellerFollowController::class, 'toggle'])->name('sellers.follow');
@@ -80,10 +88,28 @@ Route::middleware('auth')->group(function () {
         Route::post('/products/{product}/submit', [SellerProductController::class, 'submit'])->name('products.submit');
     });
     Route::middleware('role:administrator')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/withdrawals', [WithdrawalReviewController::class, 'index'])->name('withdrawals.index');
+        Route::post('/withdrawals/{withdrawalRequest}/approve', [WithdrawalReviewController::class, 'approve'])->name('withdrawals.approve');
         Route::post('/withdrawals/{withdrawalRequest}/reject', [WithdrawalReviewController::class, 'reject'])->name('withdrawals.reject');
+        Route::get('/refunds', [RefundReviewController::class, 'index'])->name('refunds.index');
         Route::post('/refunds/{refundRequest}/approve', [RefundReviewController::class, 'approve'])->name('refunds.approve');
+        Route::post('/refunds/{refundRequest}/reject', [RefundReviewController::class, 'reject'])->name('refunds.reject');
+        Route::get('/sellers', [SellerReviewController::class, 'index'])->name('sellers.index');
         Route::post('/sellers/{sellerProfile}/approve', [SellerReviewController::class, 'approve'])->name('sellers.approve');
+        Route::post('/sellers/{sellerProfile}/reject', [SellerReviewController::class, 'reject'])->name('sellers.reject');
         Route::get('/products/review', [ProductReviewController::class, 'index'])->name('products.review');
         Route::post('/products/{product}/approve', [ProductReviewController::class, 'approve'])->name('products.approve');
+        Route::post('/products/{product}/request-changes', [ProductReviewController::class, 'requestChanges'])->name('products.request-changes');
+        Route::get('/users', [UserDirectoryController::class, 'index'])->name('users.index');
+        Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
+        Route::get('/orders', [OrderDirectoryController::class, 'index'])->name('orders.index');
+        Route::get('/audits', [AuditLogController::class, 'index'])->name('audits.index');
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
+        Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+        Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     });
 });
