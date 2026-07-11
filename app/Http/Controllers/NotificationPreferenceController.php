@@ -1,0 +1,5 @@
+<?php
+namespace App\Http\Controllers;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+class NotificationPreferenceController extends Controller {public function edit():View{$preferences=auth()->user()->notificationPreference()->firstOrCreate();return view('notifications.preferences',compact('preferences'));}public function update():RedirectResponse{$data=request()->validate(['email_sales'=>['nullable','boolean'],'email_product_updates'=>['nullable','boolean'],'email_support'=>['nullable','boolean'],'email_marketing'=>['nullable','boolean'],'in_app'=>['nullable','boolean']]);foreach(['email_sales','email_product_updates','email_support','email_marketing','in_app'] as $key)$data[$key]=request()->boolean($key);auth()->user()->notificationPreference()->updateOrCreate([], $data);return back()->with('status','Preferences saved.');}}

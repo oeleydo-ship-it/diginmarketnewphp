@@ -1,0 +1,15 @@
+<?php
+namespace App\Services;
+use App\Contracts\RefundGateway;
+use App\Models\RefundRequest;
+use App\Models\SellerWallet;
+use App\Models\WalletTransaction;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+class RefundService
+{
+ public function __construct(private RefundGateway $gateway){}
+ public function request(User $user,\App\Models\OrderItem $item,array $data):RefundRequest{if($item->order->user_id!==$user->id||$item->order->payment_status!=='paid')throw ValidationException::withMessages(['order'=>'Only paid purchases are eligible.']);return RefundRequest::create(['number'=>'RF-'.str()->upper(str()->random(10)),'user_id'=>$user->id,'order_id'=>$item->order_id,'order_item_id'=>$item->id,'product_id'=>$item->product_id,'seller_id'=>$item->seller_id,'reason'=>$data['reason'],'description'=>$data['description'],'requested_amount'=>$item->total,'status'=>'submitted']);}
+ public function approve(RefundRequest $request,User $admin,float $amount,string $decision=''):void{$amount=min($amount,(float)$request->requested_amount);$payment=$request->orderItem->order->payments()->where('status','succeeded')->firstOrFail();$provider=$this->gateway->refund($payment,$amount);if(($provider['status']??null)!=='succeeded')throw ValidationException::withMessages(['refund'=>'Stripe did not confirm the refund.']);DB::transaction(function()use($request,$admin,$amount,$decision,$provider){$request=RefundRequest::lockForUpdate()->findOrFail($request->id);if($request->status==='refunded')return;$item=$request->orderItem;$item->license?->update(['status'=>'refunded']);$item->order->update(['status'=>'partially_refunded','payment_status'=>'partially_refunded']);$request->update(['approved_amount'=>$amount,'status'=>'refunded','administrator_decision'=>$decision,'decided_at'=>now()]);$wallet=SellerWallet::where('seller_id',$item->seller_id)->where('currency',$item->order->currency)->lockForUpdate()->first();if($wallet){$deduction=min($amount,(float)$item->seller_earning);$bucket=(float)$wallet->pending_balance>=$deduction?'pending':'available';$bucket==='pending'?$wallet->decrement('pending_balance',$deduction):$wallet->decrement('available_balance',$deduction);$wallet->transactions()->create(['uuid'=>(string)str()->uuid(),'order_item_id'=>$item->id,'type'=>'refund_deduction','balance_bucket'=>$bucket,'amount'=>-$deduction,'currency'=>$wallet->currency,'reference'=>'refund:'.$request->id,'metadata'=>['stripe_refund_id'=>$provider['id'],'approved_by'=>$admin->id],'created_at'=>now()]);}});}
+}
