@@ -1,0 +1,43 @@
+@props(['product', 'badge' => null])
+<div class="group overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest transition-all hover:-translate-y-1 hover:shadow-lg">
+    <a href="{{ route('products.show', $product->slug) }}" class="relative block aspect-video overflow-hidden">
+        <x-product-thumb :product="$product" class="h-full w-full transition-transform duration-500 group-hover:scale-105" />
+        @if($badge)
+            <span class="absolute right-4 top-4 rounded-full bg-surface/90 px-3 py-1 font-mono text-[11px] font-semibold tracking-widest text-primary shadow-sm backdrop-blur-sm">{{ $badge }}</span>
+        @endif
+    </a>
+    <div class="p-4">
+        <a href="{{ route('products.show', $product->slug) }}">
+            <h4 class="truncate text-[17px] font-semibold text-on-surface transition-colors group-hover:text-primary">{{ $product->title }}</h4>
+        </a>
+        <div class="mt-2 flex items-center gap-2">
+            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-container-highest text-[11px] font-bold text-primary">{{ str($product->seller->sellerProfile?->display_name ?? $product->seller->name)->substr(0, 1)->upper() }}</span>
+            <a href="{{ route('sellers.show', $product->seller->sellerProfile?->username ?? '#') }}" class="truncate text-sm text-on-surface-variant hover:text-primary">{{ $product->seller->sellerProfile?->display_name ?? $product->seller->name }}</a>
+            @if($product->seller->sellerProfile?->status?->value === 'approved')
+                <span class="material-symbols-outlined icon-fill text-[15px] text-secondary-fixed-dim">verified</span>
+            @endif
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+                <x-rating-stars :rating="$product->average_rating" :size="16" />
+                <span class="font-mono text-xs text-on-surface-variant">{{ number_format((float) $product->average_rating, 1) }}</span>
+            </div>
+            <span class="font-display text-xl font-bold text-on-surface">${{ number_format((float) $product->regular_price, 2) }}</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between border-t border-outline-variant pt-3">
+            <span class="font-mono text-xs uppercase tracking-wider text-on-surface-variant">{{ number_format($product->sales_count) }} sales</span>
+            @auth
+                <form method="POST" action="{{ route('wishlist.toggle', $product) }}">
+                    @csrf
+                    <button class="rounded-lg p-1.5 text-primary transition-colors hover:bg-primary/10" aria-label="Add to wishlist">
+                        <span class="material-symbols-outlined text-[20px]">favorite</span>
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="rounded-lg p-1.5 text-primary transition-colors hover:bg-primary/10" aria-label="Sign in to save">
+                    <span class="material-symbols-outlined text-[20px]">favorite</span>
+                </a>
+            @endauth
+        </div>
+    </div>
+</div>

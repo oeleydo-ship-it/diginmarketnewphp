@@ -1,1 +1,140 @@
-<x-marketplace-layout title="DiginMarket — Digital products built by experts"><section class="mx-auto max-w-7xl px-6 py-24"><div class="max-w-4xl"><span class="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-300">Reviewed products from independent experts</span><h1 class="mt-8 text-5xl font-black tracking-tight sm:text-7xl">Ship faster with products you can trust.</h1><p class="mt-6 max-w-3xl text-xl leading-8 text-slate-300">Production-ready applications, themes, plugins, APIs, and design systems with secure licensing and updates.</p><form action="{{ route('products.index') }}" method="GET" class="mt-10 flex max-w-2xl gap-3"><input name="q" class="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4" placeholder="Search Laravel apps, themes, plugins..."><button class="rounded-2xl bg-emerald-400 px-7 font-bold text-slate-950">Search</button></form></div></section><section class="border-y border-white/10 bg-white/[.03]"><div class="mx-auto max-w-7xl px-6 py-14"><h2 class="text-2xl font-black">Explore categories</h2><div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">@foreach($categories as $category)<a href="{{ route('categories.show',$category->slug) }}" class="rounded-xl border border-white/10 bg-slate-950 p-5"><span class="font-bold">{{ $category->name }}</span><span class="mt-1 block text-sm text-slate-500">{{ $category->products_count }} products</span></a>@endforeach</div></div></section>@if($featured->isNotEmpty())<section class="mx-auto max-w-7xl px-6 py-14"><h2 class="text-2xl font-black">Featured products</h2><div class="mt-6 grid gap-6 md:grid-cols-3">@foreach($featured as $product)<a href="{{ route('products.show',$product->slug) }}" class="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-6"><p class="text-sm text-emerald-400">{{ $product->category->name }}</p><h3 class="mt-2 text-xl font-bold">{{ $product->title }}</h3><p class="mt-3 text-slate-400">{{ $product->short_description }}</p><strong class="mt-5 block">${{ $product->regular_price }}</strong></a>@endforeach</div></section>@endif<section class="mx-auto max-w-7xl px-6 py-14"><div class="flex justify-between"><h2 class="text-2xl font-black">New arrivals</h2><a href="{{ route('products.index') }}" class="text-emerald-400">Browse all →</a></div><div class="mt-6 grid gap-6 md:grid-cols-3">@forelse($newest as $product)<a href="{{ route('products.show',$product->slug) }}" class="rounded-2xl border border-white/10 bg-white/5 p-6"><p class="text-sm text-emerald-400">{{ $product->category->name }}</p><h3 class="mt-2 text-xl font-bold">{{ $product->title }}</h3><p class="mt-3 text-slate-400">{{ $product->short_description }}</p><div class="mt-5 flex justify-between"><strong>${{ $product->regular_price }}</strong><span class="text-sm text-slate-500">{{ $product->sales_count }} sales</span></div></a>@empty<p class="text-slate-400">Approved products will appear here.</p>@endforelse</div></section></x-marketplace-layout>
+<x-nexus-layout title="DiginMarket — Premium Digital Assets" description="Access a curated library of high-quality scripts, themes, and design tools from top-tier creators.">
+
+<!-- Hero -->
+<section class="relative flex min-h-[520px] items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
+    <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(circle at 2px 2px, #c7c4d8 1px, transparent 0); background-size: 28px 28px;"></div>
+    <div class="relative z-10 mx-auto max-w-7xl px-6 py-20 text-center">
+        <h1 class="mx-auto max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight text-on-surface sm:text-5xl sm:leading-[1.15]">Find the perfect digital assets for your next project.</h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg font-medium text-on-surface-variant">Access a curated library of high-quality scripts, themes, and design tools from top-tier creators worldwide.</p>
+        <form action="{{ route('products.index') }}" method="GET" class="mx-auto mt-10 flex max-w-3xl rounded-2xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-lg ring-primary transition-all focus-within:ring-2">
+            <div class="flex items-center pl-4 text-on-surface-variant">
+                <span class="material-symbols-outlined">search</span>
+            </div>
+            <input name="q" type="text" placeholder="Search scripts, themes, and more..."
+                class="w-full border-none bg-transparent px-4 py-4 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-0">
+            <button class="shrink-0 rounded-xl bg-primary px-8 font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Search</button>
+        </form>
+    </div>
+</section>
+
+<!-- Categories Bento -->
+<section id="categories" class="mx-auto max-w-7xl px-6 py-16">
+    <h2 class="mb-8 font-display text-3xl font-semibold tracking-tight">Browse Categories</h2>
+    @php
+        $catIcons = ['php-scripts' => 'code', 'laravel-applications' => 'terminal', 'wordpress-themes' => 'view_quilt', 'javascript-applications' => 'javascript', 'mobile-applications' => 'smartphone', 'ui-templates' => 'palette'];
+        $tileStyles = [
+            ['tile' => 'bg-surface-container-high hover:bg-surface-container-highest', 'icon' => 'text-primary', 'text' => 'text-on-surface'],
+            ['tile' => 'bg-secondary-container hover:scale-[1.02]', 'icon' => 'text-on-secondary-container', 'text' => 'text-on-secondary-container'],
+            ['tile' => 'bg-surface-container-high hover:bg-surface-container-highest', 'icon' => 'text-primary', 'text' => 'text-on-surface'],
+            ['tile' => 'bg-tertiary-fixed hover:scale-[1.02]', 'icon' => 'text-on-tertiary-fixed-variant', 'text' => 'text-on-tertiary-fixed-variant'],
+        ];
+        $lead = $categories->first();
+        $small = $categories->slice(1);
+    @endphp
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+        @if($lead)
+            <a href="{{ route('categories.show', $lead->slug) }}" class="group flex flex-col justify-end rounded-2xl bg-primary-container p-10 transition-all hover:scale-[1.02] md:col-span-2 md:row-span-2 md:min-h-[400px]">
+                <span class="material-symbols-outlined mb-4 text-5xl text-on-primary-container">{{ $lead->icon ?: ($catIcons[$lead->slug] ?? 'deployed_code') }}</span>
+                <h3 class="font-display text-3xl font-semibold text-on-primary-container">{{ $lead->name }}</h3>
+                <p class="mt-1 text-on-primary-container/80">{{ $lead->description ?: $lead->products_count.' products ready for production.' }}</p>
+            </a>
+        @endif
+        @foreach($small as $category)
+            @php $style = $tileStyles[$loop->index % count($tileStyles)]; @endphp
+            <a href="{{ route('categories.show', $category->slug) }}"
+                class="group flex flex-col items-center justify-center rounded-2xl p-6 text-center transition-all {{ $style['tile'] }} {{ $loop->remaining === 0 && $loop->iteration % 2 !== 0 ? 'md:col-span-2' : '' }}">
+                <span class="material-symbols-outlined mb-2 text-4xl {{ $style['icon'] }}">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
+                <h3 class="text-[17px] font-semibold {{ $style['text'] }}">{{ $category->name }}</h3>
+                <span class="mt-1 font-mono text-xs {{ $style['text'] }} opacity-70">{{ $category->products_count }} products</span>
+            </a>
+        @endforeach
+    </div>
+</section>
+
+<!-- Trending Products -->
+<section class="bg-surface-container-low py-16">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mb-8 flex items-end justify-between">
+            <div>
+                <h2 class="font-display text-3xl font-semibold tracking-tight">Trending Products</h2>
+                <p class="mt-1 text-on-surface-variant">The most popular assets this week.</p>
+            </div>
+            <a href="{{ route('products.index', ['sort' => 'popular']) }}" class="flex items-center gap-1 font-semibold text-primary hover:underline">
+                View All <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </a>
+        </div>
+        @php $trendingList = $trending->isNotEmpty() ? $trending : $bestSellers; @endphp
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            @forelse($trendingList->take(4) as $product)
+                <x-product-card :product="$product" :badge="$loop->first ? 'HOT' : null" />
+            @empty
+                <p class="text-on-surface-variant">Approved products will appear here.</p>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+<!-- New Arrivals -->
+<section class="mx-auto max-w-7xl px-6 py-16">
+    <div class="mb-8 flex items-end justify-between">
+        <div>
+            <h2 class="font-display text-3xl font-semibold tracking-tight">New Arrivals</h2>
+            <p class="mt-1 text-on-surface-variant">Fresh releases from our creator community.</p>
+        </div>
+        <a href="{{ route('products.index', ['sort' => 'newest']) }}" class="flex items-center gap-1 font-semibold text-primary hover:underline">
+            View All <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </a>
+    </div>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        @forelse($newest->take(4) as $product)
+            <x-product-card :product="$product" :badge="$loop->first ? 'NEW' : null" />
+        @empty
+            <p class="text-on-surface-variant">Approved products will appear here.</p>
+        @endforelse
+    </div>
+</section>
+
+<!-- Staff Picks -->
+@if($featured->isNotEmpty())
+<section class="mx-auto max-w-7xl px-6 pb-16">
+    <h2 class="mb-8 font-display text-3xl font-semibold tracking-tight">Staff Picks</h2>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        @foreach($featured->take(2) as $product)
+            <div class="flex h-auto flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest transition-all hover:shadow-xl md:h-64 md:flex-row">
+                <a href="{{ route('products.show', $product->slug) }}" class="block w-full overflow-hidden md:w-1/2">
+                    <x-product-thumb :product="$product" class="h-48 w-full md:h-full" />
+                </a>
+                <div class="flex w-full flex-col justify-between p-6 md:w-1/2">
+                    <div>
+                        <span class="mb-2 inline-block rounded bg-secondary-container/25 px-2 py-1 font-mono text-[11px] font-semibold tracking-widest text-secondary">STAFF CHOICE</span>
+                        <a href="{{ route('products.show', $product->slug) }}">
+                            <h3 class="mb-1 text-[17px] font-semibold transition-colors hover:text-primary">{{ $product->title }}</h3>
+                        </a>
+                        <p class="line-clamp-2 text-sm text-on-surface-variant">{{ $product->short_description }}</p>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="font-display text-2xl font-bold">${{ number_format((float) $product->regular_price, 2) }}</span>
+                        <a href="{{ route('products.show', $product->slug) }}" class="rounded-lg bg-surface-container-high px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface-container-highest">Preview</a>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</section>
+@endif
+
+<!-- CTA -->
+<section class="mx-auto max-w-7xl px-6 pb-4">
+    <div class="relative flex flex-col items-center overflow-hidden rounded-3xl bg-primary p-12 text-center text-on-primary sm:p-16">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+        <h2 class="relative z-10 mb-4 font-display text-4xl font-bold tracking-tight">Start selling on DiginMarket today.</h2>
+        <p class="relative z-10 mb-8 max-w-2xl text-lg opacity-90">Join a growing community of creators and reach buyers worldwide with our powerful marketplace engine.</p>
+        <div class="relative z-10 flex flex-col gap-4 sm:flex-row">
+            <a href="{{ auth()->check() ? route('seller.apply') : route('register') }}" class="rounded-2xl bg-on-primary px-10 py-4 text-lg font-semibold text-primary transition-all hover:bg-surface-container-lowest active:scale-95">Become a Seller</a>
+            <a href="{{ route('products.index') }}" class="rounded-2xl border-2 border-on-primary px-10 py-4 text-lg font-semibold text-on-primary transition-all hover:bg-white/10 active:scale-95">Explore Assets</a>
+        </div>
+    </div>
+</section>
+
+</x-nexus-layout>
