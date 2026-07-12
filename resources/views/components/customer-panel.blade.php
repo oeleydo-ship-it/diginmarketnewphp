@@ -12,6 +12,7 @@
                     ['route' => 'purchases.index', 'match' => 'purchases.*', 'icon' => 'download', 'label' => 'Purchases'],
                     ['route' => 'wishlist.index', 'match' => 'wishlist.*', 'icon' => 'favorite', 'label' => 'Wishlist'],
                     ['route' => 'support.index', 'match' => 'support.*', 'icon' => 'support_agent', 'label' => 'Support'],
+                    ['route' => 'affiliates.show', 'match' => 'affiliates.*', 'icon' => 'share', 'label' => 'Affiliates'],
                     ['route' => 'notifications.preferences', 'match' => 'notifications.*', 'icon' => 'notifications', 'label' => 'Notifications'],
                 ])
                 @foreach($links as $link)

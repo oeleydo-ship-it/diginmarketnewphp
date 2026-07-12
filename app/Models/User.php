@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasOne(SellerProfile::class);
     }
 
+    public function affiliateProfile(): HasOne
+    {
+        return $this->hasOne(AffiliateProfile::class);
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'seller_id');

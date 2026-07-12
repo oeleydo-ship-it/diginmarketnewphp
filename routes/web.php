@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/support/{supportTicket}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
     Route::post('/refunds/{orderItem}', [RefundRequestController::class, 'store'])->name('refunds.store');
     Route::post('/disputes/{orderItem}', [DisputeController::class, 'store'])->name('disputes.store');
+    Route::get('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'show'])->name('affiliates.show');
+    Route::post('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'store'])->name('affiliates.store');
     Route::get('/notification-preferences', [NotificationPreferenceController::class, 'edit'])->name('notifications.preferences');
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update'])->name('notifications.preferences.update');
     Route::get('/sell/apply', [SellerApplicationController::class, 'create'])->name('seller.apply');
@@ -90,6 +92,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/products/create', [SellerProductController::class, 'create'])->name('products.create');
         Route::post('/products', [SellerProductController::class, 'store'])->name('products.store');
         Route::post('/products/{product}/submit', [SellerProductController::class, 'submit'])->name('products.submit');
+        Route::get('/products/{product}/edit', [SellerProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [SellerProductController::class, 'update'])->name('products.update');
+        Route::post('/products/{product}/versions', [SellerProductController::class, 'storeVersion'])->name('products.versions.store');
     });
     Route::middleware('role:administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/withdrawals', [WithdrawalReviewController::class, 'index'])->name('withdrawals.index');
@@ -104,6 +109,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/products/review', [ProductReviewController::class, 'index'])->name('products.review');
         Route::post('/products/{product}/approve', [ProductReviewController::class, 'approve'])->name('products.approve');
         Route::post('/products/{product}/request-changes', [ProductReviewController::class, 'requestChanges'])->name('products.request-changes');
+        Route::post('/versions/{version}/approve', [ProductReviewController::class, 'approveVersion'])->name('versions.approve');
+        Route::post('/versions/{version}/reject', [ProductReviewController::class, 'rejectVersion'])->name('versions.reject');
         Route::get('/users', [UserDirectoryController::class, 'index'])->name('users.index');
         Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
         Route::get('/orders', [OrderDirectoryController::class, 'index'])->name('orders.index');

@@ -23,6 +23,11 @@
                         <span class="mt-1 inline-block rounded px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider {{ ['approved' => 'bg-secondary-container/40 text-on-secondary-container', 'published' => 'bg-secondary-container/40 text-on-secondary-container', 'rejected' => 'bg-error-container text-on-error-container', 'changes_requested' => 'bg-tertiary-fixed text-on-tertiary-fixed-variant', 'submitted' => 'bg-primary-container/20 text-primary'][$status] ?? 'bg-outline-variant/30 text-on-surface-variant' }}">{{ str($status)->headline() }}</span>
                     </div>
                 </div>
+                <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('seller.products.edit', $product) }}" class="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:border-primary hover:text-primary active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    Manage
+                </a>
                 @can('submit', $product)
                     <form method="POST" action="{{ route('seller.products.submit', $product) }}">
                         @csrf
@@ -32,6 +37,7 @@
                         </button>
                     </form>
                 @endcan
+                </div>
             </div>
         @empty
             <div class="rounded-xl border border-dashed border-outline-variant p-14 text-center">

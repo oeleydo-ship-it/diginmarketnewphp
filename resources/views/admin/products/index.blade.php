@@ -7,4 +7,26 @@
    <div class="grid gap-3 lg:grid-cols-2 xl:min-w-[650px]"><form method="POST" action="{{ route('admin.products.approve',$product) }}" class="flex gap-2">@csrf<input name="notes" placeholder="Optional review notes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Approve</button></form><form method="POST" action="{{ route('admin.products.request-changes',$product) }}" class="flex gap-2">@csrf<input name="notes" required placeholder="Describe required changes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50">Request changes</button></form></div></div></article>
  @empty<div class="rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">task_alt</span><h2 class="font-bold text-[#111827]">Review queue is clear</h2><p class="mt-1 text-sm">There are no submitted products awaiting a decision.</p></div>@endforelse</div>
  <div class="mt-6">{{ $products->links() }}</div>
+ @isset($versions)
+ <div class="mt-12">
+  <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h2 class="text-2xl font-extrabold tracking-tight">Version Updates</h2><p class="mt-1 text-[#626576]">New releases for already-published products.</p></div><span class="rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700">{{ $versions->count() }} pending versions</span></div>
+  <div class="mt-6 space-y-4">
+  @forelse($versions as $version)
+   <article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6">
+    <div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+     <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-2"><h3 class="text-lg font-bold">{{ $version->product->title }}</h3><span class="rounded-full bg-violet-50 px-2.5 py-1 font-mono text-xs font-bold text-violet-700">v{{ $version->version_number }}</span></div>
+      <p class="mt-2 text-sm text-[#626576]">{{ $version->product->seller->name }} · {{ $version->release_title }} · submitted {{ $version->created_at->diffForHumans() }}</p>
+      @if($version->release_notes)<p class="mt-3 max-w-2xl rounded-lg bg-[#f6f7fb] p-4 text-sm leading-6 text-[#525565]">{{ $version->release_notes }}</p>@endif
+     </div>
+     <div class="grid gap-3 lg:grid-cols-2 xl:min-w-[650px]">
+      <form method="POST" action="{{ route('admin.versions.approve',$version) }}" class="flex gap-2">@csrf<input name="notes" placeholder="Optional review notes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Publish version</button></form>
+      <form method="POST" action="{{ route('admin.versions.reject',$version) }}" class="flex gap-2">@csrf<input name="notes" required placeholder="Reason for rejection" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Reject</button></form>
+     </div>
+    </div>
+   </article>
+  @empty<div class="rounded-xl border border-dashed border-[#d7d9e5] bg-white px-6 py-12 text-center text-[#777a8a]">No version updates awaiting review.</div>@endforelse
+  </div>
+ </div>
+ @endisset
 </div></x-admin-layout>
