@@ -1,1 +1,54 @@
-<x-marketplace-layout title="Browse digital products"><div class="mx-auto max-w-7xl px-6 py-14"><p class="text-emerald-400">Curated marketplace</p><h1 class="mt-2 text-4xl font-black">Find your next building block</h1><form method="GET" class="mt-8 grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 md:grid-cols-6"><input name="q" value="{{ request('q') }}" placeholder="Search products" class="rounded-xl bg-slate-900 p-3 md:col-span-2"><select name="category" class="rounded-xl bg-slate-900 p-3"><option value="">All categories</option>@foreach($categories as $category)<option value="{{ $category->slug }}" @selected(request('category')===$category->slug)>{{ $category->name }}</option>@endforeach</select><input name="min_price" type="number" value="{{ request('min_price') }}" placeholder="Min price" class="rounded-xl bg-slate-900 p-3"><input name="max_price" type="number" value="{{ request('max_price') }}" placeholder="Max price" class="rounded-xl bg-slate-900 p-3"><select name="sort" class="rounded-xl bg-slate-900 p-3"><option value="newest">Newest</option><option value="popular" @selected(request('sort')==='popular')>Best selling</option><option value="rated" @selected(request('sort')==='rated')>Highest rated</option><option value="price_low" @selected(request('sort')==='price_low')>Lowest price</option><option value="price_high" @selected(request('sort')==='price_high')>Highest price</option></select><button class="rounded-xl bg-emerald-400 p-3 font-bold text-slate-950 md:col-span-6">Apply filters</button></form><div class="mt-10 grid gap-6 md:grid-cols-3">@forelse($products as $product)<article class="rounded-2xl border border-white/10 bg-white/5 p-6"><a href="{{ route('categories.show',$product->category->slug) }}" class="text-sm text-emerald-400">{{ $product->category->name }}</a><a href="{{ route('products.show',$product->slug) }}"><h2 class="mt-2 text-xl font-bold">{{ $product->title }}</h2><p class="mt-3 line-clamp-2 text-slate-400">{{ $product->short_description }}</p></a><div class="mt-5 flex items-center justify-between"><span class="font-black">${{ $product->regular_price }}</span><span class="text-sm text-slate-400">★ {{ $product->average_rating }} · {{ $product->sales_count }} sales</span></div><a href="{{ route('sellers.show',$product->seller->sellerProfile?->username) }}" class="mt-4 block text-sm text-slate-500">by {{ $product->seller->sellerProfile?->display_name ?? $product->seller->name }}</a></article>@empty<p class="text-slate-400">No products match these filters.</p>@endforelse</div><div class="mt-10">{{ $products->links() }}</div></div></x-marketplace-layout>
+<x-marketplace-layout title="Browse Digital Assets — DiginMarket">
+<div class="mx-auto max-w-7xl px-6 py-12">
+    <header class="mb-8">
+        <p class="font-mono text-xs font-medium uppercase tracking-wider text-primary">Curated Marketplace</p>
+        <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">Find your next building block</h1>
+    </header>
+    <form method="GET" class="mb-4 grid gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-5 md:grid-cols-6">
+        <div class="relative md:col-span-2">
+            <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
+            <input name="q" value="{{ request('q') }}" placeholder="Search products"
+                class="w-full rounded-lg border border-outline-variant bg-surface py-3 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+        </div>
+        <select name="category" class="rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+            <option value="">All categories</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->slug }}" @selected(request('category') === $category->slug)>{{ $category->name }}</option>
+            @endforeach
+        </select>
+        <input name="min_price" type="number" value="{{ request('min_price') }}" placeholder="Min price" class="rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+        <input name="max_price" type="number" value="{{ request('max_price') }}" placeholder="Max price" class="rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+        <select name="sort" class="rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+            <option value="newest">Newest</option>
+            <option value="popular" @selected(request('sort') === 'popular')>Best selling</option>
+            <option value="rated" @selected(request('sort') === 'rated')>Highest rated</option>
+            <option value="price_low" @selected(request('sort') === 'price_low')>Lowest price</option>
+            <option value="price_high" @selected(request('sort') === 'price_high')>Highest price</option>
+        </select>
+        <button class="flex items-center justify-center gap-2 rounded-lg bg-primary p-3 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 md:col-span-6">
+            <span class="material-symbols-outlined text-[18px]">tune</span>
+            Apply filters
+        </button>
+    </form>
+    <div class="mb-8 flex flex-wrap gap-2">
+        @foreach($categories as $category)
+            <a href="{{ route('products.index', array_merge(request()->except('page'), ['category' => request('category') === $category->slug ? null : $category->slug])) }}"
+                class="rounded-full border px-4 py-1.5 text-sm font-medium transition-colors {{ request('category') === $category->slug ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary' }}">
+                {{ $category->name }}
+                @if(request('category') === $category->slug)<span class="material-symbols-outlined ml-1 align-middle text-[14px]">close</span>@endif
+            </a>
+        @endforeach
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @forelse($products as $product)
+            <x-product-card :product="$product" />
+        @empty
+            <div class="col-span-full rounded-xl border border-dashed border-outline-variant p-14 text-center">
+                <span class="material-symbols-outlined mb-3 text-[40px] text-outline">search_off</span>
+                <p class="text-on-surface-variant">No products match these filters.</p>
+            </div>
+        @endforelse
+    </div>
+    <div class="mt-10">{{ $products->links() }}</div>
+</div>
+</x-marketplace-layout>

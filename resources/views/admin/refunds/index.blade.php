@@ -1,25 +1,6 @@
-<x-marketplace-layout title="Refund queue">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">Refund queue</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- @if($errors->any())<p class="mt-4 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-rose-300">{{ $errors->first() }}</p>@endif
- <div class="mt-8 space-y-4">
- @forelse($refunds as $refund)
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-   <div class="flex flex-wrap items-start justify-between gap-4">
-    <div>
-     <h2 class="text-xl font-bold">{{ $refund->number }}</h2>
-     <p class="text-slate-400">{{ $refund->user?->name }} · {{ $refund->orderItem?->product_title }} · Requested ${{ number_format($refund->requested_amount,2) }} · {{ $refund->reason }}</p>
-     <p class="mt-2 max-w-2xl text-sm text-slate-300">{{ $refund->description }}</p>
-    </div>
-    <div class="flex gap-2">
-     <form method="POST" action="{{ route('admin.refunds.approve',$refund) }}">@csrf<input name="amount" required type="number" step="0.01" min="0.01" value="{{ $refund->requested_amount }}" class="w-28 rounded-lg bg-white/5 p-2"><input name="decision" placeholder="Decision" class="ml-2 rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Refund</button></form>
-     <form method="POST" action="{{ route('admin.refunds.reject',$refund) }}">@csrf<input name="decision" placeholder="Reason" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg border border-rose-400 px-4 py-2 font-bold text-rose-300">Reject</button></form>
-    </div>
-   </div>
-  </div>
- @empty<p class="text-slate-400">No refund requests awaiting review.</p>@endforelse
- </div>
- <div class="mt-6">{{ $refunds->links() }}</div>
-</div>
-</x-marketplace-layout>
+<x-admin-layout title="Refund Queue">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Refund Queue</h1><p class="mt-2 text-[#626576]">Assess customer claims and record financial decisions.</p></div><span class="rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">{{ $refunds->total() }} open requests</span></div>
+ @if($errors->any())<div class="mt-5 flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>@endif
+ <div class="mt-8 space-y-5">@forelse($refunds as $refund)<article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6"><div class="grid gap-6 xl:grid-cols-[1fr_600px]"><div><div class="flex flex-wrap items-center gap-2"><h2 class="font-mono text-lg font-bold text-[#3525cd]">#{{ $refund->number }}</h2><span class="rounded-full bg-red-50 px-3 py-1 text-xs font-bold capitalize text-red-700">{{ str($refund->reason)->replace('_',' ') }}</span></div><p class="mt-3 text-sm text-[#626576]">{{ $refund->user?->name ?? 'Unknown customer' }} · {{ $refund->orderItem?->product_title }}</p><p class="mt-3 rounded-lg bg-[#f6f7fb] p-4 text-sm leading-6 text-[#525565]">{{ $refund->description }}</p></div><div><div class="mb-4 grid grid-cols-2 gap-3 rounded-lg bg-[#edf2ff] p-4"><div><p class="text-xs text-[#626576]">Requested amount</p><p class="mt-1 text-xl font-bold">${{ number_format($refund->requested_amount,2) }}</p></div><div><p class="text-xs text-[#626576]">Submitted</p><p class="mt-1 text-sm font-semibold">{{ $refund->created_at->format('M d, Y') }}</p></div></div><form method="POST" action="{{ route('admin.refunds.approve',$refund) }}" class="grid gap-2 sm:grid-cols-[100px_1fr_auto]">@csrf<input name="amount" required type="number" step="0.01" min="0.01" value="{{ $refund->requested_amount }}" class="rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><input name="decision" placeholder="Approval note" class="min-w-0 rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Approve refund</button></form><form method="POST" action="{{ route('admin.refunds.reject',$refund) }}" class="mt-2 flex gap-2">@csrf<input name="decision" placeholder="Reason for rejection" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><button class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Reject</button></form></div></div></article>@empty<div class="rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">currency_exchange</span><h2 class="font-bold text-[#111827]">No refunds need review</h2><p class="mt-1 text-sm">All customer refund requests have been processed.</p></div>@endforelse</div><div class="mt-6">{{ $refunds->links() }}</div>
+</div></x-admin-layout>

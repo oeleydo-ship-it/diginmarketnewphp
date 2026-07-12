@@ -8,6 +8,12 @@
       "port": 8000
     },
     {
+      "name": "laravel-alt",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["artisan", "serve", "--port=8123"],
+      "port": 8123
+    },
+    {
       "name": "vite",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],

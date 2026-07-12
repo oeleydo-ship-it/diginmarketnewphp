@@ -1,1 +1,20 @@
-<x-marketplace-layout title="My wishlist"><div class="mx-auto max-w-7xl px-6 py-16"><h1 class="text-4xl font-black">My wishlist</h1><div class="mt-10 grid gap-6 md:grid-cols-3">@forelse($products as $product)<a href="{{ route('products.show',$product->slug) }}" class="rounded-2xl border border-white/10 bg-white/5 p-6"><h2 class="text-xl font-bold">{{ $product->title }}</h2><p class="mt-3 text-slate-400">{{ $product->short_description }}</p><p class="mt-5 font-black">${{ $product->regular_price }}</p></a>@empty<p class="text-slate-400">Save products here to compare them later.</p>@endforelse</div>{{ $products->links() }}</div></x-marketplace-layout>
+<x-marketplace-layout title="My Wishlist — DiginMarket">
+<x-customer-panel>
+    <header class="mb-8">
+        <h1 class="font-display text-3xl font-semibold tracking-tight">My Wishlist</h1>
+        <p class="mt-1 text-on-surface-variant">Assets you saved to compare later.</p>
+    </header>
+    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        @forelse($products as $product)
+            <x-product-card :product="$product" />
+        @empty
+            <div class="col-span-full rounded-xl border border-dashed border-outline-variant p-14 text-center">
+                <span class="material-symbols-outlined mb-3 text-[40px] text-outline">favorite</span>
+                <p class="text-on-surface-variant">Save products here to compare them later.</p>
+                <a href="{{ route('products.index') }}" class="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition-all hover:opacity-90">Browse assets</a>
+            </div>
+        @endforelse
+    </div>
+    <div class="mt-8">{{ $products->links() }}</div>
+</x-customer-panel>
+</x-marketplace-layout>

@@ -1,24 +1,10 @@
-<x-marketplace-layout title="Product review">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">Product review queue</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- @if($errors->any())<p class="mt-4 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-rose-300">{{ $errors->first() }}</p>@endif
- <div class="mt-8 space-y-4">
- @forelse($products as $product)
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-   <div class="flex flex-wrap items-start justify-between gap-4">
-    <div>
-     <h2 class="text-xl font-bold">{{ $product->title }}</h2>
-     <p class="text-slate-400">{{ $product->seller->name }} · {{ $product->category->name }} · submitted {{ $product->submitted_at?->diffForHumans() }}</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-     <form method="POST" action="{{ route('admin.products.approve',$product) }}">@csrf<input name="notes" placeholder="Review notes" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Approve & publish</button></form>
-     <form method="POST" action="{{ route('admin.products.request-changes',$product) }}">@csrf<input name="notes" required placeholder="Required changes" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg border border-amber-400 px-4 py-2 font-bold text-amber-300">Request changes</button></form>
-    </div>
-   </div>
-  </div>
- @empty<p class="text-slate-400">Review queue is clear.</p>@endforelse
- </div>
+<x-admin-layout title="Product Review">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Product Review</h1><p class="mt-2 text-[#626576]">Validate submitted assets before they enter the marketplace.</p></div><span class="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">{{ $products->total() }} awaiting review</span></div>
+ @if($errors->any())<div class="mt-5 flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>@endif
+ <div class="mt-8 space-y-4">@forelse($products as $product)
+  <article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6"><div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h2 class="text-xl font-bold">{{ $product->title }}</h2><span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold capitalize text-amber-800">{{ str($product->status->value ?? $product->status)->replace('_',' ') }}</span></div><div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#626576]"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">person</span>{{ $product->seller->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">category</span>{{ $product->category->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">schedule</span>{{ $product->submitted_at?->diffForHumans() }}</span></div></div>
+   <div class="grid gap-3 lg:grid-cols-2 xl:min-w-[650px]"><form method="POST" action="{{ route('admin.products.approve',$product) }}" class="flex gap-2">@csrf<input name="notes" placeholder="Optional review notes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Approve</button></form><form method="POST" action="{{ route('admin.products.request-changes',$product) }}" class="flex gap-2">@csrf<input name="notes" required placeholder="Describe required changes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50">Request changes</button></form></div></div></article>
+ @empty<div class="rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">task_alt</span><h2 class="font-bold text-[#111827]">Review queue is clear</h2><p class="mt-1 text-sm">There are no submitted products awaiting a decision.</p></div>@endforelse</div>
  <div class="mt-6">{{ $products->links() }}</div>
-</div>
-</x-marketplace-layout>
+</div></x-admin-layout>

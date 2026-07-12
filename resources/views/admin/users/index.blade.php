@@ -1,25 +1,14 @@
-<x-marketplace-layout title="User directory">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">User directory</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- <form method="GET" class="mt-8 flex flex-wrap gap-3">
-  <input name="q" value="{{ request('q') }}" placeholder="Search name or email" class="rounded-lg bg-white/5 p-2">
-  <select name="role" class="rounded-lg bg-slate-900 p-2"><option value="">Any role</option><option value="administrator" @selected(request('role')==='administrator')>Administrator</option><option value="seller" @selected(request('role')==='seller')>Seller</option><option value="customer" @selected(request('role')==='customer')>Customer</option></select>
-  <button class="rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Filter</button>
+<x-admin-layout title="Customer Management">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Customer Management</h1><p class="mt-2 text-[#626576]">Search accounts, review roles, and control account access.</p></div>
+ <form method="GET" class="mt-8 flex flex-col gap-3 rounded-xl border border-[#d7d9e5] bg-white p-4 shadow-sm sm:flex-row">
+  <label class="relative flex-1"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777a8a]">search</span><input name="q" value="{{ request('q') }}" placeholder="Search name or email" class="w-full rounded-lg border border-[#d7d9e5] bg-[#fafbff] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-[#3525cd]"></label>
+  <select name="role" class="rounded-lg border border-[#d7d9e5] bg-white px-4 py-2.5 text-sm"><option value="">All roles</option><option value="administrator" @selected(request('role')==='administrator')>Administrator</option><option value="seller" @selected(request('role')==='seller')>Seller</option><option value="customer" @selected(request('role')==='customer')>Customer</option></select>
+  <button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white">Filter</button>@if(request()->hasAny(['q','role']))<a href="{{ route('admin.users.index') }}" class="self-center px-2 text-sm font-semibold text-[#3525cd]">Clear</a>@endif
  </form>
- <div class="mt-6 space-y-3">
- @forelse($users as $user)
-  <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-   <div>
-    <p class="font-semibold">{{ $user->name }} <span class="text-sm text-slate-400">{{ $user->email }}</span></p>
-    <p class="text-sm text-slate-400">{{ $user->roles->pluck('slug')->join(', ') ?: 'customer' }} · joined {{ $user->created_at->format('M j, Y') }} · <span class="{{ $user->status==='active'?'text-emerald-300':'text-rose-300' }}">{{ $user->status }}</span></p>
-   </div>
-   @if($user->id!==auth()->id())
-   <form method="POST" action="{{ route('admin.users.status',$user) }}">@csrf @method('PUT')<input type="hidden" name="status" value="{{ $user->status==='active'?'suspended':'active' }}"><button class="rounded-lg border {{ $user->status==='active'?'border-rose-400 text-rose-300':'border-emerald-400 text-emerald-300' }} px-4 py-2 font-bold">{{ $user->status==='active'?'Suspend':'Reactivate' }}</button></form>
-   @endif
-  </div>
- @empty<p class="text-slate-400">No users match.</p>@endforelse
- </div>
- <div class="mt-6">{{ $users->links() }}</div>
+ <div class="mt-5 overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-sm"><div class="overflow-x-auto"><table class="w-full min-w-[800px] text-left"><thead class="bg-[#edf2ff] text-xs uppercase tracking-[.08em] text-[#4e5161]"><tr><th class="px-5 py-4">Customer</th><th class="px-5 py-4">Role</th><th class="px-5 py-4">Joined</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Action</th></tr></thead><tbody class="divide-y divide-[#e2e4ec]">
+  @forelse($users as $user)<tr class="hover:bg-[#fafbff]"><td class="px-5 py-4"><div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e9e7ff] font-bold text-[#3525cd]">{{ str($user->name)->substr(0,1)->upper() }}</span><div><p class="font-semibold">{{ $user->name }}</p><p class="text-xs text-[#626576]">{{ $user->email }}</p></div></div></td><td class="px-5 py-4 text-sm capitalize">{{ $user->roles->pluck('slug')->join(', ') ?: 'customer' }}</td><td class="px-5 py-4 text-sm text-[#626576]">{{ $user->created_at->format('M d, Y') }}</td><td class="px-5 py-4"><span class="inline-flex rounded-full px-3 py-1 text-xs font-bold capitalize {{ $user->status==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700' }}">{{ $user->status }}</span></td><td class="px-5 py-4 text-right">@if($user->id!==auth()->id())<form method="POST" action="{{ route('admin.users.status',$user) }}">@csrf @method('PUT')<input type="hidden" name="status" value="{{ $user->status==='active'?'suspended':'active' }}"><button class="rounded-lg border px-3 py-2 text-xs font-semibold {{ $user->status==='active' ? 'border-red-200 text-red-700 hover:bg-red-50' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' }}">{{ $user->status==='active'?'Suspend':'Reactivate' }}</button></form>@else<span class="text-xs text-[#777a8a]">Current account</span>@endif</td></tr>
+  @empty<tr><td colspan="5" class="px-5 py-16 text-center text-[#777a8a]"><span class="material-symbols-outlined mb-2 block text-4xl">person_search</span>No users match your filters.</td></tr>@endforelse
+ </tbody></table></div><div class="flex flex-col items-center justify-between gap-4 border-t border-[#e2e4ec] bg-[#f4f7ff] px-5 py-4 text-sm sm:flex-row"><span>Showing {{ $users->firstItem() ?? 0 }} to {{ $users->lastItem() ?? 0 }} of {{ number_format($users->total()) }} users</span>{{ $users->onEachSide(1)->links() }}</div></div>
 </div>
-</x-marketplace-layout>
+</x-admin-layout>

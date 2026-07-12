@@ -1,1 +1,20 @@
-<x-marketplace-layout :title="$category->name.' products'" :description="$category->description"><div class="mx-auto max-w-7xl px-6 py-16"><p class="text-emerald-400">Category</p><h1 class="mt-2 text-5xl font-black">{{ $category->name }}</h1><p class="mt-4 max-w-2xl text-slate-400">{{ $category->description ?? 'Explore reviewed products from independent sellers.' }}</p><div class="mt-10 grid gap-6 md:grid-cols-3">@forelse($products as $product)<a href="{{ route('products.show',$product->slug) }}" class="rounded-2xl border border-white/10 bg-white/5 p-6"><h2 class="text-xl font-bold">{{ $product->title }}</h2><p class="mt-3 text-slate-400">{{ $product->short_description }}</p><p class="mt-5 font-black">${{ $product->regular_price }}</p></a>@empty<p class="text-slate-400">No published products in this category.</p>@endforelse</div>{{ $products->links() }}</div></x-marketplace-layout>
+<x-marketplace-layout :title="$category->name . ' — DiginMarket'" :description="$category->description">
+<div class="mx-auto max-w-7xl px-6 py-12">
+    <header class="mb-10">
+        <p class="font-mono text-xs font-medium uppercase tracking-wider text-primary">Category</p>
+        <h1 class="mt-1 font-display text-4xl font-semibold tracking-tight">{{ $category->name }}</h1>
+        <p class="mt-3 max-w-2xl text-on-surface-variant">{{ $category->description ?? 'Explore reviewed products from independent sellers.' }}</p>
+    </header>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @forelse($products as $product)
+            <x-product-card :product="$product" />
+        @empty
+            <div class="col-span-full rounded-xl border border-dashed border-outline-variant p-14 text-center">
+                <span class="material-symbols-outlined mb-3 text-[40px] text-outline">category</span>
+                <p class="text-on-surface-variant">No published products in this category.</p>
+            </div>
+        @endforelse
+    </div>
+    <div class="mt-10">{{ $products->links() }}</div>
+</div>
+</x-marketplace-layout>

@@ -1,24 +1,6 @@
-<x-marketplace-layout title="Withdrawal queue">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">Withdrawal queue</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- @if($errors->any())<p class="mt-4 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-rose-300">{{ $errors->first() }}</p>@endif
- <div class="mt-8 space-y-4">
- @forelse($withdrawals as $withdrawal)
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-   <div class="flex flex-wrap items-start justify-between gap-4">
-    <div>
-     <h2 class="text-xl font-bold">{{ $withdrawal->number }}</h2>
-     <p class="text-slate-400">Requested {{ $withdrawal->created_at->diffForHumans() }} · Amount ${{ number_format($withdrawal->amount,2) }} · Fee ${{ number_format($withdrawal->fee,2) }} · Net ${{ number_format($withdrawal->net_amount,2) }} {{ $withdrawal->wallet?->currency }}</p>
-    </div>
-    <div class="flex gap-2">
-     <form method="POST" action="{{ route('admin.withdrawals.approve',$withdrawal) }}">@csrf<input name="note" placeholder="Note" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Pay via Stripe</button></form>
-     <form method="POST" action="{{ route('admin.withdrawals.reject',$withdrawal) }}">@csrf<input name="note" placeholder="Reason" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg border border-rose-400 px-4 py-2 font-bold text-rose-300">Reject</button></form>
-    </div>
-   </div>
-  </div>
- @empty<p class="text-slate-400">No withdrawals awaiting review.</p>@endforelse
- </div>
- <div class="mt-6">{{ $withdrawals->links() }}</div>
-</div>
-</x-marketplace-layout>
+<x-admin-layout title="Withdrawal Queue">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Withdrawal Queue</h1><p class="mt-2 text-[#626576]">Verify seller payouts before releasing funds through Stripe.</p></div><span class="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">{{ $withdrawals->total() }} pending payouts</span></div>
+ @if($errors->any())<div class="mt-5 flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>@endif
+ <div class="mt-8 space-y-5">@forelse($withdrawals as $withdrawal)<article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6"><div class="grid gap-6 xl:grid-cols-[1fr_620px]"><div><div class="flex items-center gap-3"><span class="material-symbols-outlined rounded-xl bg-[#eeecff] p-3 text-[#3525cd]">account_balance</span><div><h2 class="font-mono text-lg font-bold text-[#3525cd]">#{{ $withdrawal->number }}</h2><p class="text-xs text-[#626576]">Requested {{ $withdrawal->created_at->diffForHumans() }}</p></div></div><div class="mt-5 grid grid-cols-3 gap-3"><div><p class="text-xs text-[#626576]">Amount</p><p class="mt-1 font-bold">${{ number_format($withdrawal->amount,2) }}</p></div><div><p class="text-xs text-[#626576]">Fee</p><p class="mt-1 font-bold">${{ number_format($withdrawal->fee,2) }}</p></div><div><p class="text-xs text-[#626576]">Net payout</p><p class="mt-1 font-bold text-emerald-700">${{ number_format($withdrawal->net_amount,2) }} {{ $withdrawal->wallet?->currency }}</p></div></div></div><div class="self-center"><form method="POST" action="{{ route('admin.withdrawals.approve',$withdrawal) }}" class="flex gap-2">@csrf<input name="note" placeholder="Optional payout note" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-[#3525cd] px-4 py-2 text-sm font-semibold text-white">Pay via Stripe</button></form><form method="POST" action="{{ route('admin.withdrawals.reject',$withdrawal) }}" class="mt-2 flex gap-2">@csrf<input name="note" required placeholder="Reason for rejection" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><button class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Reject</button></form></div></div></article>@empty<div class="rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">price_check</span><h2 class="font-bold text-[#111827]">Payout queue is clear</h2><p class="mt-1 text-sm">There are no withdrawals awaiting review.</p></div>@endforelse</div><div class="mt-6">{{ $withdrawals->links() }}</div>
+</div></x-admin-layout>

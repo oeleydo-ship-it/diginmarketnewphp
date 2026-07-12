@@ -26,3 +26,12 @@ const navMenu = document.querySelector('[data-nav-menu]');
 if (navToggle && navMenu) {
     navToggle.addEventListener('click', () => navMenu.classList.toggle('hidden'));
 }
+
+const adminToggle = document.querySelector('[data-admin-toggle]');
+const adminSidebar = document.querySelector('[data-admin-sidebar]');
+if (adminToggle && adminSidebar) {
+    adminToggle.addEventListener('click', () => {
+        adminSidebar.classList.toggle('hidden');
+        adminSidebar.classList.toggle('flex');
+    });
+}

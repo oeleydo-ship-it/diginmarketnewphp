@@ -1,23 +1,25 @@
-<x-marketplace-layout title="Orders">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">Orders</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- <form method="GET" class="mt-8 flex flex-wrap gap-3">
-  <input name="q" value="{{ request('q') }}" placeholder="Order number" class="rounded-lg bg-white/5 p-2">
-  <select name="status" class="rounded-lg bg-slate-900 p-2"><option value="">Any payment status</option>@foreach(['pending','paid','partially_refunded','failed'] as $status)<option value="{{ $status }}" @selected(request('status')===$status)>{{ str_replace('_',' ',$status) }}</option>@endforeach</select>
-  <button class="rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Filter</button>
- </form>
- <div class="mt-6 space-y-3">
- @forelse($orders as $order)
-  <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-   <div>
-    <p class="font-semibold">{{ $order->number }}</p>
-    <p class="text-sm text-slate-400">{{ $order->user?->name }} · {{ $order->items->count() }} {{ str('item')->plural($order->items->count()) }} · {{ $order->created_at->format('M j, Y H:i') }}</p>
-   </div>
-   <div class="text-right"><p class="font-bold">${{ number_format($order->total,2) }} {{ $order->currency }}</p><p class="text-sm text-slate-400">{{ $order->payment_status }} · {{ $order->status }}</p></div>
+<x-admin-layout title="Order Management">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+  <div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Order Management</h1><p class="mt-1 text-[#555868]">Track and manage your global sales activity.</p></div>
+  <div class="flex flex-wrap gap-2">
+   <form method="GET" class="flex gap-2"><input type="date" name="from" value="{{ request('from') }}" class="rounded-lg border border-[#cfd2e1] bg-white px-3 py-2.5 text-sm"><input type="date" name="to" value="{{ request('to') }}" class="rounded-lg border border-[#cfd2e1] bg-white px-3 py-2.5 text-sm"><button class="rounded-lg border border-[#cfd2e1] bg-white px-4 text-sm font-semibold">Apply</button></form>
+   <a href="{{ route('admin.orders.export', request()->query()) }}" class="flex items-center gap-2 rounded-lg border border-[#cfd2e1] bg-white px-4 py-2.5 text-sm font-semibold"><span class="material-symbols-outlined text-lg">download</span>Export</a>
   </div>
- @empty<p class="text-slate-400">No orders match.</p>@endforelse
  </div>
- <div class="mt-6">{{ $orders->links() }}</div>
+ <section class="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  @php($cards=[['Total Revenue','$'.number_format($metrics['revenue'],2),'payments','text-[#251bd5]','Across all paid orders'],['Pending Orders',number_format($metrics['pending']),'pending_actions','text-amber-700','Requires attention soon'],['Refund Rate',$metrics['refund_rate'].'%','assignment_return','text-[#303244]','Of completed orders'],['Active Disputes',number_format($metrics['disputes']),'gavel','text-red-600','Critical priority']])
+  @foreach($cards as [$label,$value,$icon,$color,$note])<article class="rounded-xl border border-[#cfd2e1] bg-white p-6 shadow-sm"><div class="flex items-start justify-between"><div><p class="text-[#555868]">{{ $label }}</p><p class="mt-2 text-2xl font-bold md:text-3xl">{{ $value }}</p></div><span class="material-symbols-outlined {{ $color }}">{{ $icon }}</span></div><p class="mt-2 text-sm {{ $color }}">{{ $note }}</p></article>@endforeach
+ </section>
+ <form method="GET" class="mt-8 flex flex-wrap items-center gap-3">
+  <input type="hidden" name="q" value="{{ request('q') }}"><select name="status" class="rounded-xl border border-[#cfd2e1] bg-[#eaf0ff] px-4 py-2.5 text-sm font-semibold"><option value="">Status: All</option>@foreach(['pending','paid','partially_refunded','failed'] as $status)<option value="{{ $status }}" @selected(request('status')===$status)>{{ str($status)->replace('_',' ')->title() }}</option>@endforeach</select>
+  <select name="category" class="rounded-xl border border-[#cfd2e1] bg-white px-4 py-2.5 text-sm"><option value="">Category: All</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected((string)request('category')===(string)$category->id)>{{ $category->name }}</option>@endforeach</select>
+  <button class="rounded-xl bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white">Filter</button><a href="{{ route('admin.orders.index') }}" class="px-3 py-2 text-sm font-semibold text-[#251bd5]">Clear All</a>
+ </form>
+ <div class="mt-6 overflow-hidden rounded-xl border border-[#cfd2e1] bg-white shadow-sm">
+  <div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left"><thead class="bg-[#edf2ff] text-xs uppercase tracking-[.08em] text-[#424555]"><tr><th class="px-5 py-4">Order ID</th><th class="px-5 py-4">Customer</th><th class="px-5 py-4">Date</th><th class="px-5 py-4">Amount</th><th class="px-5 py-4">Status</th><th class="px-5 py-4">License</th><th class="px-5 py-4 text-center">Items</th></tr></thead>
+   <tbody class="divide-y divide-[#dfe1eb]">@forelse($orders as $order)<tr class="transition hover:bg-[#fafbff]"><td class="px-5 py-5 font-mono font-semibold text-[#251bd5]">#{{ $order->number }}</td><td class="px-5 py-5"><strong class="block font-medium">{{ $order->user?->name ?? 'Guest' }}</strong><span class="text-xs text-[#66697a]">{{ $order->user?->email }}</span></td><td class="px-5 py-5 whitespace-nowrap text-sm">{{ $order->created_at->format('M d, Y') }}</td><td class="px-5 py-5 whitespace-nowrap font-semibold {{ $order->total >= 500 ? 'text-emerald-700' : '' }}">${{ number_format($order->total,2) }}</td><td class="px-5 py-5">@php($statusClasses=match($order->payment_status){'paid'=>'bg-emerald-50 text-emerald-700 border-emerald-200','failed'=>'bg-red-50 text-red-700 border-red-200','partially_refunded'=>'bg-slate-100 text-slate-600 border-slate-300',default=>'bg-amber-50 text-amber-800 border-amber-200'})<span class="inline-flex rounded-full border px-3 py-1 text-xs font-bold uppercase {{ $statusClasses }}">{{ str($order->payment_status)->replace('_',' ') }}</span></td><td class="px-5 py-5 text-sm">{{ $order->items->first()?->license_name ?? '—' }}</td><td class="px-5 py-5 text-center font-semibold">{{ $order->items->count() }}</td></tr>@empty<tr><td colspan="7" class="px-5 py-16 text-center text-[#66697a]"><span class="material-symbols-outlined mb-2 block text-4xl">search_off</span>No orders match your filters.</td></tr>@endforelse</tbody></table></div>
+  <div class="flex flex-col items-center justify-between gap-4 border-t border-[#dfe1eb] bg-[#f4f7ff] px-5 py-4 text-sm sm:flex-row"><span>Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} of {{ number_format($orders->total()) }} orders</span><div>{{ $orders->onEachSide(1)->links() }}</div></div>
+ </div>
 </div>
-</x-marketplace-layout>
+</x-admin-layout>

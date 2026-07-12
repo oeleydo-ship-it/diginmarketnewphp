@@ -7,7 +7,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 class SettingController extends Controller
 {
- public function index(): View {$settings=Setting::orderBy('group')->orderBy('key')->get()->groupBy('group');return view('admin.settings.index',compact('settings'));}
+ public function index(): View {$settings=Setting::query()->when(request('q'),fn($query,$term)=>$query->where(fn($query)=>$query->where('key','like','%'.$term.'%')->orWhere('group','like','%'.$term.'%')))->orderBy('group')->orderBy('key')->get()->groupBy('group');return view('admin.settings.index',compact('settings'));}
  public function update(): RedirectResponse
  {
   $data=request()->validate(['group'=>['required','string','max:64'],'key'=>['required','string','max:128'],'value'=>['nullable','string','max:5000']]);

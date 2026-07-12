@@ -1,1 +1,44 @@
-<x-marketplace-layout :title="$seller->display_name.' storefront'" :description="$seller->biography"><div class="mx-auto max-w-7xl px-6 py-16"><div class="flex flex-col justify-between gap-6 md:flex-row"><div><p class="text-emerald-400">Verified marketplace seller</p><h1 class="mt-2 text-5xl font-black">{{ $seller->display_name }}</h1><p class="mt-4 max-w-2xl text-slate-400">{{ $seller->biography }}</p><p class="mt-3 text-sm text-slate-500">{{ $seller->country }} · {{ $followers }} followers · Member since {{ $seller->created_at->format('Y') }}</p></div>@auth@if(auth()->id()!==$seller->user_id)<form method="POST" action="{{ route('sellers.follow',$seller) }}">@csrf<button class="rounded-xl border border-emerald-400 px-5 py-3 text-emerald-300">Follow seller</button></form>@endif@endauth</div><h2 class="mt-14 text-2xl font-bold">Products</h2><div class="mt-6 grid gap-6 md:grid-cols-3">@foreach($products as $product)<a href="{{ route('products.show',$product->slug) }}" class="rounded-2xl border border-white/10 bg-white/5 p-6"><h3 class="font-bold">{{ $product->title }}</h3><p class="mt-3 text-slate-400">{{ $product->short_description }}</p><p class="mt-5 font-black">${{ $product->regular_price }}</p></a>@endforeach</div>{{ $products->links() }}</div></x-marketplace-layout>
+<x-marketplace-layout :title="$seller->display_name . ' — DiginMarket'" :description="$seller->biography">
+<div class="border-b border-outline-variant bg-surface-container-low">
+    <div class="mx-auto max-w-7xl px-6 py-14">
+        <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div class="flex items-start gap-5">
+                <span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-primary-container font-display text-3xl font-bold text-on-primary-container">{{ str($seller->display_name)->substr(0, 1)->upper() }}</span>
+                <div>
+                    <p class="flex items-center gap-1 font-mono text-xs font-medium uppercase tracking-wider text-secondary">
+                        <span class="material-symbols-outlined text-[16px]">verified</span> Verified Seller
+                    </p>
+                    <h1 class="mt-1 font-display text-4xl font-semibold tracking-tight">{{ $seller->display_name }}</h1>
+                    <p class="mt-3 max-w-2xl text-on-surface-variant">{{ $seller->biography }}</p>
+                    <p class="mt-3 text-sm text-on-surface-variant">
+                        {{ $seller->country }} · <span class="font-semibold text-on-surface">{{ $followers }}</span> followers ·
+                        Member since <span class="font-mono text-xs uppercase">{{ $seller->created_at->format('Y') }}</span>
+                    </p>
+                </div>
+            </div>
+            @auth
+                @if(auth()->id() !== $seller->user_id)
+                    <form method="POST" action="{{ route('sellers.follow', $seller) }}">
+                        @csrf
+                        <button class="flex items-center gap-2 rounded-xl border border-primary px-5 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-on-primary active:scale-95">
+                            <span class="material-symbols-outlined text-[20px]">person_add</span>
+                            Follow seller
+                        </button>
+                    </form>
+                @endif
+            @endauth
+        </div>
+    </div>
+</div>
+<div class="mx-auto max-w-7xl px-6 py-12">
+    <h2 class="mb-6 font-display text-2xl font-semibold tracking-tight">Products</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @forelse($products as $product)
+            <x-product-card :product="$product" />
+        @empty
+            <p class="col-span-full text-on-surface-variant">No published products yet.</p>
+        @endforelse
+    </div>
+    <div class="mt-10">{{ $products->links() }}</div>
+</div>
+</x-marketplace-layout>

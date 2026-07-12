@@ -1,31 +1,19 @@
-<x-marketplace-layout title="Administration">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <p class="text-emerald-400">Marketplace operations</p>
- <h1 class="mt-2 text-4xl font-black">Administrator dashboard</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6"><p class="text-sm text-slate-400">Gross revenue</p><p class="mt-2 text-3xl font-black">${{ number_format($metrics['revenue'],2) }}</p></div>
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6"><p class="text-sm text-slate-400">Paid orders</p><p class="mt-2 text-3xl font-black">{{ $metrics['paid_orders'] }}</p></div>
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6"><p class="text-sm text-slate-400">Registered users</p><p class="mt-2 text-3xl font-black">{{ $metrics['customers'] }}</p></div>
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6"><p class="text-sm text-slate-400">Published products</p><p class="mt-2 text-3xl font-black">{{ $metrics['published_products'] }}</p></div>
- </div>
- <h2 class="mt-12 text-2xl font-bold">Work queues</h2>
- <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-  <a href="{{ route('admin.sellers.index') }}" class="rounded-2xl border border-white/10 bg-white/5 p-5"><p class="text-sm text-slate-400">Seller applications</p><p class="mt-1 text-2xl font-black {{ $metrics['pending_sellers']?'text-amber-300':'' }}">{{ $metrics['pending_sellers'] }}</p></a>
-  <a href="{{ route('admin.products.review') }}" class="rounded-2xl border border-white/10 bg-white/5 p-5"><p class="text-sm text-slate-400">Products to review</p><p class="mt-1 text-2xl font-black {{ $metrics['pending_products']?'text-amber-300':'' }}">{{ $metrics['pending_products'] }}</p></a>
-  <a href="{{ route('admin.refunds.index') }}" class="rounded-2xl border border-white/10 bg-white/5 p-5"><p class="text-sm text-slate-400">Open refunds</p><p class="mt-1 text-2xl font-black {{ $metrics['open_refunds']?'text-amber-300':'' }}">{{ $metrics['open_refunds'] }}</p></a>
-  <a href="{{ route('admin.withdrawals.index') }}" class="rounded-2xl border border-white/10 bg-white/5 p-5"><p class="text-sm text-slate-400">Pending withdrawals</p><p class="mt-1 text-2xl font-black {{ $metrics['pending_withdrawals']?'text-amber-300':'' }}">{{ $metrics['pending_withdrawals'] }}</p></a>
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-5"><p class="text-sm text-slate-400">Open tickets</p><p class="mt-1 text-2xl font-black">{{ $metrics['open_tickets'] }}</p></div>
- </div>
- <div class="mt-12 grid gap-8 lg:grid-cols-2">
-  <div>
-   <h2 class="text-2xl font-bold">Recent orders</h2>
-   <div class="mt-4 space-y-3">@forelse($recentOrders as $order)<div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"><div><p class="font-semibold">{{ $order->number }}</p><p class="text-sm text-slate-400">{{ $order->user?->name }} · {{ $order->created_at->diffForHumans() }}</p></div><div class="text-right"><p class="font-bold">${{ number_format($order->total,2) }}</p><p class="text-sm text-slate-400">{{ $order->payment_status }}</p></div></div>@empty<p class="text-slate-400">No orders yet.</p>@endforelse</div>
+<x-admin-layout title="Administrator Dashboard">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="font-semibold text-[#3525cd]">Marketplace operations</p><h1 class="mt-1 text-3xl font-extrabold tracking-tight md:text-4xl">Administrator dashboard</h1><p class="mt-2 text-[#626576]">Monitor sales, customers, publishing, and operational queues.</p></div><p class="text-sm text-[#626576]">Updated {{ now()->format('M d, Y · H:i') }}</p></div>
+ <section class="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  @php($cards=[['Gross revenue','$'.number_format($metrics['revenue'],2),'payments','text-[#3525cd]','bg-[#eeecff]'],['Paid orders',number_format($metrics['paid_orders']),'shopping_bag','text-emerald-700','bg-emerald-50'],['Registered users',number_format($metrics['customers']),'group','text-sky-700','bg-sky-50'],['Published products',number_format($metrics['published_products']),'inventory_2','text-amber-700','bg-amber-50']])
+  @foreach($cards as [$label,$value,$icon,$color,$bg])<article class="rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm"><div class="flex items-start justify-between"><div><p class="text-sm text-[#626576]">{{ $label }}</p><p class="mt-2 text-3xl font-bold tracking-tight">{{ $value }}</p></div><span class="material-symbols-outlined rounded-xl p-2.5 {{ $color }} {{ $bg }}">{{ $icon }}</span></div><p class="mt-4 text-xs text-[#777a8a]">Lifetime marketplace total</p></article>@endforeach
+ </section>
+ <section class="mt-9"><div class="flex items-center justify-between"><div><h2 class="text-xl font-bold">Work queues</h2><p class="mt-1 text-sm text-[#626576]">Items requiring administrator attention</p></div></div>
+  <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+   @php($queues=[[route('admin.sellers.index'),'Seller applications',$metrics['pending_sellers'],'store'],[route('admin.products.review'),'Products to review',$metrics['pending_products'],'rate_review'],[route('admin.refunds.index'),'Open refunds',$metrics['open_refunds'],'assignment_return'],[route('admin.withdrawals.index'),'Withdrawals',$metrics['pending_withdrawals'],'payments'],[route('admin.support.index'),'Open tickets',$metrics['open_tickets'],'support_agent']])
+   @foreach($queues as [$url,$label,$count,$icon])<a href="{{ $url }}" class="group flex items-center justify-between rounded-xl border border-[#d7d9e5] bg-white p-4 transition hover:-translate-y-0.5 hover:border-[#9189e9] hover:shadow-md"><div><p class="text-sm text-[#626576]">{{ $label }}</p><p class="mt-1 text-2xl font-bold {{ $count ? 'text-amber-700' : '' }}">{{ $count }}</p></div><span class="material-symbols-outlined text-[#777a8a] group-hover:text-[#3525cd]">{{ $icon }}</span></a>@endforeach
   </div>
-  <div>
-   <h2 class="text-2xl font-bold">Recent administration</h2>
-   <div class="mt-4 space-y-3">@forelse($recentAudits as $log)<div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3"><p class="font-semibold">{{ $log->action }}</p><p class="text-sm text-slate-400">{{ $log->user?->name ?? 'System' }} · {{ $log->created_at->diffForHumans() }}</p></div>@empty<p class="text-slate-400">No audited activity yet.</p>@endforelse</div>
-  </div>
+ </section>
+ <div class="mt-9 grid gap-6 xl:grid-cols-2">
+  <section class="overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-sm"><div class="flex items-center justify-between border-b border-[#e2e4ec] px-5 py-4"><div><h2 class="font-bold">Recent orders</h2><p class="text-xs text-[#777a8a]">Latest marketplace purchases</p></div><a href="{{ route('admin.orders.index') }}" class="text-sm font-semibold text-[#3525cd]">View all</a></div><div class="divide-y divide-[#e7e8ee]">@forelse($recentOrders as $order)<div class="flex items-center justify-between gap-4 px-5 py-4"><div class="min-w-0"><p class="truncate font-mono text-sm font-semibold text-[#3525cd]">#{{ $order->number }}</p><p class="truncate text-xs text-[#626576]">{{ $order->user?->name ?? 'Guest' }} · {{ $order->created_at->diffForHumans() }}</p></div><div class="text-right"><p class="font-semibold">${{ number_format($order->total,2) }}</p><p class="text-xs capitalize text-[#626576]">{{ str($order->payment_status)->replace('_',' ') }}</p></div></div>@empty<div class="p-10 text-center text-sm text-[#777a8a]">No orders yet.</div>@endforelse</div></section>
+  <section class="overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-sm"><div class="flex items-center justify-between border-b border-[#e2e4ec] px-5 py-4"><div><h2 class="font-bold">Recent administration</h2><p class="text-xs text-[#777a8a]">Latest protected backend activity</p></div><a href="{{ route('admin.audits.index') }}" class="text-sm font-semibold text-[#3525cd]">Audit log</a></div><div class="divide-y divide-[#e7e8ee]">@forelse($recentAudits as $log)<div class="flex items-center gap-3 px-5 py-4"><span class="material-symbols-outlined rounded-lg bg-[#f0f2fa] p-2 text-lg text-[#626576]">history</span><div class="min-w-0"><p class="truncate text-sm font-semibold">{{ str($log->action)->replace(['.','_'],' ')->title() }}</p><p class="text-xs text-[#626576]">{{ $log->user?->name ?? 'System' }} · {{ $log->created_at->diffForHumans() }}</p></div></div>@empty<div class="p-10 text-center text-sm text-[#777a8a]">No audited activity yet.</div>@endforelse</div></section>
  </div>
 </div>
-</x-marketplace-layout>
+</x-admin-layout>

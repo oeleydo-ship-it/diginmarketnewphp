@@ -8,7 +8,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
 class PageController extends Controller
 {
- public function index(): View {$pages=Page::latest()->paginate(25);return view('admin.pages.index',compact('pages'));}
+ public function index(): View
+ {
+  $pages=Page::query()->when(request('q'),fn($query,$term)=>$query->where(fn($query)=>$query->where('title','like','%'.$term.'%')->orWhere('slug','like','%'.$term.'%')))->when(request('status'),fn($query,$status)=>$query->where('status',$status))->latest()->paginate(25)->withQueryString();
+  return view('admin.pages.index',compact('pages'));
+ }
  public function create(): View {return view('admin.pages.form',['page'=>new Page()]);}
  public function store(): RedirectResponse
  {

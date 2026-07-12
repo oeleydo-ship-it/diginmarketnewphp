@@ -1,24 +1,7 @@
-<x-marketplace-layout title="Seller applications">
-<div class="mx-auto max-w-7xl px-6 py-12">
- <h1 class="text-4xl font-black">Seller applications</h1>
- <div class="mt-6">@include('admin.partials.nav')</div>
- <div class="mt-8 space-y-4">
- @forelse($sellers as $profile)
-  <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-   <div class="flex flex-wrap items-start justify-between gap-4">
-    <div>
-     <h2 class="text-xl font-bold">{{ $profile->display_name }} <span class="text-sm font-normal text-slate-400">@ {{ $profile->username }}</span></h2>
-     <p class="text-slate-400">{{ $profile->user->name }} · {{ $profile->user->email }} · {{ $profile->country }}</p>
-     <p class="mt-2 max-w-2xl text-sm text-slate-300">{{ $profile->biography }}</p>
-    </div>
-    <div class="flex gap-2">
-     <form method="POST" action="{{ route('admin.sellers.approve',$profile) }}">@csrf<button class="rounded-lg bg-emerald-400 px-4 py-2 font-bold text-slate-950">Approve</button></form>
-     <form method="POST" action="{{ route('admin.sellers.reject',$profile) }}">@csrf<input name="reason" required placeholder="Rejection reason" class="rounded-lg bg-white/5 p-2"><button class="ml-2 rounded-lg border border-rose-400 px-4 py-2 font-bold text-rose-300">Reject</button></form>
-    </div>
-   </div>
-  </div>
- @empty<p class="text-slate-400">No pending applications.</p>@endforelse
- </div>
- <div class="mt-6">{{ $sellers->links() }}</div>
-</div>
-</x-marketplace-layout>
+<x-admin-layout title="Seller Applications">
+<div class="mx-auto max-w-[1400px] px-5 py-8 md:px-8 lg:py-10">
+ <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Seller Applications</h1><p class="mt-2 text-[#626576]">Review creator profiles before granting seller access.</p></div><span class="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">{{ $sellers->total() }} pending</span></div>
+ <div class="mt-8 grid gap-5 xl:grid-cols-2">@forelse($sellers as $profile)
+  <article class="flex flex-col rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm"><div class="flex items-start gap-4"><span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e9e7ff] text-lg font-bold text-[#3525cd]">{{ str($profile->display_name)->substr(0,1)->upper() }}</span><div class="min-w-0"><h2 class="truncate text-xl font-bold">{{ $profile->display_name }}</h2><p class="text-sm text-[#3525cd]">{{ '@'.$profile->username }}</p></div><span class="ml-auto rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">Pending</span></div><div class="mt-5 grid gap-3 text-sm sm:grid-cols-2"><div><p class="text-xs uppercase tracking-wide text-[#777a8a]">Applicant</p><p class="mt-1 font-medium">{{ $profile->user->name }}</p><p class="truncate text-[#626576]">{{ $profile->user->email }}</p></div><div><p class="text-xs uppercase tracking-wide text-[#777a8a]">Country</p><p class="mt-1 font-medium">{{ $profile->country }}</p></div></div><p class="mt-5 flex-1 rounded-lg bg-[#f6f7fb] p-4 text-sm leading-6 text-[#525565]">{{ $profile->biography }}</p><div class="mt-5 grid gap-3 sm:grid-cols-[auto_1fr]"><form method="POST" action="{{ route('admin.sellers.approve',$profile) }}">@csrf<button class="w-full rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white">Approve seller</button></form><form method="POST" action="{{ route('admin.sellers.reject',$profile) }}" class="flex gap-2">@csrf<input name="reason" required placeholder="Reason for rejection" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] px-3 py-2 text-sm"><button class="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Reject</button></form></div></article>
+ @empty<div class="col-span-full rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">verified_user</span><h2 class="font-bold text-[#111827]">Applications are up to date</h2><p class="mt-1 text-sm">No seller applications are waiting for review.</p></div>@endforelse</div><div class="mt-6">{{ $sellers->links() }}</div>
+</div></x-admin-layout>
