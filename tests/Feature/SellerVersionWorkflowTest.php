@@ -25,10 +25,11 @@ class SellerVersionWorkflowTest extends TestCase
   $product->versions()->create(['version_number'=>'1.0.0','release_title'=>'Stable','status'=>ProductVersionStatus::Published,'published_at'=>now()]);
   return compact('seller','category','product');
  }
- public function test_published_product_details_are_locked_but_new_version_can_be_submitted(): void
+ public function test_new_version_for_published_product_awaits_review(): void
  {
+  // Details edits on published products now resubmit for review (PublishedListingEditTest);
+  // this test covers the version-update queue.
   $d=$this->publishedProduct();
-  $this->actingAs($d['seller'])->put('/seller/products/'.$d['product']->id,['category_id'=>$d['category']->id,'title'=>'Renamed','short_description'=>'Deploys.','description'=>str_repeat('Complete deploy toolkit. ',4),'regular_price'=>'50.00'])->assertForbidden();
   $this->actingAs($d['seller'])->post('/seller/products/'.$d['product']->id.'/versions',['version_number'=>'1.1.0','release_title'=>'Bugfix release','archive'=>UploadedFile::fake()->create('update.zip',10,'application/zip')])->assertRedirect();
   $this->assertDatabaseHas('product_versions',['product_id'=>$d['product']->id,'version_number'=>'1.1.0','status'=>'pending_review']);
   $this->actingAs($d['seller'])->post('/seller/products/'.$d['product']->id.'/versions',['version_number'=>'1.2.0','release_title'=>'Too soon','archive'=>UploadedFile::fake()->create('again.zip',10,'application/zip')])->assertSessionHasErrors('version_number');

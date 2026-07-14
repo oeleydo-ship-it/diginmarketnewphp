@@ -15,13 +15,30 @@
     </header>
     @php($input = 'w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60')
     @php($labelCls = 'font-mono text-[11px] font-medium uppercase tracking-wider text-on-surface-variant')
-    @php($locked = !auth()->user()->can('update', $product))
+    @php($isPublished = $product->status->value === 'published')
+    @php($unlocked = $isPublished && request()->boolean('unlock'))
+    @php($locked = !auth()->user()->can('update', $product) || ($isPublished && !$unlocked))
     <section class="rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
         <h2 class="mb-2 font-display text-lg font-semibold">Product Details</h2>
-        @if($locked)
+        @if($isPublished && !$unlocked)
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-tertiary-fixed/40 px-4 py-3 text-sm font-medium text-on-tertiary-fixed-variant">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                    This listing is live. Unlock it to edit the details — saving sends it back for review.
+                </span>
+                <a href="{{ route('seller.products.edit', [$product, 'unlock' => 1]) }}" class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">lock_open</span> Unlock &amp; edit
+                </a>
+            </div>
+        @elseif($unlocked)
+            <p class="mb-5 flex items-center gap-2 rounded-lg border border-error/30 bg-error-container/40 px-4 py-3 text-sm font-medium text-on-error-container">
+                <span class="material-symbols-outlined text-[18px]">warning</span>
+                You are editing a live listing. Saving submits it for review and hides it from the marketplace until an administrator approves the changes.
+            </p>
+        @elseif($locked)
             <p class="mb-5 flex items-center gap-2 rounded-lg bg-tertiary-fixed/40 px-4 py-3 text-sm font-medium text-on-tertiary-fixed-variant">
                 <span class="material-symbols-outlined text-[18px]">lock</span>
-                Published listings are locked. Ship changes through a new version below.
+                This listing is awaiting review and cannot be edited right now.
             </p>
         @endif
         <form method="POST" action="{{ route('seller.products.update', $product) }}" class="grid gap-5 sm:grid-cols-2">
@@ -65,7 +82,7 @@
                 <div class="rounded-lg border border-error/30 bg-error-container/40 p-4 text-sm font-medium text-on-error-container sm:col-span-2">{{ $errors->first() }}</div>
             @endif
             @unless($locked)
-                <button class="rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95 sm:col-span-2">Save changes</button>
+                <button class="rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95 sm:col-span-2">{{ $unlocked ? 'Save & submit for review' : 'Save changes' }}</button>
             @endunless
         </form>
     </section>
