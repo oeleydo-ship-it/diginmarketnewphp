@@ -112,16 +112,22 @@
             <div>
                 <h5 class="mb-5 text-[15px] font-semibold">Legal</h5>
                 <ul class="flex flex-col gap-2.5">
+                    @forelse(\App\Models\MenuItem::forLocation('footer-legal') as $item)
+                    <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ $item->url }}">{{ $item->label }}</a></li>
+                    @empty
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('pages.show', 'privacy-policy') }}">Privacy Policy</a></li>
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('pages.show', 'terms-of-service') }}">Terms of Service</a></li>
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('pages.show', 'seller-agreement') }}">Seller Agreement</a></li>
+                    @endforelse
                 </ul>
             </div>
             <div>
                 <h5 class="mb-5 text-[15px] font-semibold">Support</h5>
                 <ul class="flex flex-col gap-2.5">
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('support.index') }}">Help Center</a></li>
-                    <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('support.index') }}">Contact Support</a></li>
+                    @foreach(\App\Models\MenuItem::forLocation('footer-resources') as $item)
+                    <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ $item->url }}">{{ $item->label }}</a></li>
+                    @endforeach
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('sitemap') }}">Sitemap</a></li>
                 </ul>
             </div>

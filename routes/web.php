@@ -38,6 +38,10 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\SupportManagementController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\MenuItemController;
+use App\Http\Controllers\Admin\SystemHealthController;
 use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [MarketplaceProductController::class, 'index'])->name('products.index');
@@ -46,6 +50,8 @@ Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('cat
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
@@ -133,5 +139,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
         Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
         Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+        Route::get('/blog', [BlogPostController::class, 'index'])->name('blog.index');
+        Route::get('/blog/create', [BlogPostController::class, 'create'])->name('blog.create');
+        Route::post('/blog', [BlogPostController::class, 'store'])->name('blog.store');
+        Route::get('/blog/{post}/edit', [BlogPostController::class, 'edit'])->name('blog.edit');
+        Route::put('/blog/{post}', [BlogPostController::class, 'update'])->name('blog.update');
+        Route::get('/menus', [MenuItemController::class, 'index'])->name('menus.index');
+        Route::post('/menus', [MenuItemController::class, 'store'])->name('menus.store');
+        Route::put('/menus/{menuItem}', [MenuItemController::class, 'update'])->name('menus.update');
+        Route::delete('/menus/{menuItem}', [MenuItemController::class, 'destroy'])->name('menus.destroy');
+        Route::get('/system', SystemHealthController::class)->name('system');
     });
 });
