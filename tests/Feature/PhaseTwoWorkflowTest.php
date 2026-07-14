@@ -26,6 +26,14 @@ class PhaseTwoWorkflowTest extends TestCase
   $this->actingAs($admin)->post("/admin/sellers/{$profile->id}/approve")->assertRedirect();
   $this->assertSame(SellerStatus::Approved,$profile->fresh()->status);$this->assertTrue($applicant->hasRole('seller'));
  }
+ public function test_apply_page_redirects_users_who_already_applied(): void
+ {
+  $this->role('seller');
+  $pending=User::factory()->create();SellerProfile::create(['user_id'=>$pending->id,'display_name'=>'Waiting Studio','username'=>'waiting-studio','country'=>'AE','biography'=>'Pending applicant','status'=>SellerStatus::Pending]);
+  $this->actingAs($pending)->get('/sell/apply')->assertRedirect('/dashboard')->assertSessionHas('status');
+  $approved=User::factory()->create();$approved->roles()->attach(Role::where('slug','seller')->firstOrFail());SellerProfile::create(['user_id'=>$approved->id,'display_name'=>'Live Studio','username'=>'live-studio','country'=>'AE','biography'=>'Approved seller','status'=>SellerStatus::Approved]);
+  $this->actingAs($approved)->get('/sell/apply')->assertRedirect('/seller/products');
+ }
  public function test_private_product_can_be_submitted_reviewed_and_published(): void
  {
   Storage::fake('local');$sellerRole=$this->role('seller');$adminRole=$this->role('administrator');$category=Category::create(['name'=>'Laravel Applications','slug'=>'laravel-applications']);
