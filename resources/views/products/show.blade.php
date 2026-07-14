@@ -168,7 +168,7 @@
         <!-- Right Column: Sidebar -->
         <aside class="space-y-6 lg:col-span-4">
             <!-- Purchase Widget -->
-            <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm lg:sticky lg:top-24">
+            <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
                 @auth
                 <form method="POST" action="{{ route('cart.add', $product) }}">
                     @csrf
