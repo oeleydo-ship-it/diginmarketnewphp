@@ -42,6 +42,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\SystemHealthController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Route;
 Route::get('/install', [InstallController::class, 'show'])->name('install.show');
@@ -70,6 +71,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/authors/{sellerProfile}/follow', [SellerFollowController::class, 'toggle'])->name('sellers.follow');
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->middleware('throttle:10,1')->name('cart.coupon.apply');
+    Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
     Route::post('/cart/{product}', [CartController::class, 'add'])->name('cart.add');
     Route::delete('/cart/items/{item}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
@@ -151,6 +154,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/menus', [MenuItemController::class, 'store'])->name('menus.store');
         Route::put('/menus/{menuItem}', [MenuItemController::class, 'update'])->name('menus.update');
         Route::delete('/menus/{menuItem}', [MenuItemController::class, 'destroy'])->name('menus.destroy');
+        Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+        Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
+        Route::put('/coupons/{coupon}/toggle', [CouponController::class, 'toggle'])->name('coupons.toggle');
+        Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
         Route::get('/system', [SystemHealthController::class, 'index'])->name('system');
         Route::post('/system/backup', [SystemHealthController::class, 'backup'])->name('system.backup');
     });

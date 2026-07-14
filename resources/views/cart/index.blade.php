@@ -78,14 +78,36 @@
             <aside class="sticky top-24 lg:col-span-4">
                 <div class="rounded-xl border border-outline-variant bg-surface-container-high p-6 shadow-sm">
                     <h2 class="mb-6 font-display text-lg font-semibold">Order Summary</h2>
-                    <div class="mb-6 space-y-4 border-b border-outline-variant pb-6">
+                    <div class="mb-6 border-b border-outline-variant pb-6">
+                        @if($cart->coupon)
+                            <div class="mb-4 flex items-center justify-between rounded-lg border border-secondary-fixed-dim/50 bg-secondary-container/15 px-3 py-2.5 text-sm">
+                                <span class="flex items-center gap-1.5 font-mono font-bold text-on-secondary-container"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">sell</span>{{ $cart->coupon->code }}</span>
+                                <form method="POST" action="{{ route('cart.coupon.remove') }}">@csrf @method('DELETE')<button class="font-semibold text-on-surface-variant hover:text-error">Remove</button></form>
+                            </div>
+                        @else
+                            <form method="POST" action="{{ route('cart.coupon.apply') }}" class="mb-4 flex gap-2">
+                                @csrf
+                                <input name="code" value="{{ old('code') }}" placeholder="Coupon code" aria-label="Coupon code" class="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface px-3 py-2 font-mono text-sm uppercase placeholder:font-sans placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                <button class="rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-container/10">Apply</button>
+                            </form>
+                        @endif
+                        @error('coupon')<p class="mb-4 text-sm text-error">{{ $message }}</p>@enderror
+                        @error('code')<p class="mb-4 text-sm text-error">{{ $message }}</p>@enderror
+                        <div class="space-y-4">
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-on-surface-variant">Subtotal</span>
                             <span class="font-mono">${{ number_format($totals['subtotal'], 2) }}</span>
                         </div>
+                        @if($totals['discount'] > 0)
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-on-surface-variant">Discount{{ $cart->coupon ? ' ('.$cart->coupon->code.')' : '' }}</span>
+                            <span class="font-mono text-secondary">−${{ number_format($totals['discount'], 2) }}</span>
+                        </div>
+                        @endif
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-on-surface-variant">Tax</span>
                             <span class="font-mono">${{ number_format($totals['tax'], 2) }}</span>
+                        </div>
                         </div>
                     </div>
                     <div class="mb-8 flex items-end justify-between">
