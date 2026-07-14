@@ -12,6 +12,7 @@
 <meta property="og:description" content="{{ $description ?? 'A curated marketplace for digital products.' }}">
 <meta property="og:url" content="{{ url()->current() }}">
 <meta property="og:type" content="website">
+<script>{!! \App\Http\Middleware\SecurityHeaders::THEME_BOOTSTRAP !!}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -19,6 +20,7 @@
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
+<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-primary">Skip to main content</a>
 @php
     $cartCount = auth()->check() ? (auth()->user()->cart()->first()?->items()->count() ?? 0) : 0;
     $isSeller = auth()->check() && auth()->user()->hasRole('seller');
@@ -42,11 +44,14 @@
         <div class="flex items-center gap-2 sm:gap-3">
             <form action="{{ route('products.index') }}" method="GET" class="relative hidden lg:block">
                 <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
-                <input name="q" value="{{ request('q') }}" type="text" placeholder="Search assets..."
+                <input name="q" value="{{ request('q') }}" type="text" placeholder="Search assets..." aria-label="Search assets"
                     class="w-64 rounded-xl border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20">
             </form>
             <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : route('register') }}"
                 class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">Sell Assets</a>
+            <button data-theme-toggle type="button" class="p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Toggle dark mode" aria-pressed="false">
+                <span data-theme-icon class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+            </button>
             @auth
                 <a href="{{ route('cart.index') }}" class="relative p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Cart">
                     <span class="material-symbols-outlined">shopping_cart</span>
@@ -77,7 +82,7 @@
         </div>
     </nav>
 </header>
-<main class="pt-20">
+<main id="main-content" class="pt-20">
     @if(session('status'))
         <div class="mx-auto mt-6 max-w-7xl px-6">
             <div class="flex items-center gap-3 rounded-xl border border-secondary-fixed-dim/60 bg-secondary-container/20 px-4 py-3 text-sm font-medium text-on-secondary-container">
@@ -94,10 +99,10 @@
             <div class="col-span-1 lg:col-span-2">
                 <span class="mb-4 block font-display text-lg font-bold text-primary">{{ config('app.name', 'DiginMarket') }}</span>
                 <p class="mb-6 max-w-xs text-sm text-on-surface-variant">A curated marketplace for professional digital assets, scripts, and themes from independent creators.</p>
-                <div class="flex gap-2">
-                    <span class="material-symbols-outlined cursor-pointer rounded-full p-2 text-primary transition-colors hover:bg-primary-container/20">public</span>
-                    <span class="material-symbols-outlined cursor-pointer rounded-full p-2 text-primary transition-colors hover:bg-primary-container/20">alternate_email</span>
-                    <span class="material-symbols-outlined cursor-pointer rounded-full p-2 text-primary transition-colors hover:bg-primary-container/20">forum</span>
+                <div class="flex gap-2" aria-hidden="true">
+                    <span class="material-symbols-outlined rounded-full p-2 text-primary">public</span>
+                    <span class="material-symbols-outlined rounded-full p-2 text-primary">alternate_email</span>
+                    <span class="material-symbols-outlined rounded-full p-2 text-primary">forum</span>
                 </div>
             </div>
             <div>

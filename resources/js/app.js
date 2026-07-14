@@ -35,3 +35,20 @@ if (adminToggle && adminSidebar) {
         adminSidebar.classList.toggle('flex');
     });
 }
+
+// Dark mode toggle: html.dark swaps the design-token palette (see app.css).
+// The Material Symbols font is ligature-based, so the icon is just text.
+document.querySelectorAll('[data-theme-toggle]').forEach((toggle) => {
+    const icon = toggle.querySelector('[data-theme-icon]');
+    const sync = () => {
+        const dark = document.documentElement.classList.contains('dark');
+        toggle.setAttribute('aria-pressed', dark ? 'true' : 'false');
+        if (icon) icon.textContent = dark ? 'light_mode' : 'dark_mode';
+    };
+    sync();
+    toggle.addEventListener('click', () => {
+        const dark = document.documentElement.classList.toggle('dark');
+        try { localStorage.setItem('dm-theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
+        sync();
+    });
+});
