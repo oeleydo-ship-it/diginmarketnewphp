@@ -1,66 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# DiginMarket
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A multi-vendor marketplace for licensed digital products built with Laravel 12, Blade, Tailwind CSS, and Stripe (Checkout, Webhooks, Connect). Sellers submit versioned products through admin moderation; customers buy, download, and manage licenses; finances flow through an immutable wallet ledger with commissions, clearance, refunds, disputes, and Stripe transfer payouts.
 
-## About Laravel
+The implementation blueprint lives in [MARKETPLACE_BUILD_PLAN.md](MARKETPLACE_BUILD_PLAN.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.3+ with the `pdo_sqlite` / `pdo_mysql`, `mbstring`, `openssl`, and `curl` extensions
+- Composer 2
+- Node 20+ / npm
+- MySQL 8+ in production (SQLite is used for local development and in-memory tests)
+- A Stripe account with Connect enabled
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Local setup
 
-## Learning Laravel
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite   # .env defaults to sqlite
+php artisan migrate --seed       # seeds roles + one admin user
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Run the app with two dev servers (also configured in `.claude/launch.json`):
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+php artisan serve        # app on http://localhost:8000
+npm run dev              # Vite assets on http://127.0.0.1:5173
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Process queued work (emails, jobs) and the scheduler locally:
 
-## Laravel Sponsors
+```bash
+php artisan queue:work
+php artisan schedule:work
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Testing
 
-### Premium Partners
+```bash
+php artisan test
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those env lines, or `RefreshDatabase` will wipe `database/database.sqlite`). Stripe is never called in tests: checkout, refund, and payout gateways are contracts (`app/Contracts`) bound to fakes per test.
 
-## Contributing
+## Stripe configuration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Env var | Purpose |
+|---|---|
+| `STRIPE_KEY` | Publishable key |
+| `STRIPE_SECRET` | Secret key (server-side API calls) |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint |
 
-## Code of Conduct
+1. Create a webhook endpoint pointing at `POST /stripe/webhook` subscribed to `checkout.session.completed`. Events are persisted and processed idempotently — replays are safe.
+2. Enable Stripe Connect (Express). Sellers onboard from their dashboard; payouts to sellers are Stripe transfers created when an admin approves a withdrawal.
+3. Locally, forward events with `stripe listen --forward-to localhost:8000/stripe/webhook`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Marketplace tuning
 
-## Security Vulnerabilities
+| Env var | Default | Purpose |
+|---|---|---|
+| `MARKETPLACE_COMMISSION_RATE` | 20 | Global commission % (overridable per category/seller/product via commission rules) |
+| `EARNINGS_CLEARANCE_DAYS` | 14 | Days before pending seller earnings clear to available |
+| `MINIMUM_WITHDRAWAL` | 50 | Minimum withdrawal amount |
+| `WITHDRAWAL_FEE_RATE` | 0 | Withdrawal fee % |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Production deployment
 
-## License
+1. **Build**: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+2. **Configure** `.env`: `APP_ENV=production`, `APP_DEBUG=false`, MySQL credentials, real mail transport, Stripe live keys. Then `php artisan config:cache route:cache view:cache`.
+3. **Migrate**: `php artisan migrate --force`
+4. **Queue worker** (required — emails and jobs are queued): run `php artisan queue:work --tries=3` under a supervisor (systemd/Supervisor), restart on deploy with `php artisan queue:restart`.
+5. **Scheduler** (required — earnings clearance runs daily): add the cron entry `* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1`.
+6. **Storage**: product archives live on the private local disk (or S3 via `FILESYSTEM_DISK`); they are only ever served through signed, license-checked download routes. Run `php artisan storage:link` for public branding uploads.
+7. **Security**: HTTPS is required (HSTS is emitted on secure responses); a CSP and hardened headers are applied by `App\Http\Middleware\SecurityHeaders`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Backup & restore
+
+- Back up the database and `storage/app` (private product files) together; licenses, orders, and ledger entries are only meaningful alongside the files they gate.
+- Restore drill: restore the DB dump, restore `storage/app`, run `php artisan config:clear`, and verify `/up` returns 200 and a test download succeeds.
+
+## Operational notes
+
+- Money is stored as fixed-precision decimals; seller balances change only through immutable `wallet_transactions` rows written inside DB transactions.
+- Sensitive admin actions (approvals, rejections, payouts, settings changes) are written to `audit_logs` and visible at `/admin/audits`.
+- The health endpoint is `/up`; the license verification API is under `/api/v1/licenses` (license-key auth, rate-limited).

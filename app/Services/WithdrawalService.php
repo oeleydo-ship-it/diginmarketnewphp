@@ -19,6 +19,7 @@ class WithdrawalService
   $wallet=SellerWallet::findOrFail($withdrawal->seller_wallet_id);
   $transfer=$this->gateway->transfer($withdrawal,$account->stripe_account_id,$wallet->currency);
   DB::transaction(function()use($withdrawal,$admin,$note,$transfer){$withdrawal=WithdrawalRequest::lockForUpdate()->findOrFail($withdrawal->id);if(!in_array($withdrawal->status,['pending','under_review'],true))return;$wallet=SellerWallet::lockForUpdate()->findOrFail($withdrawal->seller_wallet_id);$wallet->decrement('reserved_balance',(float)$withdrawal->amount);$wallet->increment('withdrawn_balance',(float)$withdrawal->amount);$withdrawal->update(['status'=>'paid','administrator_note'=>$note,'stripe_transfer_id'=>$transfer['id'],'processed_at'=>now()]);$wallet->transactions()->create(['uuid'=>(string)str()->uuid(),'type'=>'withdrawal_paid','balance_bucket'=>'reserved','amount'=>-(float)$withdrawal->amount,'currency'=>$wallet->currency,'reference'=>'withdrawal:'.$withdrawal->id.':paid','metadata'=>['stripe_transfer_id'=>$transfer['id'],'approved_by'=>$admin->id],'created_at'=>now()]);AuditLog::create(['user_id'=>$admin->id,'action'=>'withdrawal.paid','entity_type'=>WithdrawalRequest::class,'entity_id'=>$withdrawal->id,'old_values'=>['status'=>'pending'],'new_values'=>['status'=>'paid','stripe_transfer_id'=>$transfer['id']],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);});
+  if($withdrawal->fresh()->status==='paid')app(MarketplaceMailer::class)->withdrawalDecided($withdrawal->fresh());
  }
  public function request(SellerWallet $wallet,float $amount):WithdrawalRequest
  {
@@ -26,6 +27,8 @@ class WithdrawalService
  }
  public function reject(WithdrawalRequest $withdrawal,string $note=''):void
  {
+  $wasOpen=in_array($withdrawal->status,['pending','under_review'],true);
   DB::transaction(function()use($withdrawal,$note){$withdrawal=WithdrawalRequest::lockForUpdate()->findOrFail($withdrawal->id);if(!in_array($withdrawal->status,['pending','under_review'],true))return;$wallet=SellerWallet::lockForUpdate()->findOrFail($withdrawal->seller_wallet_id);$wallet->decrement('reserved_balance',(float)$withdrawal->amount);$wallet->increment('available_balance',(float)$withdrawal->amount);$withdrawal->update(['status'=>'rejected','administrator_note'=>$note,'processed_at'=>now()]);$wallet->transactions()->create(['uuid'=>(string)str()->uuid(),'type'=>'withdrawal_reversal','balance_bucket'=>'available','amount'=>$withdrawal->amount,'currency'=>$wallet->currency,'reference'=>'withdrawal:'.$withdrawal->id.':reversal','created_at'=>now()]);});
+  if($wasOpen&&$withdrawal->fresh()->status==='rejected')app(MarketplaceMailer::class)->withdrawalDecided($withdrawal->fresh());
  }
 }
