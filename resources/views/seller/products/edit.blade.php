@@ -45,6 +45,14 @@
                 <textarea name="description" rows="8" required @disabled($locked) class="{{ $input }}">{{ old('description', $product->description) }}</textarea>
             </div>
             <div class="flex flex-col gap-1.5">
+                <label class="{{ $labelCls }}">Live demo URL</label>
+                <input name="demo_url" type="url" placeholder="https://demo.example.com" value="{{ old('demo_url', $product->demo_url) }}" @disabled($locked) class="{{ $input }}">
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label class="{{ $labelCls }}">Video URL (YouTube or Vimeo)</label>
+                <input name="video_url" type="url" placeholder="https://youtube.com/watch?v=..." value="{{ old('video_url', $product->video_url) }}" @disabled($locked) class="{{ $input }}">
+            </div>
+            <div class="flex flex-col gap-1.5">
                 <label class="{{ $labelCls }}">Regular price</label>
                 <input name="regular_price" type="number" step="0.01" required value="{{ old('regular_price', $product->regular_price) }}" @disabled($locked) class="{{ $input }}">
             </div>
@@ -84,9 +92,13 @@
                 <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60">
                     <span class="material-symbols-outlined text-[28px] text-primary">add_photo_alternate</span>
                     <span class="text-sm text-on-surface-variant">Add images</span>
-                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple required class="text-sm">
+                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="text-sm">
                 </label>
-                <button class="rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Upload</button>
+                <div class="flex flex-1 flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Or paste image URLs (one per line)</label>
+                    <textarea name="image_urls" rows="3" placeholder="https://example.com/screenshot.png" class="rounded-lg border border-outline-variant bg-surface px-3 py-2 font-mono text-xs outline-none focus:border-primary"></textarea>
+                </div>
+                <button class="rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Add images</button>
             </form>
         @endif
     </section>

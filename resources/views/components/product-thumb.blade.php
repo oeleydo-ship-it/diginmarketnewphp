@@ -1,6 +1,6 @@
 @props(['product'])
 @if($product->cover_image_path)
-    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($product->cover_image_path) }}" alt="{{ $product->title }}"
+    <img src="{{ str_starts_with($product->cover_image_path, 'http') ? $product->cover_image_path : \Illuminate\Support\Facades\Storage::disk('public')->url($product->cover_image_path) }}" alt="{{ $product->title }}"
         {{ $attributes->merge(['class' => 'object-cover']) }} loading="lazy">
 @else
 @php

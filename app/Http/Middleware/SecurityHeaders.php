@@ -26,7 +26,7 @@ class SecurityHeaders
         $ws = app()->isLocal() ? ' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173' : '';
 
         // Google Fonts serves the marketplace typefaces (Inter, Geist, JetBrains Mono, Material Symbols).
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'{$vite}{$ws}; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'{$vite}{$ws}; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

@@ -64,6 +64,18 @@
                 <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="text-sm">
             </label>
         </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+            <label class="{{ $label }}">Image URLs <span class="font-normal normal-case text-on-surface-variant">(optional — one https:// link per line, counted toward the 6-image limit)</span></label>
+            <textarea name="image_urls" rows="2" placeholder="https://example.com/screenshot-1.png" class="{{ $input }} font-mono text-xs">{{ old('image_urls') }}</textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="{{ $label }}">Live demo URL <span class="font-normal normal-case text-on-surface-variant">(optional)</span></label>
+            <input name="demo_url" type="url" placeholder="https://demo.example.com" value="{{ old('demo_url') }}" class="{{ $input }}">
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="{{ $label }}">Video URL <span class="font-normal normal-case text-on-surface-variant">(optional — YouTube or Vimeo)</span></label>
+            <input name="video_url" type="url" placeholder="https://youtube.com/watch?v=..." value="{{ old('video_url') }}" class="{{ $input }}">
+        </div>
         @if($errors->any())
             <div class="rounded-lg border border-error/30 bg-error-container/40 p-4 text-sm font-medium text-on-error-container sm:col-span-2">{{ $errors->first() }}</div>
         @endif

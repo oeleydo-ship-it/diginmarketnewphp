@@ -38,6 +38,11 @@
             <!-- Preview -->
             <section class="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
                 <x-product-thumb :product="$product" class="aspect-video w-full" />
+                @if($product->videoEmbedUrl())
+                    <div class="aspect-video w-full border-t border-outline-variant">
+                        <iframe src="{{ $product->videoEmbedUrl() }}" title="{{ $product->title }} video preview" class="h-full w-full" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                @endif
                 @if($product->images->count() > 1)
                     <div class="flex gap-3 overflow-x-auto border-t border-outline-variant p-4">
                         @foreach($product->images as $image)
@@ -186,6 +191,11 @@
                         @endforeach
                     </div>
                     <div class="mt-5 space-y-3">
+                        @if($product->demo_url)
+                            <a href="{{ $product->demo_url }}" target="_blank" rel="noopener nofollow" class="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary-container py-3.5 font-semibold text-on-secondary-container shadow-md transition-all hover:brightness-105 active:scale-[0.98]">
+                                <span class="material-symbols-outlined text-[20px]">visibility</span> Live Preview
+                            </a>
+                        @endif
                         @auth
                             <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-on-primary shadow-md transition-all hover:brightness-110 active:scale-[0.98]">
                                 <span class="material-symbols-outlined">shopping_cart</span> Add to Cart
