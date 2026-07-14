@@ -12,3 +12,7 @@ Schedule::call(fn () => app(\App\Services\SellerWalletService::class)->clearElig
     ->name('seller-earnings-clearance')
     ->dailyAt('01:00')
     ->withoutOverlapping();
+
+Schedule::command('marketplace:backup')
+    ->dailyAt('02:30')
+    ->withoutOverlapping();

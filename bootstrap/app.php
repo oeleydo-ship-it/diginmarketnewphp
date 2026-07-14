@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+        $middleware->web(prepend: [\App\Http\Middleware\EnsureInstalled::class]);
         $middleware->web(append: [\App\Http\Middleware\SecurityHeaders::class, \App\Http\Middleware\TrackAffiliateReferral::class]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RequireRole::class,

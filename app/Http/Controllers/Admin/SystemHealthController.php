@@ -5,10 +5,12 @@ use App\Models\ProductFile;
 use App\Models\StripeWebhookEvent;
 use App\Models\WalletTransaction;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 class SystemHealthController extends Controller
 {
- public function __invoke(): View
+ public function index(): View
  {
   $health=[
    'php_version'=>PHP_VERSION,
@@ -28,6 +30,14 @@ class SystemHealthController extends Controller
    'storage_free_bytes'=>@disk_free_space(storage_path())?:0,
   ];
   $failedJobs=DB::table('failed_jobs')->latest('failed_at')->limit(10)->get();
-  return view('admin.system.index',compact('health','failedJobs'));
+  $backups=collect(glob($this->backupDir().DIRECTORY_SEPARATOR.'backup-*.zip'))->sortDesc()->take(10)->map(fn($file)=>['name'=>basename($file),'size'=>filesize($file),'created_at'=>\Illuminate\Support\Carbon::createFromTimestamp(filemtime($file))])->values();
+  return view('admin.system.index',compact('health','failedJobs','backups'));
  }
+ public function backup(): RedirectResponse
+ {
+  Artisan::call('marketplace:backup');
+  \App\Models\AuditLog::create(['user_id'=>auth()->id(),'action'=>'system.backup_run','entity_type'=>null,'entity_id'=>null,'new_values'=>['output'=>trim(Artisan::output())],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
+  return back()->with('status','Backup created.');
+ }
+ private function backupDir(): string {return config('marketplace.backup_path')?:storage_path('app/backups');}
 }

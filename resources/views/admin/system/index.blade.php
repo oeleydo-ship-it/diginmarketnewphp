@@ -30,6 +30,18 @@
   </div>
  </div>
  <div class="mt-6 rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+   <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">backup</span>Backups</h2>
+   <form method="POST" action="{{ route('admin.system.backup') }}">@csrf<button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Run backup now</button></form>
+  </div>
+  @if(session('status'))<p class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800">{{ session('status') }}</p>@endif
+  <div class="mt-4 divide-y divide-[#eef0f6]">
+  @forelse($backups as $backup)
+   <div class="flex flex-wrap items-center justify-between gap-2 py-3"><p class="font-mono text-sm">{{ $backup['name'] }}</p><p class="text-sm text-[#626576]">{{ $fmt($backup['size']) }} · {{ $backup['created_at']->diffForHumans() }}</p></div>
+  @empty<p class="py-6 text-center text-sm text-[#777a8a]">No backups yet. Backups run daily at 02:30 and are kept for {{ config('marketplace.backup_keep',7) }} generations.</p>@endforelse
+  </div>
+ </div>
+ <div class="mt-6 rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
   <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">report</span>Recent failed jobs</h2>
   <div class="mt-4 divide-y divide-[#eef0f6]">
   @forelse($failedJobs as $job)
