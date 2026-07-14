@@ -108,6 +108,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/products/{product}/edit', [SellerProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [SellerProductController::class, 'update'])->name('products.update');
         Route::post('/products/{product}/versions', [SellerProductController::class, 'storeVersion'])->name('products.versions.store');
+        Route::post('/products/{product}/images', [SellerProductController::class, 'storeImages'])->name('products.images.store');
+        Route::delete('/products/{product}/images/{image}', [SellerProductController::class, 'destroyImage'])->name('products.images.destroy');
         Route::get('/coupons', [SellerCouponController::class, 'index'])->name('coupons.index');
         Route::post('/coupons', [SellerCouponController::class, 'store'])->name('coupons.store');
         Route::put('/coupons/{coupon}/toggle', [SellerCouponController::class, 'toggle'])->name('coupons.toggle');

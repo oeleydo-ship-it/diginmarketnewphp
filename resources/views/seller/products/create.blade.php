@@ -56,6 +56,14 @@
                 <input name="archive" type="file" accept=".zip" required class="text-sm">
             </label>
         </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+            <label class="{{ $label }}">Product images <span class="font-normal normal-case text-on-surface-variant">(optional — up to 6, JPG/PNG/WebP, 5&nbsp;MB each; the first becomes the cover)</span></label>
+            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60">
+                <span class="material-symbols-outlined text-[32px] text-primary">add_photo_alternate</span>
+                <span class="text-sm text-on-surface-variant">Add screenshots or cover art</span>
+                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="text-sm">
+            </label>
+        </div>
         @if($errors->any())
             <div class="rounded-lg border border-error/30 bg-error-container/40 p-4 text-sm font-medium text-on-error-container sm:col-span-2">{{ $errors->first() }}</div>
         @endif

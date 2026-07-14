@@ -62,6 +62,35 @@
         </form>
     </section>
     <section class="mt-8 rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
+        <h2 class="mb-2 font-display text-lg font-semibold">Images</h2>
+        <p class="mb-5 text-sm text-on-surface-variant">Up to 6 screenshots or cover art (JPG/PNG/WebP, 5&nbsp;MB each). The first image is used as the cover across the marketplace.</p>
+        @if($product->images->isNotEmpty())
+            <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                @foreach($product->images as $image)
+                    <div class="group relative overflow-hidden rounded-xl border border-outline-variant">
+                        <img src="{{ $image->url() }}" alt="{{ $image->alt ?? $product->title }}" class="aspect-video w-full object-cover">
+                        @if($loop->first)<span class="absolute left-2 top-2 rounded-full bg-primary px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-on-primary">Cover</span>@endif
+                        <form method="POST" action="{{ route('seller.products.images.destroy', [$product, $image]) }}" onsubmit="return confirm('Remove this image?')" class="absolute right-2 top-2">
+                            @csrf @method('DELETE')
+                            <button class="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-error shadow-sm transition-all hover:bg-error hover:text-on-error" aria-label="Remove image"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+                        </form>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+        @if($product->images->count() < 6)
+            <form method="POST" action="{{ route('seller.products.images.store', $product) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+                @csrf
+                <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60">
+                    <span class="material-symbols-outlined text-[28px] text-primary">add_photo_alternate</span>
+                    <span class="text-sm text-on-surface-variant">Add images</span>
+                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple required class="text-sm">
+                </label>
+                <button class="rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Upload</button>
+            </form>
+        @endif
+    </section>
+    <section class="mt-8 rounded-xl border border-outline-variant bg-surface-container-lowest p-8">
         <h2 class="mb-5 font-display text-lg font-semibold">Versions</h2>
         <div class="space-y-3">
             @foreach($versions as $version)

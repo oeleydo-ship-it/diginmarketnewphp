@@ -1,6 +1,10 @@
 @props(['product'])
+@if($product->cover_image_path)
+    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($product->cover_image_path) }}" alt="{{ $product->title }}"
+        {{ $attributes->merge(['class' => 'object-cover']) }} loading="lazy">
+@else
 @php
-    // Products have no uploaded artwork yet, so render a deterministic branded placeholder.
+    // Fall back to a deterministic branded placeholder for products without artwork.
     $gradients = [
         'bg-gradient-to-br from-[#4f46e5] to-[#8b7cf6]',
         'bg-gradient-to-br from-[#006c49] to-[#4edea3]',
@@ -24,3 +28,4 @@
     <span class="material-symbols-outlined relative text-6xl text-white/90">{{ $icon }}</span>
     <span class="absolute bottom-3 left-4 font-mono text-[11px] uppercase tracking-widest text-white/80">{{ $product->category->name }}</span>
 </div>
+@endif

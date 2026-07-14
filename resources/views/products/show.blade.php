@@ -38,6 +38,15 @@
             <!-- Preview -->
             <section class="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
                 <x-product-thumb :product="$product" class="aspect-video w-full" />
+                @if($product->images->count() > 1)
+                    <div class="flex gap-3 overflow-x-auto border-t border-outline-variant p-4">
+                        @foreach($product->images as $image)
+                            <a href="{{ $image->url() }}" target="_blank" rel="noopener" class="shrink-0 overflow-hidden rounded-lg border border-outline-variant transition-all hover:border-primary" aria-label="View screenshot {{ $loop->iteration }} full size">
+                                <img src="{{ $image->url() }}" alt="{{ $image->alt ?? $product->title.' screenshot '.$loop->iteration }}" class="h-20 w-32 object-cover" loading="lazy">
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             </section>
 
             <!-- Tabs -->
