@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 class CouponService
 {
+ /** $subtotal is the eligible subtotal — for seller coupons, only that seller's items. */
  public function validate(Coupon $coupon,User $user,float $subtotal): void
  {
   if(!$coupon->is_active)throw ValidationException::withMessages(['coupon'=>'This coupon is no longer active.']);
+  if($coupon->seller_id!==null&&$subtotal<=0)throw ValidationException::withMessages(['coupon'=>'This coupon only applies to products from '.(User::whereKey($coupon->seller_id)->value('name')??'its seller').', and your cart has none.']);
   if($coupon->starts_at&&$coupon->starts_at->isFuture())throw ValidationException::withMessages(['coupon'=>'This coupon is not active yet.']);
   if($coupon->ends_at&&$coupon->ends_at->isPast())throw ValidationException::withMessages(['coupon'=>'This coupon has expired.']);
   if($coupon->min_cart_total!==null&&$subtotal<(float)$coupon->min_cart_total)throw ValidationException::withMessages(['coupon'=>'Cart total is below the coupon minimum of $'.number_format((float)$coupon->min_cart_total,2).'.']);

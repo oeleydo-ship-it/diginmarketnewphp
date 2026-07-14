@@ -84,6 +84,7 @@
                                 <span class="flex items-center gap-1.5 font-mono font-bold text-on-secondary-container"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">sell</span>{{ $cart->coupon->code }}</span>
                                 <form method="POST" action="{{ route('cart.coupon.remove') }}">@csrf @method('DELETE')<button class="font-semibold text-on-surface-variant hover:text-error">Remove</button></form>
                             </div>
+                            @if($cart->coupon->seller_id)<p class="mb-4 -mt-2 px-1 text-xs text-on-surface-variant">Applies to items from {{ $cart->coupon->seller?->name ?? 'this seller' }} only.</p>@endif
                         @else
                             <form method="POST" action="{{ route('cart.coupon.apply') }}" class="mb-4 flex gap-2">
                                 @csrf

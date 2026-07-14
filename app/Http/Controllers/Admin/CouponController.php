@@ -10,7 +10,7 @@ class CouponController extends Controller
 {
  public function index(): View
  {
-  $coupons=Coupon::withCount('usages')->when(request('q'),fn($query,$term)=>$query->where('code','like','%'.$term.'%'))->latest()->paginate(25)->withQueryString();
+  $coupons=Coupon::withCount('usages')->with('seller')->when(request('q'),fn($query,$term)=>$query->where('code','like','%'.$term.'%'))->latest()->paginate(25)->withQueryString();
   return view('admin.coupons.index',compact('coupons'));
  }
  public function store(): RedirectResponse

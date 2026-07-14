@@ -23,11 +23,12 @@
  <form method="GET" class="mt-8 flex max-w-md gap-2"><input name="q" value="{{ request('q') }}" placeholder="Search code" class="{{ $input }} flex-1 bg-white"><button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white">Search</button></form>
  <div class="mt-5 overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-sm">
   <div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left text-sm">
-   <thead class="bg-[#edf2ff] text-xs uppercase tracking-[.08em] text-[#424555]"><tr><th class="px-5 py-4">Code</th><th class="px-5 py-4">Discount</th><th class="px-5 py-4">Rules</th><th class="px-5 py-4">Usage</th><th class="px-5 py-4">Window</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
+   <thead class="bg-[#edf2ff] text-xs uppercase tracking-[.08em] text-[#424555]"><tr><th class="px-5 py-4">Code</th><th class="px-5 py-4">Scope</th><th class="px-5 py-4">Discount</th><th class="px-5 py-4">Rules</th><th class="px-5 py-4">Usage</th><th class="px-5 py-4">Window</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
    <tbody class="divide-y divide-[#e2e4ec]">
    @forelse($coupons as $coupon)
     <tr class="transition hover:bg-[#fafbff]">
      <td class="px-5 py-4"><span class="font-mono font-bold text-[#251bd5]">{{ $coupon->code }}</span>@if($coupon->description)<p class="mt-0.5 text-xs text-[#777a8a]">{{ $coupon->description }}</p>@endif</td>
+     <td class="px-5 py-4 text-[#626576]">{{ $coupon->seller?->name ?? 'Platform' }}</td>
      <td class="px-5 py-4 font-semibold">{{ $coupon->type==='percent' ? rtrim(rtrim(number_format($coupon->value,2),'0'),'.').'%' : '$'.number_format($coupon->value,2) }}</td>
      <td class="px-5 py-4 text-[#626576]">@if($coupon->min_cart_total)Min ${{ number_format($coupon->min_cart_total,2) }} · @endif{{ $coupon->max_uses_per_user }}/customer</td>
      <td class="px-5 py-4">{{ number_format($coupon->used_count) }}{{ $coupon->max_uses ? ' / '.number_format($coupon->max_uses) : '' }}</td>
@@ -40,7 +41,7 @@
       </div>
      </td>
     </tr>
-   @empty<tr><td colspan="7" class="px-6 py-16 text-center text-[#777a8a]"><span class="material-symbols-outlined mb-2 block text-4xl">sell</span>No coupons yet. Create your first discount code above.</td></tr>@endforelse
+   @empty<tr><td colspan="8" class="px-6 py-16 text-center text-[#777a8a]"><span class="material-symbols-outlined mb-2 block text-4xl">sell</span>No coupons yet. Create your first discount code above.</td></tr>@endforelse
    </tbody>
   </table></div>
  </div>
