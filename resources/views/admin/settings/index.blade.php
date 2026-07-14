@@ -31,6 +31,13 @@
         <select name="{{ str_replace('.', '__', $key) }}" class="{{ $input }}">
          @foreach($field['options'] as $option)<option value="{{ $option }}" @selected($field['value'] === $option)>{{ $option === '' ? 'None' : strtoupper($option) }}</option>@endforeach
         </select>
+       @elseif($field['type'] === 'toggle')
+        <select name="{{ str_replace('.', '__', $key) }}" class="{{ $input }}">
+         <option value="1" @selected($field['value'] === '' || in_array(strtolower($field['value']), ['1','true','yes','on'], true))>Enabled</option>
+         <option value="0" @selected($field['value'] !== '' && !in_array(strtolower($field['value']), ['1','true','yes','on'], true))>Disabled</option>
+        </select>
+       @elseif($field['type'] === 'decimal')
+        <input type="number" step="0.01" min="{{ $field['min'] ?? 0 }}" max="{{ $field['max'] ?? '' }}" name="{{ str_replace('.', '__', $key) }}" value="{{ $field['value'] }}" class="{{ $input }}">
        @else
         <input type="{{ $field['type'] }}" name="{{ str_replace('.', '__', $key) }}" value="{{ $field['value'] }}"
          placeholder="{{ ($field['encrypted'] ?? false) ? (($field['configured'] ?? false) ? '•••••••• (configured — enter to replace)' : 'Not configured') : '' }}"

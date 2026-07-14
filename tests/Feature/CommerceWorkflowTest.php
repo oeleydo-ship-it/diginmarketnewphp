@@ -24,7 +24,7 @@ class CommerceWorkflowTest extends TestCase
  private function fakeGateway(): void{$this->app->bind(CheckoutGateway::class,fn()=>new class implements CheckoutGateway{public function createCheckout(\App\Models\Order $order):array{return ['id'=>'cs_test_'.$order->id,'url'=>'https://checkout.stripe.test/session/'.$order->id];}});}
  public function test_checkout_snapshots_server_prices_without_granting_access(): void
  {
-  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['extended']->id])->assertRedirect('/cart');$response=$this->post('/checkout');$response->assertRedirectContains('checkout.stripe.test');$order=$customer->orders()->with('items')->firstOrFail();$this->assertEquals(160.00,$order->total);$this->assertEquals(160.00,$order->items->first()->unit_price);$this->assertSame('pending',$order->payment_status);$this->assertDatabaseCount('licenses',0);
+  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['extended']->id])->assertRedirect('/cart');$this->get('/cart')->assertOk();$response=$this->post('/checkout');$response->assertRedirectContains('checkout.stripe.test');$order=$customer->orders()->with('items')->firstOrFail();$this->assertEquals(160.00,$order->total);$this->assertEquals(160.00,$order->items->first()->unit_price);$this->assertSame('pending',$order->payment_status);$this->assertDatabaseCount('licenses',0);
  }
  public function test_fulfilment_is_idempotent_and_issues_one_license(): void
  {

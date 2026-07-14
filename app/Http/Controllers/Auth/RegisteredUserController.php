@@ -11,6 +11,7 @@ class RegisteredUserController extends Controller
 {
     public function store(RegisterRequest $request): RedirectResponse
     {
+        abort_unless(\App\Models\Setting::enabled('features.registration'), 403, 'Registration is currently disabled.');
         $user = DB::transaction(function () use ($request): User { $user = User::create($request->safe()->only('name', 'email', 'password')); $user->roles()->attach(Role::where('slug', 'customer')->firstOrFail()); return $user; });
         Auth::login($user);
         return redirect()->route('dashboard');

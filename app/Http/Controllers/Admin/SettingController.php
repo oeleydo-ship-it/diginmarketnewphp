@@ -34,6 +34,25 @@ class SettingController extends Controller
    'payments.stripe_secret_key'=>['label'=>'Secret key','group'=>'payments','type'=>'password','encrypted'=>true],
    'payments.stripe_webhook_secret'=>['label'=>'Webhook signing secret','group'=>'payments','type'=>'password','encrypted'=>true],
   ]],
+  'commerce'=>['title'=>'Commerce & Finance','icon'=>'payments','fields'=>[
+   'commerce.default_commission_rate'=>['label'=>'Default commission %','group'=>'commerce','type'=>'decimal','min'=>0,'max'=>100],
+   'commerce.affiliate_commission_rate'=>['label'=>'Affiliate share of commission %','group'=>'commerce','type'=>'decimal','min'=>0,'max'=>100],
+   'commerce.withdrawal_fee_rate'=>['label'=>'Withdrawal fee %','group'=>'commerce','type'=>'decimal','min'=>0,'max'=>100],
+   'commerce.minimum_withdrawal'=>['label'=>'Minimum withdrawal amount','group'=>'commerce','type'=>'decimal','min'=>1,'max'=>100000],
+   'commerce.earnings_clearance_days'=>['label'=>'Earnings clearance (days)','group'=>'commerce','type'=>'number','min'=>0,'max'=>90],
+  ]],
+  'features'=>['title'=>'Features','icon'=>'toggle_on','fields'=>[
+   'features.registration'=>['label'=>'Customer registration','group'=>'features','type'=>'toggle'],
+   'features.seller_applications'=>['label'=>'Seller applications','group'=>'features','type'=>'toggle'],
+   'features.reviews'=>['label'=>'Product reviews','group'=>'features','type'=>'toggle'],
+   'features.comments'=>['label'=>'Product comments','group'=>'features','type'=>'toggle'],
+   'features.blog'=>['label'=>'Public blog','group'=>'features','type'=>'toggle'],
+  ]],
+  'social'=>['title'=>'Social Links','icon'=>'share','fields'=>[
+   'social.website'=>['label'=>'Website URL','group'=>'social','type'=>'url'],
+   'social.twitter'=>['label'=>'X (Twitter) URL','group'=>'social','type'=>'url'],
+   'social.community'=>['label'=>'Community / Discord URL','group'=>'social','type'=>'url'],
+  ]],
  ];
  public function index(): View
  {
@@ -53,7 +72,7 @@ class SettingController extends Controller
  {
   abort_unless(array_key_exists($section,self::SECTIONS),404);
   $fields=self::SECTIONS[$section]['fields'];
-  $data=request()->validate(collect($fields)->mapWithKeys(fn(array $field,string $key)=>[str_replace('.','__',$key)=>match($field['type']){'email'=>['nullable','email','max:255'],'number'=>['nullable','integer','between:1,65535'],'select'=>['nullable','in:'.implode(',',$field['options'])],default=>['nullable','string','max:2000']}])->all());
+  $data=request()->validate(collect($fields)->mapWithKeys(fn(array $field,string $key)=>[str_replace('.','__',$key)=>match($field['type']){'email'=>['nullable','email','max:255'],'url'=>['nullable','url:http,https','max:500'],'number'=>['nullable','integer','between:'.($field['min']??1).','.($field['max']??65535)],'decimal'=>['nullable','numeric','between:'.($field['min']??0).','.($field['max']??1000000)],'toggle'=>['nullable','in:1,0'],'select'=>['nullable','in:'.implode(',',$field['options'])],default=>['nullable','string','max:2000']}])->all());
   $changed=[];
   foreach($fields as $key=>$field){
    $input=$data[str_replace('.','__',$key)]??null;

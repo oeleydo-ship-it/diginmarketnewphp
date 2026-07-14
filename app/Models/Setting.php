@@ -25,6 +25,12 @@ class Setting extends Model
         return ($value === null || $value === '') ? $default : $value;
     }
 
+    public static function enabled(string $key, bool $default = true): bool
+    {
+        $value = static::get($key);
+        return $value === null ? $default : in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
+    }
+
     public static function put(string $key, ?string $value, string $group, bool $encrypted = false): self
     {
         $setting = static::firstOrNew(['key' => $key]);

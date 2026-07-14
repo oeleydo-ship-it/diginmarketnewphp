@@ -99,11 +99,14 @@
             <div class="col-span-1 lg:col-span-2">
                 <span class="mb-4 block font-display text-lg font-bold text-primary">{{ config('app.name', 'DiginMarket') }}</span>
                 <p class="mb-6 max-w-xs text-sm text-on-surface-variant">A curated marketplace for professional digital assets, scripts, and themes from independent creators.</p>
-                <div class="flex gap-2" aria-hidden="true">
-                    <span class="material-symbols-outlined rounded-full p-2 text-primary">public</span>
-                    <span class="material-symbols-outlined rounded-full p-2 text-primary">alternate_email</span>
-                    <span class="material-symbols-outlined rounded-full p-2 text-primary">forum</span>
+                @php($socials=collect([['social.website','public','Website'],['social.twitter','alternate_email','X (Twitter)'],['social.community','forum','Community']])->map(fn($s)=>['url'=>\App\Models\Setting::get($s[0]),'icon'=>$s[1],'label'=>$s[2]])->filter(fn($s)=>$s['url']))
+                @if($socials->isNotEmpty())
+                <div class="flex gap-2">
+                    @foreach($socials as $social)
+                    <a href="{{ $social['url'] }}" rel="noopener" target="_blank" aria-label="{{ $social['label'] }}" class="rounded-full p-2 text-primary transition-colors hover:bg-primary-container/20"><span class="material-symbols-outlined" aria-hidden="true">{{ $social['icon'] }}</span></a>
+                    @endforeach
                 </div>
+                @endif
             </div>
             <div>
                 <h5 class="mb-5 text-[15px] font-semibold">Marketplace</h5>
