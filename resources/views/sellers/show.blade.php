@@ -9,6 +9,12 @@
                         <span class="material-symbols-outlined text-[16px]">verified</span> Verified Seller
                     </p>
                     <h1 class="mt-1 font-display text-4xl font-semibold tracking-tight">{{ $seller->display_name }}</h1>
+                    @if($seller->business_name)
+                        <p class="mt-1 flex items-center gap-1.5 text-sm font-medium text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
+                            {{ $seller->business_name }} · Verified business
+                        </p>
+                    @endif
                     <p class="mt-3 max-w-2xl text-on-surface-variant">{{ $seller->biography }}</p>
                     <p class="mt-3 text-sm text-on-surface-variant">
                         {{ $seller->country }} · <span class="font-semibold text-on-surface">{{ $followers }}</span> followers ·

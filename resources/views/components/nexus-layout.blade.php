@@ -4,8 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ $title ?? 'DiginMarket — Premium Digital Assets' }}</title>
-<meta name="description" content="{{ $description ?? 'Discover reviewed digital products from independent creators.' }}">
+<title>{{ $title ?? config('marketplace.seo_meta_title', config('app.name', 'DiginMarket').' — Premium Digital Assets') }}</title>
+<meta name="description" content="{{ $description ?? config('marketplace.seo_meta_description', 'Discover reviewed digital products from independent creators.') }}">
+@if(config('marketplace.seo_meta_keywords'))<meta name="keywords" content="{{ config('marketplace.seo_meta_keywords') }}">@endif
 <link rel="canonical" href="{{ url()->current() }}">
 <meta property="og:title" content="{{ $title ?? 'DiginMarket — Premium Digital Assets' }}">
 <meta property="og:description" content="{{ $description ?? 'A curated marketplace for digital products.' }}">
@@ -25,7 +26,13 @@
 <header data-header class="fixed inset-x-0 top-0 z-50 border-b border-outline-variant bg-surface/80 backdrop-blur-md transition-shadow">
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-6">
         <div class="flex items-center gap-10">
-            <a href="{{ route('home') }}" class="font-display text-2xl font-bold tracking-tight text-primary">DiginMarket</a>
+            <a href="{{ route('home') }}" class="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-primary">
+                @if($brandLogo = config('marketplace.logo_path'))
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandLogo) }}" alt="{{ config('app.name', 'DiginMarket') }}" class="h-10 w-auto">
+                @else
+                    {{ config('app.name', 'DiginMarket') }}
+                @endif
+            </a>
             <nav class="hidden items-center gap-6 md:flex">
                 <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">Browse</a>
                 <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">Categories</a>
@@ -85,7 +92,7 @@
     <div class="mx-auto max-w-7xl px-6 py-14">
         <div class="mb-12 grid grid-cols-1 gap-10 md:grid-cols-4 lg:grid-cols-5">
             <div class="col-span-1 lg:col-span-2">
-                <span class="mb-4 block font-display text-lg font-bold text-primary">DiginMarket</span>
+                <span class="mb-4 block font-display text-lg font-bold text-primary">{{ config('app.name', 'DiginMarket') }}</span>
                 <p class="mb-6 max-w-xs text-sm text-on-surface-variant">A curated marketplace for professional digital assets, scripts, and themes from independent creators.</p>
                 <div class="flex gap-2">
                     <span class="material-symbols-outlined cursor-pointer rounded-full p-2 text-primary transition-colors hover:bg-primary-container/20">public</span>

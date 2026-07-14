@@ -19,7 +19,8 @@ class PhaseTwoWorkflowTest extends TestCase
  {
   $customer=$this->role('customer');$sellerRole=$this->role('seller');$adminRole=$this->role('administrator');
   $applicant=User::factory()->create();$applicant->roles()->attach($customer);
-  $this->actingAs($applicant)->post('/sell/apply',['display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','biography'=>'We build production-ready Laravel applications.'])->assertRedirect('/dashboard');
+  $this->actingAs($applicant)->post('/sell/apply',['display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','biography'=>'We build production-ready Laravel applications.'])->assertSessionHasErrors(['full_name','address','city','business_name']);
+  $this->actingAs($applicant)->post('/sell/apply',['full_name'=>'Alice Acme','display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','address'=>'12 Harbour Road','city'=>'Dubai','postal_code'=>'00000','business_name'=>'Acme Digital FZ-LLC','biography'=>'We build production-ready Laravel applications.'])->assertRedirect('/dashboard');
   $profile=$applicant->sellerProfile()->firstOrFail();$this->assertSame(SellerStatus::Pending,$profile->status);
   $admin=User::factory()->create();$admin->roles()->attach($adminRole);
   $this->actingAs($admin)->post("/admin/sellers/{$profile->id}/approve")->assertRedirect();

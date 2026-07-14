@@ -13,7 +13,7 @@
   <aside data-admin-sidebar class="fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col border-r border-[#d7d9e5] bg-[#f8f9ff] p-5 lg:flex">
    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-4 px-2 py-3">
     <span class="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-[#4338db] text-white">storefront</span>
-    <span><strong class="block text-lg text-[#251bd5]">DiginMarket</strong><small class="text-[#555868]">Admin Management</small></span>
+    <span><strong class="block text-lg text-[#251bd5]">{{ config('app.name', 'DiginMarket') }}</strong><small class="text-[#555868]">Admin Management</small></span>
    </a>
    <nav class="mt-10 flex-1 space-y-1 overflow-y-auto text-[14px] font-medium">
     @php($links=[['admin.dashboard','dashboard','Dashboard'],['admin.orders.index','shopping_cart','Orders'],['admin.products.review','inventory_2','Product review'],['admin.sellers.index','store','Seller applications'],['admin.users.index','group','Customers'],['admin.support.index','support_agent','Support'],['admin.refunds.index','assignment_return','Refunds'],['admin.disputes.index','gavel','Disputes'],['admin.withdrawals.index','payments','Withdrawals'],['admin.pages.index','article','Content pages'],['admin.audits.index','history','Audit log'],['admin.settings.index','settings','Settings']])

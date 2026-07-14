@@ -126,6 +126,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/support/{supportTicket}/status', [SupportManagementController::class, 'updateStatus'])->name('support.status');
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::post('/settings/sections/{section}', [SettingController::class, 'updateSection'])->name('settings.sections.update');
+        Route::post('/settings/branding', [SettingController::class, 'updateBranding'])->name('settings.branding.update');
         Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
         Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
         Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
