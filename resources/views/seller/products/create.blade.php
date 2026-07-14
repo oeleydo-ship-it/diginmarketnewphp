@@ -32,8 +32,9 @@
             <input name="regular_price" type="number" step="0.01" required class="{{ $input }}">
         </div>
         <div class="flex flex-col gap-1.5">
-            <label class="{{ $label }}">Extended price</label>
+            <label class="{{ $label }}">Business license price</label>
             <input name="extended_price" type="number" step="0.01" class="{{ $input }}">
+            <label class="mt-1 flex items-center gap-2 text-sm text-on-surface-variant"><input type="checkbox" name="business_license_enabled" value="1" checked class="rounded text-primary focus:ring-primary">Offer the business license on this product</label>
         </div>
         <div class="flex flex-col gap-1.5">
             <label class="{{ $label }}">Version</label>

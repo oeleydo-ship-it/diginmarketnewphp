@@ -162,6 +162,7 @@
                     <span class="mb-4 block text-[17px] font-semibold text-on-surface">Select License</span>
                     <div class="space-y-3">
                         @foreach($licenseTypes as $license)
+                            @continue($license->slug === 'extended' && ! $product->business_license_enabled)
                             @php $price = $license->slug === 'extended' ? ($product->extended_price ?: $product->regular_price) : $product->regular_price; @endphp
                             <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-outline-variant p-4 transition-all hover:border-primary/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 has-[:checked]:ring-1 has-[:checked]:ring-primary">
                                 <input type="radio" name="license_type_id" value="{{ $license->id }}" @checked($loop->first) class="mt-1 text-primary focus:ring-primary" @guest disabled @endguest>

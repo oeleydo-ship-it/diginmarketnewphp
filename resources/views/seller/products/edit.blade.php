@@ -49,8 +49,9 @@
                 <input name="regular_price" type="number" step="0.01" required value="{{ old('regular_price', $product->regular_price) }}" @disabled($locked) class="{{ $input }}">
             </div>
             <div class="flex flex-col gap-1.5">
-                <label class="{{ $labelCls }}">Extended price</label>
+                <label class="{{ $labelCls }}">Business license price</label>
                 <input name="extended_price" type="number" step="0.01" value="{{ old('extended_price', $product->extended_price) }}" @disabled($locked) class="{{ $input }}">
+                <label class="mt-1 flex items-center gap-2 text-sm text-on-surface-variant"><input type="checkbox" name="business_license_enabled" value="1" @checked(old('business_license_enabled', $product->business_license_enabled)) @disabled($locked) class="rounded text-primary focus:ring-primary">Offer the business license on this product</label>
             </div>
             @if($errors->any())
                 <div class="rounded-lg border border-error/30 bg-error-container/40 p-4 text-sm font-medium text-on-error-container sm:col-span-2">{{ $errors->first() }}</div>

@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Product extends Model
 {
  use \Illuminate\Database\Eloquent\SoftDeletes;
- protected $fillable=['seller_id','category_id','title','slug','short_description','description','regular_price','extended_price','status','submitted_at','published_at','views_count','sales_count','average_rating','is_featured','is_trending','seo_title','seo_description'];
- protected function casts(): array { return ['status'=>ProductStatus::class,'regular_price'=>'decimal:2','extended_price'=>'decimal:2','average_rating'=>'decimal:2','is_featured'=>'boolean','is_trending'=>'boolean','submitted_at'=>'datetime','published_at'=>'datetime']; }
+ protected $fillable=['seller_id','category_id','title','slug','short_description','description','regular_price','extended_price','business_license_enabled','status','submitted_at','published_at','views_count','sales_count','average_rating','is_featured','is_trending','seo_title','seo_description'];
+ protected function casts(): array { return ['status'=>ProductStatus::class,'regular_price'=>'decimal:2','extended_price'=>'decimal:2','business_license_enabled'=>'boolean','average_rating'=>'decimal:2','is_featured'=>'boolean','is_trending'=>'boolean','submitted_at'=>'datetime','published_at'=>'datetime']; }
  public function seller(): BelongsTo { return $this->belongsTo(User::class,'seller_id'); }
  public function category(): BelongsTo { return $this->belongsTo(Category::class); }
  public function versions(): HasMany { return $this->hasMany(ProductVersion::class); }
