@@ -12,12 +12,22 @@ if (header) {
 document.querySelectorAll('[data-tabs]').forEach((root) => {
     const tabs = root.querySelectorAll('[data-tab]');
     const panels = root.querySelectorAll('[data-tab-panel]');
-    tabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-            tabs.forEach((t) => t.classList.toggle('tab-active', t === tab));
-            panels.forEach((p) => p.classList.toggle('hidden', p.dataset.tabPanel !== tab.dataset.tab));
-        });
-    });
+    const activate = (tab, sync) => {
+        tabs.forEach((t) => t.classList.toggle('tab-active', t === tab));
+        panels.forEach((p) => p.classList.toggle('hidden', p.dataset.tabPanel !== tab.dataset.tab));
+        // data-tabs-sync keeps the active tab in the URL so it survives form-save redirects.
+        if (sync && root.hasAttribute('data-tabs-sync')) {
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tab.dataset.tab);
+            history.replaceState({}, '', url);
+        }
+    };
+    tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab, true)));
+    if (root.hasAttribute('data-tabs-sync')) {
+        const current = new URL(window.location).searchParams.get('tab');
+        const initial = [...tabs].find((t) => t.dataset.tab === current);
+        if (initial) activate(initial, false);
+    }
 });
 
 // File inputs marked data-auto-submit upload as soon as files are chosen
