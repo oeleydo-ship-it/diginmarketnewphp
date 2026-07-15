@@ -8,11 +8,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    protected $fillable = ['parent_id', 'name', 'slug', 'description', 'icon', 'is_active', 'display_order', 'commission_rate'];
+    protected $fillable = ['parent_id', 'name', 'slug', 'description', 'icon', 'image_path', 'is_active', 'display_order', 'commission_rate'];
 
     protected function casts(): array
     {
         return ['is_active' => 'boolean', 'commission_rate' => 'decimal:2'];
+    }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->image_path) : null;
     }
 
     public function parent(): BelongsTo

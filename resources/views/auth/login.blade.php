@@ -27,4 +27,18 @@
         </p>
     </div>
 </div>
+
+@if(session('registration_closed'))
+    <div data-modal class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div data-modal-dismiss class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div role="alertdialog" aria-modal="true" aria-labelledby="reg-modal-title" class="relative w-full max-w-md rounded-2xl border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-2xl">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-container/30">
+                <span class="material-symbols-outlined text-[32px] text-primary" aria-hidden="true">person_off</span>
+            </div>
+            <h2 id="reg-modal-title" class="font-display text-xl font-semibold tracking-tight">Registration unavailable</h2>
+            <p class="mt-2 text-sm text-on-surface-variant">New account registration is currently disabled. We’re sorry for the inconvenience — please check back soon or sign in if you already have an account.</p>
+            <button type="button" data-modal-dismiss class="mt-6 w-full rounded-xl bg-primary p-3 font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Got it</button>
+        </div>
+    </div>
+@endif
 </x-marketplace-layout>

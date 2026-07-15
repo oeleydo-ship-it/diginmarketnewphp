@@ -45,7 +45,8 @@ class AdminSettingsTest extends TestCase
  public function test_disabling_registration_hides_signup_entry_points(): void
  {
   Setting::put('features.registration','0','features');
-  $this->get('/register')->assertForbidden();
+  $this->get('/register')->assertRedirect(route('login'))->assertSessionHas('registration_closed');
+  $this->followingRedirects()->get('/register')->assertOk()->assertSee('Registration unavailable');
   $this->get('/login')->assertOk()->assertDontSee('Create an account');
   $this->get('/')->assertOk()->assertDontSee(route('register'));
   Setting::put('features.registration','1','features');

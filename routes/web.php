@@ -62,7 +62,9 @@ Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
     Route::get('/register', function () {
-        abort_unless(\App\Models\Setting::enabled('features.registration'), 403, 'Registration is currently disabled.');
+        if (! \App\Models\Setting::enabled('features.registration')) {
+            return redirect()->route('login')->with('registration_closed', true);
+        }
         return view('auth.register');
     })->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
@@ -150,6 +152,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::post('/settings/sections/{section}', [SettingController::class, 'updateSection'])->name('settings.sections.update');
         Route::post('/settings/branding', [SettingController::class, 'updateBranding'])->name('settings.branding.update');
+        Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}/image', [\App\Http\Controllers\Admin\CategoryController::class, 'removeImage'])->name('categories.image.remove');
+        Route::put('/categories/{category}/toggle', [\App\Http\Controllers\Admin\CategoryController::class, 'toggle'])->name('categories.toggle');
+        Route::delete('/categories/{category}', [\App\Http\Controllers\Admin\CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
         Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
         Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');

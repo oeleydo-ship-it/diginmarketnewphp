@@ -34,19 +34,27 @@
     @endphp
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
         @if($lead)
-            <a href="{{ route('categories.show', $lead->slug) }}" class="group flex flex-col justify-end rounded-2xl bg-primary-container p-10 transition-all hover:scale-[1.02] md:col-span-2 md:row-span-2 md:min-h-[400px]">
-                <span class="material-symbols-outlined mb-4 text-5xl text-on-primary-container">{{ $lead->icon ?: ($catIcons[$lead->slug] ?? 'deployed_code') }}</span>
-                <h3 class="font-display text-3xl font-semibold text-on-primary-container">{{ $lead->name }}</h3>
-                <p class="mt-1 text-on-primary-container/80">{{ $lead->description ?: $lead->products_count.' products ready for production.' }}</p>
+            <a href="{{ route('categories.show', $lead->slug) }}" class="group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-primary-container p-10 transition-all hover:scale-[1.02] md:col-span-2 md:row-span-2 md:min-h-[400px]">
+                @if($lead->imageUrl())
+                    <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"></div>
+                @endif
+                <span class="material-symbols-outlined relative mb-4 text-5xl {{ $lead->imageUrl() ? 'text-white' : 'text-on-primary-container' }}">{{ $lead->icon ?: ($catIcons[$lead->slug] ?? 'deployed_code') }}</span>
+                <h3 class="relative font-display text-3xl font-semibold {{ $lead->imageUrl() ? 'text-white' : 'text-on-primary-container' }}">{{ $lead->name }}</h3>
+                <p class="relative mt-1 {{ $lead->imageUrl() ? 'text-white/80' : 'text-on-primary-container/80' }}">{{ $lead->description ?: $lead->products_count.' products ready for production.' }}</p>
             </a>
         @endif
         @foreach($small as $category)
             @php $style = $tileStyles[$loop->index % count($tileStyles)]; @endphp
             <a href="{{ route('categories.show', $category->slug) }}"
-                class="group flex flex-col items-center justify-center rounded-2xl p-6 text-center transition-all {{ $style['tile'] }} {{ $loop->remaining === 0 && $loop->iteration % 2 !== 0 ? 'md:col-span-2' : '' }}">
-                <span class="material-symbols-outlined mb-2 text-4xl {{ $style['icon'] }}">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
-                <h3 class="text-[17px] font-semibold {{ $style['text'] }}">{{ $category->name }}</h3>
-                <span class="mt-1 font-mono text-xs {{ $style['text'] }} opacity-70">{{ $category->products_count }} products</span>
+                class="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl p-6 text-center transition-all {{ $category->imageUrl() ? 'hover:scale-[1.02]' : $style['tile'] }} {{ $loop->remaining === 0 && $loop->iteration % 2 !== 0 ? 'md:col-span-2' : '' }}">
+                @if($category->imageUrl())
+                    <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10"></div>
+                @endif
+                <span class="material-symbols-outlined relative mb-2 text-4xl {{ $category->imageUrl() ? 'text-white' : $style['icon'] }}">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
+                <h3 class="relative text-[17px] font-semibold {{ $category->imageUrl() ? 'text-white' : $style['text'] }}">{{ $category->name }}</h3>
+                <span class="relative mt-1 font-mono text-xs {{ $category->imageUrl() ? 'text-white/80' : $style['text'].' opacity-70' }}">{{ $category->products_count }} products</span>
             </a>
         @endforeach
     </div>

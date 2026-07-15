@@ -38,6 +38,16 @@ document.querySelectorAll('input[type="file"][data-auto-submit]').forEach((input
     });
 });
 
+// Dismissible modals: any [data-modal-dismiss] (backdrop or button) closes the
+// nearest [data-modal]; Escape closes any open modal.
+document.querySelectorAll('[data-modal]').forEach((modal) => {
+    const close = () => modal.remove();
+    modal.querySelectorAll('[data-modal-dismiss]').forEach((el) => el.addEventListener('click', close));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+    });
+});
+
 // Mobile navigation toggle.
 const navToggle = document.querySelector('[data-nav-toggle]');
 const navMenu = document.querySelector('[data-nav-menu]');
