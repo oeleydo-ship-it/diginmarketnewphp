@@ -48,6 +48,11 @@ document.querySelectorAll('[data-modal]').forEach((modal) => {
     });
 });
 
+// Selects marked data-submit-on-change submit their form immediately (e.g. sort dropdowns).
+document.querySelectorAll('[data-submit-on-change]').forEach((el) => {
+    el.addEventListener('change', () => el.form?.submit());
+});
+
 // Mobile navigation toggle.
 const navToggle = document.querySelector('[data-nav-toggle]');
 const navMenu = document.querySelector('[data-nav-menu]');
