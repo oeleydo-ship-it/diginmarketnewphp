@@ -38,6 +38,14 @@ class MarketplaceDiscoveryTest extends TestCase
   Product::create(['seller_id'=>$data['seller']->id,'category_id'=>$other->id,'title'=>'Outsider Tool','slug'=>'outsider-tool','short_description'=>'x','description'=>str_repeat('y ',30),'regular_price'=>'20.00','status'=>ProductStatus::Published,'published_at'=>now()]);
   $this->get('/categories/laravel-apps?category=other-cat')->assertOk()->assertSee('Laravel CRM')->assertDontSee('Outsider Tool');
  }
+ public function test_category_page_supports_grid_and_list_views(): void
+ {
+  $data=$this->catalog();
+  // Grid (default): product-card thumbnails, no list rows.
+  $this->get('/categories/laravel-apps')->assertOk()->assertSee('Laravel CRM')->assertDontSee('sm:h-28 sm:w-28',false);
+  // List view renders the product-row layout and keeps filters in the toggle links.
+  $this->get('/categories/laravel-apps?view=list')->assertOk()->assertSee('Laravel CRM')->assertSee('sm:h-28 sm:w-28',false);
+ }
  public function test_approved_seller_has_public_storefront(): void
  {
   $data=$this->catalog();$this->get('/authors/north-studio')->assertOk()->assertSee('North Studio')->assertSee('Laravel CRM')->assertDontSee('Secret Draft');

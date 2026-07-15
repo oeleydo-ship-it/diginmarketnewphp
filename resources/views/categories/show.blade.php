@@ -13,6 +13,7 @@
     @php($field = 'rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20')
     @php($hasFilters = collect(['q','min_price','max_price','min_rating','business'])->contains(fn ($k) => request()->filled($k)) || request('sort'))
     <form method="GET" action="{{ route('categories.show', $category->slug) }}" class="mb-4 grid gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-5 md:grid-cols-6">
+        @if(request('view') === 'list')<input type="hidden" name="view" value="list">@endif
         <div class="relative md:col-span-2">
             <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
             <input name="q" value="{{ request('q') }}" placeholder="Search in {{ $category->name }}" class="{{ $field }} w-full pl-10">
@@ -43,17 +44,38 @@
             @endif
         </div>
     </form>
-    <p class="mb-6 text-sm text-on-surface-variant">{{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}{{ $hasFilters ? ' match your filters' : ' in this category' }}.</p>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        @forelse($products as $product)
-            <x-product-card :product="$product" />
-        @empty
-            <div class="col-span-full rounded-xl border border-dashed border-outline-variant p-14 text-center">
-                <span class="material-symbols-outlined mb-3 text-[40px] text-outline">{{ $hasFilters ? 'search_off' : 'category' }}</span>
-                <p class="text-on-surface-variant">{{ $hasFilters ? 'No products match these filters.' : 'No published products in this category.' }}</p>
-            </div>
-        @endforelse
+    @php($view = request('view') === 'list' ? 'list' : 'grid')
+    <div class="mb-6 flex items-center justify-between gap-4">
+        <p class="text-sm text-on-surface-variant">{{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}{{ $hasFilters ? ' match your filters' : ' in this category' }}.</p>
+        <div class="flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-low p-1">
+            <a href="{{ route('categories.show', [$category->slug, ...request()->except(['view', 'page']), 'view' => 'grid']) }}" aria-label="Grid view" title="Grid view"
+                class="flex h-8 w-8 items-center justify-center rounded-md transition-colors {{ $view === 'grid' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-primary' }}">
+                <span class="material-symbols-outlined text-[20px]">grid_view</span>
+            </a>
+            <a href="{{ route('categories.show', [$category->slug, ...request()->except(['view', 'page']), 'view' => 'list']) }}" aria-label="List view" title="List view"
+                class="flex h-8 w-8 items-center justify-center rounded-md transition-colors {{ $view === 'list' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-primary' }}">
+                <span class="material-symbols-outlined text-[20px]">view_list</span>
+            </a>
+        </div>
     </div>
+    @if($products->isEmpty())
+        <div class="rounded-xl border border-dashed border-outline-variant p-14 text-center">
+            <span class="material-symbols-outlined mb-3 text-[40px] text-outline">{{ $hasFilters ? 'search_off' : 'category' }}</span>
+            <p class="text-on-surface-variant">{{ $hasFilters ? 'No products match these filters.' : 'No published products in this category.' }}</p>
+        </div>
+    @elseif($view === 'list')
+        <div class="flex flex-col gap-4">
+            @foreach($products as $product)
+                <x-product-row :product="$product" />
+            @endforeach
+        </div>
+    @else
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @foreach($products as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    @endif
     <div class="mt-10">{{ $products->links() }}</div>
 </div>
 </x-marketplace-layout>
