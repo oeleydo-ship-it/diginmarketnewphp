@@ -20,6 +20,14 @@ document.querySelectorAll('[data-tabs]').forEach((root) => {
     });
 });
 
+// File inputs marked data-auto-submit upload as soon as files are chosen
+// (sellers otherwise miss the section-local submit button).
+document.querySelectorAll('input[type="file"][data-auto-submit]').forEach((input) => {
+    input.addEventListener('change', () => {
+        if (input.files.length) input.form?.submit();
+    });
+});
+
 // Mobile navigation toggle.
 const navToggle = document.querySelector('[data-nav-toggle]');
 const navMenu = document.querySelector('[data-nav-menu]');
