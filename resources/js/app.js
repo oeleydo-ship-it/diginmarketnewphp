@@ -53,6 +53,18 @@ document.querySelectorAll('[data-submit-on-change]').forEach((el) => {
     el.addEventListener('change', () => el.form?.submit());
 });
 
+// Payout method picker: show only the selected method's fields.
+document.querySelectorAll('[data-payout-method]').forEach((select) => {
+    const form = select.closest('[data-payout-form]') || document;
+    const sync = () => {
+        form.querySelectorAll('[data-payout-fields]').forEach((group) => {
+            group.classList.toggle('hidden', group.dataset.payoutFields !== select.value);
+        });
+    };
+    select.addEventListener('change', sync);
+    sync();
+});
+
 // Mobile navigation toggle.
 const navToggle = document.querySelector('[data-nav-toggle]');
 const navMenu = document.querySelector('[data-nav-menu]');

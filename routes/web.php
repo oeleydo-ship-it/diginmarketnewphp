@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/withdrawals', [WithdrawalReviewController::class, 'index'])->name('withdrawals.index');
         Route::post('/withdrawals/{withdrawalRequest}/approve', [WithdrawalReviewController::class, 'approve'])->name('withdrawals.approve');
+        Route::post('/withdrawals/{withdrawalRequest}/mark-paid', [WithdrawalReviewController::class, 'markPaid'])->name('withdrawals.mark-paid');
         Route::post('/withdrawals/{withdrawalRequest}/reject', [WithdrawalReviewController::class, 'reject'])->name('withdrawals.reject');
         Route::get('/refunds', [RefundReviewController::class, 'index'])->name('refunds.index');
         Route::post('/refunds/{refundRequest}/approve', [RefundReviewController::class, 'approve'])->name('refunds.approve');

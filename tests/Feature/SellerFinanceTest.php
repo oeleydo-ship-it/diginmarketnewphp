@@ -38,4 +38,51 @@ class SellerFinanceTest extends TestCase
  {
   $this->expectException(ValidationException::class);$seller=User::factory()->create();$wallet=SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>55]);app(WithdrawalService::class)->request($wallet,60);
  }
+ private function seller():User
+ {
+  $u=User::factory()->create();$u->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'seller'],['name'=>'Seller']));return $u;
+ }
+ public function test_seller_requests_paypal_withdrawal_and_details_are_stored():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>200]);
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>'80','payout_method'=>'paypal','paypal_email'=>'pay@example.com'])->assertRedirect();
+  $wd=\App\Models\WithdrawalRequest::firstOrFail();
+  $this->assertSame('paypal',$wd->payout_method);
+  $this->assertSame('pay@example.com',$wd->payout_details['email']);
+  $this->assertSame('PayPal',$wd->methodLabel());
+ }
+ public function test_paypal_withdrawal_requires_email():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>200]);
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>'80','payout_method'=>'paypal'])->assertSessionHasErrors('paypal_email');
+ }
+ public function test_bank_withdrawal_stores_account_details():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>200]);
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>'80','payout_method'=>'bank','bank_name'=>'Acme Bank','account_name'=>'A Seller','account_number'=>'123456789'])->assertRedirect();
+  $wd=\App\Models\WithdrawalRequest::firstOrFail();
+  $this->assertSame('bank',$wd->payout_method);
+  $this->assertSame('Acme Bank',$wd->payout_details['bank_name']);
+  $this->assertStringContainsString('6789',$wd->payoutSummary());
+ }
+ public function test_admin_marks_manual_payout_paid_and_wallet_settles():void
+ {
+  $admin=User::factory()->create();$admin->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'administrator'],['name'=>'Administrator']));
+  $seller=$this->seller();$wallet=SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>200]);
+  $wd=app(WithdrawalService::class)->request($wallet,100,'paypal',['email'=>'pay@example.com']);
+  $wallet->refresh();$this->assertEquals(100,$wallet->reserved_balance);
+  $this->actingAs($admin)->post('/admin/withdrawals/'.$wd->id.'/mark-paid',['reference'=>'PP-TXN-123'])->assertRedirect();
+  $wd->refresh();$wallet->refresh();
+  $this->assertSame('paid',$wd->status);
+  $this->assertSame('PP-TXN-123',$wd->payout_reference);
+  $this->assertEquals(0,$wallet->reserved_balance);
+  $this->assertEquals(100,$wallet->withdrawn_balance);
+ }
+ public function test_stripe_approve_rejects_a_paypal_request():void
+ {
+  $this->expectException(ValidationException::class);
+  $seller=$this->seller();$wallet=SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>200]);
+  $wd=app(WithdrawalService::class)->request($wallet,100,'paypal',['email'=>'pay@example.com']);
+  app(WithdrawalService::class)->approve($wd,$seller,'');
+ }
 }
