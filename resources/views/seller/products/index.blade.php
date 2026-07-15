@@ -5,17 +5,12 @@
             <p class="font-mono text-xs font-medium uppercase tracking-wider text-primary">Seller Catalog</p>
             <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">My Products</h1>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
-            <a href="{{ route('seller.coupons.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-3 font-semibold text-on-surface-variant transition-all hover:border-primary hover:text-primary active:scale-95">
-                <span class="material-symbols-outlined text-[20px]">sell</span>
-                Coupons
-            </a>
-            <a href="{{ route('seller.products.create') }}" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
-                <span class="material-symbols-outlined text-[20px]">add</span>
-                Add product
-            </a>
-        </div>
+        <a href="{{ route('seller.products.create') }}" class="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Add product
+        </a>
     </div>
+    <x-seller-nav />
     <div class="space-y-3">
         @forelse($products as $product)
             <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-5">

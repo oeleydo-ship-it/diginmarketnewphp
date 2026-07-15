@@ -17,6 +17,7 @@
             </span>
         @endif
     </div>
+    <x-seller-nav />
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         @foreach(['pending_balance' => ['Pending', 'hourglass_top'], 'available_balance' => ['Available', 'account_balance_wallet'], 'reserved_balance' => ['Reserved', 'lock'], 'withdrawn_balance' => ['Withdrawn', 'north_east'], 'lifetime_earnings' => ['Lifetime', 'trending_up']] as $field => [$label, $icon])
             <div class="rounded-xl border border-outline-variant bg-surface-container p-5">

@@ -6,11 +6,8 @@
             <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">My Coupons</h1>
             <p class="mt-2 text-on-surface-variant">Discount codes that apply only to your products, even in mixed carts.</p>
         </div>
-        <a href="{{ route('seller.products.index') }}" class="flex items-center gap-2 rounded-xl border border-outline-variant px-5 py-3 font-semibold text-on-surface-variant transition-all hover:border-primary hover:text-primary active:scale-95">
-            <span class="material-symbols-outlined text-[20px]">inventory_2</span>
-            My products
-        </a>
     </div>
+    <x-seller-nav />
     @if(session('status'))<div class="mb-6 rounded-xl border border-outline-variant bg-secondary-container/40 px-4 py-3 text-sm text-on-secondary-container">{{ session('status') }}</div>@endif
     @if($errors->any())<div class="mb-6 rounded-xl border border-error bg-error-container px-4 py-3 text-sm text-on-error-container">{{ $errors->first() }}</div>@endif
     @php($input='rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary')

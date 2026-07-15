@@ -50,7 +50,7 @@
                 <input name="q" value="{{ request('q') }}" type="text" placeholder="Search assets..." aria-label="Search assets"
                     class="w-64 rounded-xl border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20">
             </form>
-            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : $guestSellUrl }}"
+            <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}"
                 class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">Start Selling</a>
             <button data-theme-toggle type="button" class="p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Toggle dark mode" aria-pressed="false">
                 <span data-theme-icon class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
@@ -81,7 +81,7 @@
             <a href="{{ route('products.index') }}">Browse</a>
             <a href="{{ route('home') }}#categories">Categories</a>
             <a href="{{ route('support.index') }}">Support</a>
-            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">Start Selling</a>
+            <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">Start Selling</a>
         </div>
     </nav>
 </header>

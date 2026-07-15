@@ -101,6 +101,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/sell/apply', [SellerApplicationController::class, 'create'])->name('seller.apply');
     Route::post('/sell/apply', [SellerApplicationController::class, 'store'])->name('seller.apply.store');
     Route::middleware('role:seller')->prefix('seller')->name('seller.')->group(function () {
+        Route::get('/', \App\Http\Controllers\SellerDashboardController::class)->name('dashboard');
+        Route::get('/sales', \App\Http\Controllers\SellerSalesController::class)->name('sales');
+        Route::get('/customers', \App\Http\Controllers\SellerCustomerController::class)->name('customers');
         Route::get('/finance', SellerFinanceController::class)->name('finance');
         Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
         Route::get('/stripe-connect', [StripeConnectController::class, 'start'])->name('connect.start');
@@ -131,6 +134,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/sellers/{sellerProfile}/approve', [SellerReviewController::class, 'approve'])->name('sellers.approve');
         Route::post('/sellers/{sellerProfile}/reject', [SellerReviewController::class, 'reject'])->name('sellers.reject');
         Route::put('/sellers/{sellerProfile}/feature', [SellerReviewController::class, 'feature'])->name('sellers.feature');
+        Route::get('/products', [\App\Http\Controllers\Admin\ProductDirectoryController::class, 'index'])->name('products.index');
         Route::get('/products/review', [ProductReviewController::class, 'index'])->name('products.review');
         Route::post('/products/{product}/approve', [ProductReviewController::class, 'approve'])->name('products.approve');
         Route::post('/products/{product}/request-changes', [ProductReviewController::class, 'requestChanges'])->name('products.request-changes');
