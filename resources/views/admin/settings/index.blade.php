@@ -5,16 +5,18 @@
  @php($input='w-full rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2.5 text-sm outline-none focus:border-[#3525cd]')
  @php($labelCls='text-xs font-semibold uppercase tracking-wide text-[#555868]')
 
- <div data-tabs data-tabs-sync class="mt-8">
-  <div class="flex gap-1 overflow-x-auto rounded-t-xl border border-b-0 border-[#d7d9e5] bg-white px-3 pt-2" role="tablist" aria-label="Settings sections">
-   <button type="button" data-tab="branding" class="tab-active flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-[#555868] transition-colors hover:text-[#3525cd]"><span class="material-symbols-outlined text-[18px]">image</span>Branding</button>
+ @php($tabBtn='flex w-full items-center gap-2.5 rounded-lg border-l-[3px] border-transparent px-4 py-3 text-left text-sm font-semibold text-[#555868] transition-colors hover:bg-[#f4f6fd] hover:text-[#3525cd]')
+ <div data-tabs data-tabs-sync class="mt-8 flex flex-col gap-6 lg:flex-row lg:items-start">
+  <div class="flex w-full flex-row gap-1 overflow-x-auto rounded-xl border border-[#d7d9e5] bg-white p-3 shadow-sm lg:sticky lg:top-6 lg:w-64 lg:shrink-0 lg:flex-col lg:overflow-visible" role="tablist" aria-label="Settings sections" aria-orientation="vertical">
+   <button type="button" data-tab="branding" class="tab-active {{ $tabBtn }}"><span class="material-symbols-outlined text-[20px]">image</span>Branding</button>
    @foreach($sections as $sectionKey => $section)
-    <button type="button" data-tab="{{ $sectionKey }}" class="flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-[#555868] transition-colors hover:text-[#3525cd]"><span class="material-symbols-outlined text-[18px]">{{ $section['icon'] }}</span>{{ $section['title'] }}</button>
+    <button type="button" data-tab="{{ $sectionKey }}" class="{{ $tabBtn }}"><span class="material-symbols-outlined text-[20px]">{{ $section['icon'] }}</span>{{ $section['title'] }}</button>
    @endforeach
-   <button type="button" data-tab="advanced" class="flex shrink-0 items-center gap-1.5 border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-[#555868] transition-colors hover:text-[#3525cd]"><span class="material-symbols-outlined text-[18px]">data_object</span>Advanced</button>
+   <button type="button" data-tab="advanced" class="{{ $tabBtn }}"><span class="material-symbols-outlined text-[20px]">data_object</span>Advanced</button>
   </div>
 
-  <div data-tab-panel="branding" class="rounded-b-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
+  <div class="min-w-0 flex-1">
+  <div data-tab-panel="branding" class="rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
    <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">image</span>Branding</h2>
    <div class="mt-4 flex flex-wrap items-center gap-6">
     <div class="flex h-20 w-44 items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#d7d9e5] bg-[#fafbff]">
@@ -29,7 +31,7 @@
   </div>
 
   @foreach($sections as $sectionKey => $section)
-   <div data-tab-panel="{{ $sectionKey }}" class="hidden rounded-b-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
+   <div data-tab-panel="{{ $sectionKey }}" class="hidden rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
     <form method="POST" action="{{ route('admin.settings.sections.update', $sectionKey) }}">@csrf
      <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">{{ $section['icon'] }}</span>{{ $section['title'] }}</h2>
      <div class="mt-5 grid content-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -60,7 +62,7 @@
    </div>
   @endforeach
 
-  <div data-tab-panel="advanced" class="hidden rounded-b-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
+  <div data-tab-panel="advanced" class="hidden rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
    <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">data_object</span>All Settings</h2>
    <p class="mt-1 text-sm text-[#626576]">Raw key/value store behind the sections above.</p>
    <form method="GET" class="mt-4 flex max-w-xl gap-2"><input type="hidden" name="tab" value="advanced"><label class="relative flex-1"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777a8a]">search</span><input name="q" value="{{ request('q') }}" placeholder="Search setting key or group" class="w-full rounded-lg border border-[#d7d9e5] bg-white py-2.5 pl-10 pr-4 text-sm"></label><button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white">Search</button>@if(request('q'))<a href="{{ route('admin.settings.index', ['tab' => 'advanced']) }}" class="self-center text-sm font-semibold text-[#3525cd]">Clear</a>@endif</form>
@@ -92,6 +94,7 @@
      </form>
     </div>
    </div>
+  </div>
   </div>
  </div>
 </div>
