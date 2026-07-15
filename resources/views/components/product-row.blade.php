@@ -1,13 +1,13 @@
 @props(['product'])
-<div class="group flex flex-col gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 transition-all hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center">
-    <a href="{{ route('products.show', $product->slug) }}" class="relative block aspect-video shrink-0 overflow-hidden rounded-xl sm:aspect-square sm:h-28 sm:w-28">
+<div class="group flex flex-col gap-5 rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 transition-all hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center">
+    <a href="{{ route('products.show', $product->slug) }}" class="relative block aspect-video shrink-0 overflow-hidden rounded-xl sm:h-36 sm:w-52">
         <x-product-thumb :product="$product" class="h-full w-full transition-transform duration-500 group-hover:scale-105" />
     </a>
     <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
                 <a href="{{ route('products.show', $product->slug) }}">
-                    <h4 class="truncate text-[17px] font-semibold text-on-surface transition-colors group-hover:text-primary">{{ $product->title }}</h4>
+                    <h4 class="truncate text-xl font-semibold text-on-surface transition-colors group-hover:text-primary">{{ $product->title }}</h4>
                 </a>
                 <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-on-surface-variant">
                     <span class="flex items-center gap-1.5">
@@ -21,11 +21,11 @@
                     <span class="rounded bg-surface-container-high px-2 py-0.5 font-mono text-[11px] uppercase tracking-wide">{{ $product->category->name }}</span>
                 </div>
                 @if($product->short_description)
-                    <p class="mt-2 line-clamp-1 text-sm text-on-surface-variant">{{ $product->short_description }}</p>
+                    <p class="mt-2.5 line-clamp-2 text-sm text-on-surface-variant">{{ $product->short_description }}</p>
                 @endif
             </div>
             <div class="shrink-0 text-right">
-                <span class="font-display text-xl font-bold text-on-surface">${{ number_format((float) $product->regular_price, 2) }}</span>
+                <span class="font-display text-2xl font-bold text-on-surface">${{ number_format((float) $product->regular_price, 2) }}</span>
                 <div class="mt-1 flex items-center justify-end gap-1.5">
                     <x-rating-stars :rating="$product->average_rating" :size="14" />
                     <span class="font-mono text-xs text-on-surface-variant">{{ number_format((float) $product->average_rating, 1) }}</span>

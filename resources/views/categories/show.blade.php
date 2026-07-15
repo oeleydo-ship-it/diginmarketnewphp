@@ -1,6 +1,6 @@
 <x-marketplace-layout :title="$category->name . ' — DiginMarket'" :description="$category->description">
 @php
-    $view = request('view') === 'list' ? 'list' : 'grid';
+    $view = request('view') === 'grid' ? 'grid' : 'list';
     $hasFilters = collect(['q','min_price','max_price','min_rating','business'])->contains(fn ($k) => request()->filled($k)) || request('sort');
     $field = 'w-full rounded-lg border border-outline-variant bg-surface p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20';
     $sortLabels = ['newest' => 'Newest', 'popular' => 'Best selling', 'rated' => 'Highest rated', 'price_low' => 'Lowest price', 'price_high' => 'Highest price', 'title' => 'Name (A–Z)'];
