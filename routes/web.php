@@ -61,7 +61,10 @@ Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.web
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
-    Route::view('/register', 'auth.register')->name('register');
+    Route::get('/register', function () {
+        abort_unless(\App\Models\Setting::enabled('features.registration'), 403, 'Registration is currently disabled.');
+        return view('auth.register');
+    })->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
 });
 Route::middleware('auth')->group(function () {

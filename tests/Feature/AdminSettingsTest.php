@@ -42,6 +42,25 @@ class AdminSettingsTest extends TestCase
   Setting::put('features.registration','1','features');
   $this->post('/register',['name'=>'Allowed User','email'=>'allowed@example.test','password'=>'Password!234','password_confirmation'=>'Password!234'])->assertRedirect('/dashboard');
  }
+ public function test_disabling_registration_hides_signup_entry_points(): void
+ {
+  Setting::put('features.registration','0','features');
+  $this->get('/register')->assertForbidden();
+  $this->get('/login')->assertOk()->assertDontSee('Create an account');
+  $this->get('/')->assertOk()->assertDontSee(route('register'));
+  Setting::put('features.registration','1','features');
+  $this->get('/register')->assertOk();
+  $this->get('/login')->assertOk()->assertSee('Create an account');
+ }
+ public function test_disabling_comments_hides_the_comment_form(): void
+ {
+  $category=\App\Models\Category::create(['name'=>'Settings Apps','slug'=>'settings-apps']);
+  $seller=User::factory()->create();
+  $product=\App\Models\Product::create(['seller_id'=>$seller->id,'category_id'=>$category->id,'title'=>'Toggle App','slug'=>'toggle-app','short_description'=>'App','description'=>str_repeat('Details ',10),'regular_price'=>'10.00','status'=>\App\Enums\ProductStatus::Published,'published_at'=>now()]);
+  $this->get('/products/toggle-app')->assertOk()->assertDontSee('Comments are currently disabled');
+  Setting::put('features.comments','0','features');
+  $this->get('/products/toggle-app')->assertOk()->assertSee('Comments are currently disabled');
+ }
  public function test_disabling_seller_applications_blocks_the_apply_flow(): void
  {
   Setting::put('features.seller_applications','0','features');

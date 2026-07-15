@@ -131,7 +131,7 @@
         <h2 class="relative z-10 mb-4 font-display text-4xl font-bold tracking-tight">Start selling on DiginMarket today.</h2>
         <p class="relative z-10 mb-8 max-w-2xl text-lg opacity-90">Join a growing community of creators and reach buyers worldwide with our powerful marketplace engine.</p>
         <div class="relative z-10 flex flex-col gap-4 sm:flex-row">
-            <a href="{{ auth()->check() ? route('seller.apply') : route('register') }}" class="rounded-2xl bg-on-primary px-10 py-4 text-lg font-semibold text-primary transition-all hover:bg-surface-container-lowest active:scale-95">Become a Seller</a>
+            <a href="{{ auth()->check() ? route('seller.apply') : (\App\Models\Setting::enabled('features.registration') ? route('register') : route('login')) }}" class="rounded-2xl bg-on-primary px-10 py-4 text-lg font-semibold text-primary transition-all hover:bg-surface-container-lowest active:scale-95">Become a Seller</a>
             <a href="{{ route('products.index') }}" class="rounded-2xl border-2 border-on-primary px-10 py-4 text-lg font-semibold text-on-primary transition-all hover:bg-white/10 active:scale-95">Explore Assets</a>
         </div>
     </div>

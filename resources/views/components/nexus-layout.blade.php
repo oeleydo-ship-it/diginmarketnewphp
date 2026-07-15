@@ -24,6 +24,9 @@
 @php
     $cartCount = auth()->check() ? (auth()->user()->cart()->first()?->items()->count() ?? 0) : 0;
     $isSeller = auth()->check() && auth()->user()->hasRole('seller');
+    // Guests are sent to register normally, or to login when registration is disabled.
+    $guestSellUrl = \App\Models\Setting::enabled('features.registration') ? route('register') : route('login');
+    $blogEnabled = \App\Models\Setting::enabled('features.blog');
 @endphp
 <header data-header class="fixed inset-x-0 top-0 z-50 border-b border-outline-variant bg-surface/80 backdrop-blur-md transition-shadow">
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-6">
@@ -47,7 +50,7 @@
                 <input name="q" value="{{ request('q') }}" type="text" placeholder="Search assets..." aria-label="Search assets"
                     class="w-64 rounded-xl border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20">
             </form>
-            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : route('register') }}"
+            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : $guestSellUrl }}"
                 class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">Start Selling</a>
             <button data-theme-toggle type="button" class="p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Toggle dark mode" aria-pressed="false">
                 <span data-theme-icon class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
@@ -78,7 +81,7 @@
             <a href="{{ route('products.index') }}">Browse</a>
             <a href="{{ route('home') }}#categories">Categories</a>
             <a href="{{ route('support.index') }}">Support</a>
-            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : route('register') }}" class="text-primary">Start Selling</a>
+            <a href="{{ auth()->check() ? ($isSeller ? route('seller.products.index') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">Start Selling</a>
         </div>
     </nav>
 </header>
@@ -120,7 +123,7 @@
             <div>
                 <h5 class="mb-5 text-[15px] font-semibold">Legal</h5>
                 <ul class="flex flex-col gap-2.5">
-                    @forelse(\App\Models\MenuItem::forLocation('footer-legal') as $item)
+                    @forelse(\App\Models\MenuItem::forLocation('footer-legal')->reject(fn ($item) => !$blogEnabled && str_contains($item->url, '/blog')) as $item)
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ $item->url }}">{{ $item->label }}</a></li>
                     @empty
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('pages.show', 'privacy-policy') }}">Privacy Policy</a></li>
@@ -133,7 +136,7 @@
                 <h5 class="mb-5 text-[15px] font-semibold">Support</h5>
                 <ul class="flex flex-col gap-2.5">
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('support.index') }}">Help Center</a></li>
-                    @foreach(\App\Models\MenuItem::forLocation('footer-resources') as $item)
+                    @foreach(\App\Models\MenuItem::forLocation('footer-resources')->reject(fn ($item) => !$blogEnabled && str_contains($item->url, '/blog')) as $item)
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ $item->url }}">{{ $item->label }}</a></li>
                     @endforeach
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('sitemap') }}">Sitemap</a></li>
@@ -141,7 +144,7 @@
             </div>
         </div>
         <div class="flex flex-col items-center justify-between gap-4 border-t border-outline-variant pt-6 md:flex-row">
-            <span class="text-sm text-on-surface-variant">© {{ date('Y') }} DiginMarket. All rights reserved.</span>
+            <span class="text-sm text-on-surface-variant">© {{ date('Y') }} {{ config('app.name', 'DiginMarket') }}. All rights reserved.</span>
             <div class="flex gap-5 text-outline">
                 <span class="material-symbols-outlined">credit_card</span>
                 <span class="material-symbols-outlined">account_balance_wallet</span>

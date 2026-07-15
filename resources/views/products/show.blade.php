@@ -108,6 +108,9 @@
 
                 <!-- Comments -->
                 <div data-tab-panel="comments" class="hidden space-y-5 p-6">
+                    @if(!\App\Models\Setting::enabled('features.comments'))
+                        <p class="rounded-xl bg-surface-container-low p-4 text-sm text-on-surface-variant">Comments are currently disabled.</p>
+                    @else
                     @auth
                         <form method="POST" action="{{ route('comments.store', $product) }}">
                             @csrf
@@ -118,6 +121,7 @@
                     @else
                         <p class="rounded-xl bg-surface-container-low p-4 text-sm text-on-surface-variant"><a class="font-semibold text-primary hover:underline" href="{{ route('login') }}">Sign in</a> to ask the seller a question.</p>
                     @endauth
+                    @endif
                     @forelse($product->comments as $comment)
                         <article class="rounded-xl border border-outline-variant p-5">
                             <div class="flex items-center gap-2">

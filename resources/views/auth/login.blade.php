@@ -23,7 +23,7 @@
             <button class="w-full rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">Sign in</button>
         </form>
         <p class="mt-6 text-center text-sm text-on-surface-variant">
-            New to DiginMarket? <a href="{{ route('register') }}" class="font-semibold text-primary hover:underline">Create an account</a>
+            @if(\App\Models\Setting::enabled('features.registration'))New to DiginMarket? <a href="{{ route('register') }}" class="font-semibold text-primary hover:underline">Create an account</a>@endif
         </p>
     </div>
 </div>
