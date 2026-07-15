@@ -10,7 +10,7 @@ class HomeController extends Controller
  public function __invoke(): View
  {
   $sections=Cache::remember(self::CACHE_KEY,600,fn()=>[
-   'categories'=>Category::where('is_active',true)->withCount(['products'=>fn($q)=>$q->published()])->orderBy('display_order')->limit(8)->get(),
+   'categories'=>Category::where('is_active',true)->withCount(['products'=>fn($q)=>$q->published()])->orderBy('display_order')->orderBy('name')->limit(18)->get(),
    'featured'=>Product::published()->with(['category','seller.sellerProfile'])->where('is_featured',true)->latest('published_at')->limit(6)->get(),
    'newest'=>Product::published()->with(['category','seller.sellerProfile'])->latest('published_at')->limit(6)->get(),
    'trending'=>Product::published()->with(['category','seller.sellerProfile'])->where('is_trending',true)->orderByDesc('sales_count')->limit(6)->get(),

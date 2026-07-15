@@ -20,41 +20,33 @@
 
 <!-- Categories Bento -->
 <section id="categories" class="mx-auto max-w-7xl px-6 py-16">
-    <h2 class="mb-8 font-display text-3xl font-semibold tracking-tight">Browse Categories</h2>
+    <div class="mb-8 flex items-end justify-between">
+        <div>
+            <h2 class="font-display text-3xl font-semibold tracking-tight">Browse Categories</h2>
+            <p class="mt-1 text-on-surface-variant">Find the right tools by type.</p>
+        </div>
+        <a href="{{ route('products.index') }}" class="hidden items-center gap-1 font-semibold text-primary hover:underline sm:flex">
+            All assets <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </a>
+    </div>
     @php
         $catIcons = ['php-scripts' => 'code', 'laravel-applications' => 'terminal', 'wordpress-themes' => 'view_quilt', 'javascript-applications' => 'javascript', 'mobile-applications' => 'smartphone', 'ui-templates' => 'palette'];
-        $tileStyles = [
-            ['tile' => 'bg-surface-container-high hover:bg-surface-container-highest', 'icon' => 'text-primary', 'text' => 'text-on-surface'],
-            ['tile' => 'bg-secondary-container hover:scale-[1.02]', 'icon' => 'text-on-secondary-container', 'text' => 'text-on-secondary-container'],
-            ['tile' => 'bg-surface-container-high hover:bg-surface-container-highest', 'icon' => 'text-primary', 'text' => 'text-on-surface'],
-            ['tile' => 'bg-tertiary-fixed hover:scale-[1.02]', 'icon' => 'text-on-tertiary-fixed-variant', 'text' => 'text-on-tertiary-fixed-variant'],
-        ];
-        $lead = $categories->first();
-        $small = $categories->slice(1);
     @endphp
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
-        @if($lead)
-            <a href="{{ route('categories.show', $lead->slug) }}" class="group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-primary-container p-10 transition-all hover:scale-[1.02] md:col-span-2 md:row-span-2 md:min-h-[400px]">
-                @if($lead->imageUrl())
-                    <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent"></div>
-                @endif
-                <span class="material-symbols-outlined relative mb-4 text-5xl {{ $lead->imageUrl() ? 'text-white' : 'text-on-primary-container' }}">{{ $lead->icon ?: ($catIcons[$lead->slug] ?? 'deployed_code') }}</span>
-                <h3 class="relative font-display text-3xl font-semibold {{ $lead->imageUrl() ? 'text-white' : 'text-on-primary-container' }}">{{ $lead->name }}</h3>
-                <p class="relative mt-1 {{ $lead->imageUrl() ? 'text-white/80' : 'text-on-primary-container/80' }}">{{ $lead->description ?: $lead->products_count.' products ready for production.' }}</p>
-            </a>
-        @endif
-        @foreach($small as $category)
-            @php $style = $tileStyles[$loop->index % count($tileStyles)]; @endphp
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        @foreach($categories as $category)
             <a href="{{ route('categories.show', $category->slug) }}"
-                class="group relative flex flex-col items-center justify-center overflow-hidden rounded-2xl p-6 text-center transition-all {{ $category->imageUrl() ? 'hover:scale-[1.02]' : $style['tile'] }} {{ $loop->remaining === 0 && $loop->iteration % 2 !== 0 ? 'md:col-span-2' : '' }}">
-                @if($category->imageUrl())
-                    <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10"></div>
-                @endif
-                <span class="material-symbols-outlined relative mb-2 text-4xl {{ $category->imageUrl() ? 'text-white' : $style['icon'] }}">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
-                <h3 class="relative text-[17px] font-semibold {{ $category->imageUrl() ? 'text-white' : $style['text'] }}">{{ $category->name }}</h3>
-                <span class="relative mt-1 font-mono text-xs {{ $category->imageUrl() ? 'text-white/80' : $style['text'].' opacity-70' }}">{{ $category->products_count }} products</span>
+                class="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 text-center transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md">
+                <span class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-primary-container/25 text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary">
+                    @if($category->imageUrl())
+                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="h-full w-full object-cover" loading="lazy">
+                    @else
+                        <span class="material-symbols-outlined text-[28px]">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
+                    @endif
+                </span>
+                <div>
+                    <h3 class="text-[15px] font-semibold text-on-surface">{{ $category->name }}</h3>
+                    <span class="mt-0.5 block font-mono text-xs text-on-surface-variant">{{ $category->products_count }} {{ \Illuminate\Support\Str::plural('product', $category->products_count) }}</span>
+                </div>
             </a>
         @endforeach
     </div>
