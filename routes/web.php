@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/sellers', [SellerReviewController::class, 'index'])->name('sellers.index');
         Route::post('/sellers/{sellerProfile}/approve', [SellerReviewController::class, 'approve'])->name('sellers.approve');
         Route::post('/sellers/{sellerProfile}/reject', [SellerReviewController::class, 'reject'])->name('sellers.reject');
+        Route::put('/sellers/{sellerProfile}/feature', [SellerReviewController::class, 'feature'])->name('sellers.feature');
         Route::get('/products/review', [ProductReviewController::class, 'index'])->name('products.review');
         Route::post('/products/{product}/approve', [ProductReviewController::class, 'approve'])->name('products.approve');
         Route::post('/products/{product}/request-changes', [ProductReviewController::class, 'requestChanges'])->name('products.request-changes');

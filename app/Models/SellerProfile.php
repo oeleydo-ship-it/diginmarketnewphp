@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SellerProfile extends Model
 {
-    protected $fillable = ['user_id', 'full_name', 'display_name', 'username', 'country', 'address', 'city', 'postal_code', 'phone', 'biography', 'business_name', 'website', 'status', 'rejection_reason', 'reviewed_at'];
+    protected $fillable = ['user_id', 'full_name', 'display_name', 'username', 'country', 'address', 'city', 'postal_code', 'phone', 'biography', 'business_name', 'website', 'status', 'is_featured', 'rejection_reason', 'reviewed_at'];
 
     protected function casts(): array
     {
-        return ['status' => SellerStatus::class, 'reviewed_at' => 'datetime'];
+        return ['status' => SellerStatus::class, 'is_featured' => 'boolean', 'reviewed_at' => 'datetime'];
     }
 
     public function user(): BelongsTo
