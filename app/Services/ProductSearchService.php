@@ -13,7 +13,9 @@ class ProductSearchService
   $query->when(isset($filters['min_price']),fn(Builder $q)=>$q->where('regular_price','>=',$filters['min_price']));
   $query->when(isset($filters['max_price']),fn(Builder $q)=>$q->where('regular_price','<=',$filters['max_price']));
   $query->when(($filters['featured']??null)==='1',fn(Builder $q)=>$q->where('is_featured',true));
-  match($filters['sort']??'newest'){'price_low'=>$query->orderBy('regular_price'),'price_high'=>$query->orderByDesc('regular_price'),'popular'=>$query->orderByDesc('sales_count'),'rated'=>$query->orderByDesc('average_rating'),default=>$query->latest('published_at')};
+  $query->when(($filters['business']??null)==='1',fn(Builder $q)=>$q->where('business_license_enabled',true));
+  $query->when(isset($filters['min_rating'])&&is_numeric($filters['min_rating']),fn(Builder $q)=>$q->where('average_rating','>=',(float)$filters['min_rating']));
+  match($filters['sort']??'newest'){'price_low'=>$query->orderBy('regular_price'),'price_high'=>$query->orderByDesc('regular_price'),'popular'=>$query->orderByDesc('sales_count'),'rated'=>$query->orderByDesc('average_rating'),'title'=>$query->orderBy('title'),default=>$query->latest('published_at')};
   return $query->paginate(18)->withQueryString();
  }
 }

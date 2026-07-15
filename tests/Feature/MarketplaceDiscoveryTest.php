@@ -26,6 +26,18 @@ class MarketplaceDiscoveryTest extends TestCase
  {
   $data=$this->catalog();$this->get('/products?q=CRM&min_price=20&max_price=50&sort=popular')->assertOk()->assertSee('Laravel CRM')->assertDontSee('Secret Draft');$this->get('/categories/laravel-apps')->assertOk()->assertSee('Laravel CRM')->assertDontSee('Secret Draft');$this->get('/products?q=Secret')->assertOk()->assertDontSee('Secret Draft');
  }
+ public function test_category_page_filters_by_price_and_search_and_ignores_foreign_category_param(): void
+ {
+  $data=$this->catalog();
+  // Laravel CRM ($39, category laravel-apps) + Laravel Helpdesk ($29). Filter min_price=35 keeps only CRM.
+  $this->get('/categories/laravel-apps?min_price=35')->assertOk()->assertSee('Laravel CRM')->assertDontSee('Laravel Helpdesk')->assertSee('match your filters');
+  // Search within the category.
+  $this->get('/categories/laravel-apps?q=Helpdesk')->assertOk()->assertSee('Laravel Helpdesk')->assertDontSee('Laravel CRM');
+  // A ?category= param must not override the page's own category.
+  $other=Category::create(['name'=>'Other','slug'=>'other-cat']);
+  Product::create(['seller_id'=>$data['seller']->id,'category_id'=>$other->id,'title'=>'Outsider Tool','slug'=>'outsider-tool','short_description'=>'x','description'=>str_repeat('y ',30),'regular_price'=>'20.00','status'=>ProductStatus::Published,'published_at'=>now()]);
+  $this->get('/categories/laravel-apps?category=other-cat')->assertOk()->assertSee('Laravel CRM')->assertDontSee('Outsider Tool');
+ }
  public function test_approved_seller_has_public_storefront(): void
  {
   $data=$this->catalog();$this->get('/authors/north-studio')->assertOk()->assertSee('North Studio')->assertSee('Laravel CRM')->assertDontSee('Secret Draft');
