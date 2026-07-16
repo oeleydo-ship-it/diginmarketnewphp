@@ -62,6 +62,10 @@ Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::post('/payments/{provider}/webhook', PaymentWebhookController::class)->name('payments.webhook');
 // Kept so Stripe dashboards configured before multi-gateway support keep delivering to us.
 Route::post('/stripe/webhook', PaymentWebhookController::class)->defaults('provider', 'stripe')->name('stripe.webhook');
+// Two-factor challenge sits between credentials and a full session; it self-guards on the
+// 2fa.user_id the login step stashes, so it lives outside both the guest and auth groups.
+Route::get('/two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
+Route::post('/two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'store'])->middleware('throttle:login')->name('two-factor.challenge.store');
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
@@ -77,6 +81,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::post('/impersonation/stop', [\App\Http\Controllers\ImpersonationController::class, 'stop'])->name('impersonation.stop');
+    Route::get('/account/security', [\App\Http\Controllers\TwoFactorController::class, 'show'])->name('account.security');
+    Route::post('/account/two-factor', [\App\Http\Controllers\TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::post('/account/two-factor/confirm', [\App\Http\Controllers\TwoFactorController::class, 'confirm'])->name('two-factor.confirm');
+    Route::delete('/account/two-factor', [\App\Http\Controllers\TwoFactorController::class, 'disable'])->name('two-factor.disable');
+    Route::post('/account/two-factor/recovery-codes', [\App\Http\Controllers\TwoFactorController::class, 'recoveryCodes'])->name('two-factor.recovery-codes');
     Route::get('/admin', OperationsDashboardController::class)->middleware('role:administrator')->name('admin.dashboard');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');

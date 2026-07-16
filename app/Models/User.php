@@ -40,6 +40,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -52,7 +54,29 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /** 2FA is in force only once the user has confirmed enrolment with a valid code. */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    /** Consume a single-use recovery code; returns false if it was not among the unused set. */
+    public function useRecoveryCode(string $code): bool
+    {
+        $codes = (array) $this->two_factor_recovery_codes;
+        $remaining = array_values(array_filter($codes, fn ($stored) => ! hash_equals($stored, $code)));
+        if (count($remaining) === count($codes)) {
+            return false;
+        }
+        $this->forceFill(['two_factor_recovery_codes' => $remaining])->save();
+
+        return true;
     }
 
     public function roles(): BelongsToMany

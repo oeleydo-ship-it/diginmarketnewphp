@@ -14,6 +14,7 @@
                     ['route' => 'support.index', 'match' => 'support.*', 'icon' => 'support_agent', 'label' => 'Support'],
                     ['route' => 'affiliates.show', 'match' => 'affiliates.*', 'icon' => 'share', 'label' => 'Affiliates'],
                     ['route' => 'notifications.preferences', 'match' => 'notifications.*', 'icon' => 'notifications', 'label' => 'Notifications'],
+                    ['route' => 'account.security', 'match' => 'account.security', 'icon' => 'lock', 'label' => 'Security'],
                 ])
                 @foreach($links as $link)
                     <a href="{{ route($link['route']) }}"
