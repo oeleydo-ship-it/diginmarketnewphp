@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/customers', \App\Http\Controllers\SellerCustomerController::class)->name('customers');
         Route::get('/finance', SellerFinanceController::class)->name('finance');
         Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
+        Route::put('/payout-settings', [\App\Http\Controllers\SellerPayoutSettingsController::class, 'update'])->name('payout-settings.update');
         Route::get('/stripe-connect', [StripeConnectController::class, 'start'])->name('connect.start');
         Route::get('/stripe-connect/return', [StripeConnectController::class, 'returned'])->name('connect.return');
         Route::get('/stripe-connect/refresh', [StripeConnectController::class, 'refresh'])->name('connect.refresh');

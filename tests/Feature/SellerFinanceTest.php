@@ -40,7 +40,39 @@ class SellerFinanceTest extends TestCase
  }
  private function seller():User
  {
-  $u=User::factory()->create();$u->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'seller'],['name'=>'Seller']));return $u;
+  $u=User::factory()->create();$u->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'seller'],['name'=>'Seller']));
+  \App\Models\SellerProfile::create(['user_id'=>$u->id,'display_name'=>'S','username'=>'s-'.$u->id,'country'=>'AE','biography'=>'x','status'=>\App\Enums\SellerStatus::Approved]);
+  return $u;
+ }
+ public function test_seller_saves_default_payout_method():void
+ {
+  $seller=$this->seller();
+  $this->actingAs($seller)->put('/seller/payout-settings',['payout_method'=>'paypal','paypal_email'=>'me@example.com'])->assertRedirect()->assertSessionHas('status');
+  $profile=$seller->sellerProfile->fresh();
+  $this->assertTrue($profile->hasDefaultPayout());
+  $this->assertSame('paypal',$profile->default_payout_method);
+  $this->assertSame('me@example.com',$profile->default_payout_details['email']);
+ }
+ public function test_use_default_withdraws_with_only_an_amount():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>300]);
+  $seller->sellerProfile->update(['default_payout_method'=>'bank','default_payout_details'=>['bank_name'=>'Acme','account_name'=>'S','account_number'=>'55557777']]);
+  $this->actingAs($seller)->post('/seller/withdrawals',['use_default'=>'1','amount'=>'90'])->assertRedirect();
+  $wd=\App\Models\WithdrawalRequest::firstOrFail();
+  $this->assertSame('bank',$wd->payout_method);
+  $this->assertSame('Acme',$wd->payout_details['bank_name']);
+ }
+ public function test_save_default_checkbox_on_withdrawal_persists_method():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>300]);
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>'90','payout_method'=>'paypal','paypal_email'=>'save@example.com','save_default'=>'1'])->assertRedirect();
+  $this->assertSame('paypal',$seller->sellerProfile->fresh()->default_payout_method);
+ }
+ public function test_use_default_without_saved_method_falls_through_to_validation():void
+ {
+  $seller=$this->seller();SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>300]);
+  // No default saved: use_default is ignored, so the full form rules apply and payout_method is required.
+  $this->actingAs($seller)->post('/seller/withdrawals',['use_default'=>'1','amount'=>'90'])->assertSessionHasErrors('payout_method');
  }
  public function test_seller_requests_paypal_withdrawal_and_details_are_stored():void
  {

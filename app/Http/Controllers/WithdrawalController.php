@@ -7,6 +7,14 @@ class WithdrawalController extends Controller
 {
  public function store(WithdrawalService $service): RedirectResponse
  {
+  $profile=auth()->user()->sellerProfile;
+  // "use_default" lets the seller withdraw to their saved method with only an amount.
+  if(request()->boolean('use_default') && $profile?->hasDefaultPayout()){
+   $data=request()->validate(['amount'=>['required','numeric','min:1']]);
+   $wallet=auth()->user()->sellerWallets()->where('currency','USD')->firstOrCreate(['currency'=>'USD']);
+   $service->request($wallet,(float)$data['amount'],$profile->default_payout_method,$profile->default_payout_details);
+   return back()->with('status','Withdrawal requested to your saved payout method and funds reserved.');
+  }
   $data=request()->validate([
    'amount'=>['required','numeric','min:1'],
    'payout_method'=>['required',Rule::in(['stripe','paypal','bank'])],
@@ -16,12 +24,12 @@ class WithdrawalController extends Controller
    'account_number'=>['required_if:payout_method,bank','nullable','string','max:40'],
    'routing_number'=>['nullable','string','max:40'],
    'swift'=>['nullable','string','max:20'],
+   'save_default'=>['nullable','boolean'],
   ]);
-  $details=match($data['payout_method']){
-   'paypal'=>['email'=>$data['paypal_email']],
-   'bank'=>array_filter(['bank_name'=>$data['bank_name'],'account_name'=>$data['account_name'],'account_number'=>$data['account_number'],'routing_number'=>$data['routing_number']??null,'swift'=>$data['swift']??null]),
-   default=>null,
-  };
+  $details=SellerPayoutSettingsController::detailsFor($data);
+  if(request()->boolean('save_default') && $profile){
+   $profile->update(['default_payout_method'=>$data['payout_method'],'default_payout_details'=>$details]);
+  }
   $wallet=auth()->user()->sellerWallets()->where('currency','USD')->firstOrCreate(['currency'=>'USD']);
   $service->request($wallet,(float)$data['amount'],$data['payout_method'],$details);
   return back()->with('status','Withdrawal requested and funds reserved.');

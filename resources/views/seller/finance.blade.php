@@ -59,40 +59,72 @@
             <div class="mt-4">{{ $transactions->links() }}</div>
         </section>
         <aside>
+            @php
+                $fld = 'w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20';
+                $labels = ['stripe' => 'Stripe Connect', 'paypal' => 'PayPal', 'bank' => 'Bank transfer'];
+                $dm = $profile?->default_payout_method;
+                $dd = $profile?->default_payout_details ?? [];
+                $defaultDest = $dm === 'paypal' ? ($dd['email'] ?? '') : ($dm === 'bank' ? trim(($dd['bank_name'] ?? '').' ····'.substr($dd['account_number'] ?? '', -4)) : 'Connected Stripe account');
+            @endphp
             <div class="rounded-xl border border-outline-variant bg-surface-container-high p-6">
                 <h2 class="font-display text-xl font-semibold">Request Withdrawal</h2>
                 <p class="mt-2 text-sm text-on-surface-variant">Minimum ${{ config('marketplace.minimum_withdrawal') }}. Funds are reserved during review.</p>
-                @php($fld = 'w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20')
-                <form method="POST" action="{{ route('seller.withdrawals.store') }}" class="mt-5 space-y-3" data-payout-form>
-                    @csrf
-                    <input name="amount" type="number" step="0.01" max="{{ $wallet->available_balance }}" value="{{ old('amount') }}" placeholder="Amount" class="{{ $fld }}">
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Payout method</label>
-                        <select name="payout_method" data-payout-method class="{{ $fld }}">
-                            <option value="stripe" @selected(old('payout_method', 'stripe') === 'stripe')>Stripe Connect</option>
-                            <option value="paypal" @selected(old('payout_method') === 'paypal')>PayPal</option>
-                            <option value="bank" @selected(old('payout_method') === 'bank')>Bank transfer</option>
-                        </select>
+
+                @if($profile?->hasDefaultPayout())
+                    <div class="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
+                        <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary"><span class="material-symbols-outlined text-[16px]">bookmark</span>Saved payout method</p>
+                        <p class="mt-1 font-semibold">{{ $labels[$dm] ?? 'Stripe Connect' }}</p>
+                        <p class="font-mono text-xs text-on-surface-variant">{{ $defaultDest }}</p>
+                        <form method="POST" action="{{ route('seller.withdrawals.store') }}" class="mt-3 flex gap-2">
+                            @csrf
+                            <input type="hidden" name="use_default" value="1">
+                            <input name="amount" type="number" step="0.01" max="{{ $wallet->available_balance }}" placeholder="Amount" class="{{ $fld }}">
+                            <button class="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Withdraw</button>
+                        </form>
                     </div>
-                    <div data-payout-fields="stripe" class="rounded-lg bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
-                        Paid to your connected Stripe account.
-                    </div>
-                    <div data-payout-fields="paypal" class="hidden">
-                        <input name="paypal_email" type="email" value="{{ old('paypal_email') }}" placeholder="PayPal email" class="{{ $fld }}">
-                    </div>
-                    <div data-payout-fields="bank" class="hidden space-y-2">
-                        <input name="bank_name" value="{{ old('bank_name') }}" placeholder="Bank name" class="{{ $fld }}">
-                        <input name="account_name" value="{{ old('account_name') }}" placeholder="Account holder name" class="{{ $fld }}">
-                        <input name="account_number" value="{{ old('account_number') }}" placeholder="Account number / IBAN" class="{{ $fld }}">
-                        <div class="flex gap-2">
-                            <input name="routing_number" value="{{ old('routing_number') }}" placeholder="Routing (optional)" class="{{ $fld }}">
-                            <input name="swift" value="{{ old('swift') }}" placeholder="SWIFT/BIC (optional)" class="{{ $fld }}">
-                        </div>
-                    </div>
-                    <button class="w-full rounded-xl bg-primary p-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">Request payout</button>
-                </form>
+                    <details class="mt-4">
+                        <summary class="cursor-pointer text-sm font-semibold text-primary hover:underline">Use a different method once</summary>
+                        @include('seller.partials.withdrawal-form', ['fld' => $fld, 'wallet' => $wallet, 'dm' => $dm, 'dd' => $dd, 'showSaveDefault' => true])
+                    </details>
+                @else
+                    @include('seller.partials.withdrawal-form', ['fld' => $fld, 'wallet' => $wallet, 'dm' => null, 'dd' => [], 'showSaveDefault' => true])
+                @endif
                 @foreach($errors->all() as $err)<p class="mt-3 text-sm text-error">{{ $err }}</p>@endforeach
             </div>
+
+            <!-- Payout settings: save a default so you only enter an amount next time -->
+            <details class="mt-6 rounded-xl border border-outline-variant bg-surface-container-lowest" @if(!$profile?->hasDefaultPayout()) open @endif>
+                <summary class="flex cursor-pointer items-center justify-between p-5 font-display font-semibold">
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-primary">settings</span>Payout settings</span>
+                    @if($profile?->hasDefaultPayout())<span class="rounded-full bg-secondary-container/40 px-2.5 py-0.5 text-xs font-semibold text-on-secondary-container">{{ $labels[$dm] ?? 'Stripe' }}</span>@endif
+                </summary>
+                <div class="border-t border-outline-variant p-5">
+                    <p class="mb-4 text-sm text-on-surface-variant">Save your default payout method once — future withdrawals only need an amount.</p>
+                    <form method="POST" action="{{ route('seller.payout-settings.update') }}" class="space-y-3" data-payout-form>
+                        @csrf @method('PUT')
+                        <select name="payout_method" data-payout-method class="{{ $fld }}">
+                            <option value="stripe" @selected(($dm ?? 'stripe') === 'stripe')>Stripe Connect</option>
+                            <option value="paypal" @selected($dm === 'paypal')>PayPal</option>
+                            <option value="bank" @selected($dm === 'bank')>Bank transfer</option>
+                        </select>
+                        <div data-payout-fields="stripe" class="rounded-lg bg-surface-container-high p-3 text-xs text-on-surface-variant">Paid to your connected Stripe account.</div>
+                        <div data-payout-fields="paypal" class="hidden">
+                            <input name="paypal_email" type="email" value="{{ $dd['email'] ?? '' }}" placeholder="PayPal email" class="{{ $fld }}">
+                        </div>
+                        <div data-payout-fields="bank" class="hidden space-y-2">
+                            <input name="bank_name" value="{{ $dd['bank_name'] ?? '' }}" placeholder="Bank name" class="{{ $fld }}">
+                            <input name="account_name" value="{{ $dd['account_name'] ?? '' }}" placeholder="Account holder name" class="{{ $fld }}">
+                            <input name="account_number" value="{{ $dd['account_number'] ?? '' }}" placeholder="Account number / IBAN" class="{{ $fld }}">
+                            <div class="flex gap-2">
+                                <input name="routing_number" value="{{ $dd['routing_number'] ?? '' }}" placeholder="Routing (optional)" class="{{ $fld }}">
+                                <input name="swift" value="{{ $dd['swift'] ?? '' }}" placeholder="SWIFT/BIC (optional)" class="{{ $fld }}">
+                            </div>
+                        </div>
+                        <button class="w-full rounded-lg border border-primary py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary hover:text-on-primary active:scale-95">Save default</button>
+                    </form>
+                </div>
+            </details>
+
             <h3 class="mt-8 font-display font-semibold">Recent Withdrawals</h3>
             <div class="mt-3 space-y-3">
                 @forelse($withdrawals as $withdrawal)
