@@ -201,9 +201,15 @@
                             </a>
                         @endif
                         @auth
-                            <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-on-primary shadow-md transition-all hover:brightness-110 active:scale-[0.98]">
-                                <span class="material-symbols-outlined">shopping_cart</span> Add to Cart
-                            </button>
+                            @if($product->seller_id === auth()->id())
+                                <a href="{{ route('seller.products.edit', $product) }}" class="flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container py-3.5 font-semibold text-on-surface-variant transition-all hover:bg-surface-container-high">
+                                    <span class="material-symbols-outlined">edit</span> This is your product — manage it
+                                </a>
+                            @else
+                                <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-on-primary shadow-md transition-all hover:brightness-110 active:scale-[0.98]">
+                                    <span class="material-symbols-outlined">shopping_cart</span> Add to Cart
+                                </button>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-on-primary shadow-md transition-all hover:brightness-110 active:scale-[0.98]">
                                 <span class="material-symbols-outlined">shopping_cart</span> Sign in to Purchase

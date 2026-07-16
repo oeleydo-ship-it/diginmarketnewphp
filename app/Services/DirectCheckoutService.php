@@ -22,6 +22,7 @@ class DirectCheckoutService
     public function startBundle(Bundle $bundle, User $buyer, ?string $provider = null): array
     {
         abort_unless($bundle->isPurchasable(), 422, 'This bundle is not available right now.');
+        abort_if($bundle->seller_id === $buyer->id, 422, 'You cannot purchase your own bundle.');
         $currency = strtoupper((string) config('marketplace.currency', 'USD'));
         $provider = $this->resolveProvider($provider, $currency);
         $order = DB::transaction(function () use ($bundle, $buyer, $currency, $provider) {
