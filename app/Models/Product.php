@@ -27,6 +27,7 @@ class Product extends Model
  }
  public function reviewSubmissions(): HasMany { return $this->hasMany(ProductReviewSubmission::class); }
  public function wishlists(): BelongsToMany { return $this->belongsToMany(Wishlist::class,'wishlist_items')->withTimestamps(); }
+ public function bundles(): BelongsToMany { return $this->belongsToMany(Bundle::class); }
  public function orderItems(): HasMany { return $this->hasMany(OrderItem::class); }
  public function reviews(): HasMany { return $this->hasMany(Review::class); }
  public function comments(): HasMany { return $this->hasMany(Comment::class); }

@@ -5,6 +5,7 @@ return [
  'nav' => [
   'browse' => 'Browse',
   'categories' => 'Categories',
+  'bundles' => 'Bundles',
   'blog' => 'Blog',
   'support' => 'Support',
   'sell' => 'Start Selling',

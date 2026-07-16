@@ -74,6 +74,30 @@
             </div>
         </section>
     @endif
+    @if($bundles->isNotEmpty())
+        <section class="mb-12">
+            <h2 class="mb-6 flex items-center gap-2 font-display text-2xl font-semibold tracking-tight">
+                <span class="material-symbols-outlined text-primary">package_2</span> Bundles
+            </h2>
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach($bundles as $bundle)
+                    @php($compareAt = $bundle->products->sum(fn ($p) => (float) $p->regular_price))
+                    @php($saving = $compareAt > (float) $bundle->price ? round((1 - (float) $bundle->price / $compareAt) * 100) : 0)
+                    <a href="{{ route('bundles.show', $bundle->slug) }}" class="group rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-lg">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="font-display font-bold leading-snug group-hover:text-primary">{{ $bundle->title }}</h3>
+                            @if($saving > 0)<span class="shrink-0 rounded-full bg-secondary-container/40 px-2 py-0.5 text-xs font-bold text-on-secondary-container">-{{ $saving }}%</span>@endif
+                        </div>
+                        <p class="mt-2 text-sm text-on-surface-variant">{{ $bundle->products_count }} products</p>
+                        <p class="mt-3 font-display text-xl font-bold text-primary">${{ number_format((float) $bundle->price, 0) }}
+                            @if($saving > 0)<span class="ml-1 text-sm font-medium text-on-surface-variant line-through">${{ number_format($compareAt, 0) }}</span>@endif
+                        </p>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <h2 class="mb-6 font-display text-2xl font-semibold tracking-tight">All products</h2>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         @forelse($products as $product)

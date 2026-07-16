@@ -118,6 +118,47 @@ class BundleAndSupportExtensionTest extends TestCase
   app(DirectCheckoutService::class)->startSupportExtension($license, $buyer);
  }
 
+ public function test_bundles_index_lists_purchasable_bundles_and_hides_broken_ones(): void
+ {
+  // Two purchasable bundles (≥2 models so the lazy-load guard is armed) and one with a draft product.
+  $bundleA = $this->bundle([$this->product('Alpha', '60.00'), $this->product('Beta', '40.00')], '50.00');
+  $bundleA->update(['title' => 'Complete Toolkit']);
+  $bundleB = $this->bundle([$this->product('Gamma', '30.00'), $this->product('Delta', '30.00')], '45.00');
+  $bundleB->update(['title' => 'Design Duo']);
+  $broken = $this->bundle([$this->product('Live', '30.00'), $this->product('Dead', '30.00', ['status' => ProductStatus::Draft])], '20.00');
+  $broken->update(['title' => 'Broken Pack']);
+  $response = $this->get('/bundles');
+  $response->assertOk()->assertSee('Complete Toolkit')->assertSee('Design Duo')->assertDontSee('Broken Pack');
+  // 50 vs 100 compare-at → "Save 50%".
+  $response->assertSee('Save 50%');
+ }
+
+ public function test_bundles_index_search_filters_by_title(): void
+ {
+  $this->bundle([$this->product('A1', '10.00'), $this->product('A2', '10.00')], '15.00')->update(['title' => 'Winter Pack']);
+  $this->bundle([$this->product('B1', '10.00'), $this->product('B2', '10.00')], '15.00')->update(['title' => 'Summer Pack']);
+  $this->get('/bundles?q=Winter')->assertOk()->assertSee('Winter Pack')->assertDontSee('Summer Pack');
+ }
+
+ public function test_product_page_cross_sells_its_bundles(): void
+ {
+  $product = $this->product('Alpha', '60.00');
+  $bundle = $this->bundle([$product, $this->product('Beta', '40.00')], '50.00');
+  $bundle->update(['title' => 'Alpha Mega Deal']);
+  $this->get('/products/'.$product->slug)->assertOk()->assertSee('Save with a bundle')->assertSee('Alpha Mega Deal');
+  // A product in no bundles shows no cross-sell block.
+  $solo = $this->product('Solo', '20.00');
+  $this->get('/products/'.$solo->slug)->assertOk()->assertDontSee('Save with a bundle');
+ }
+
+ public function test_storefront_shows_seller_bundles(): void
+ {
+  $bundle = $this->bundle([$this->product('Alpha', '60.00'), $this->product('Beta', '40.00')], '50.00');
+  $bundle->update(['title' => 'Studio Collection']);
+  $username = $this->seller->sellerProfile->username;
+  $this->get('/authors/'.$username)->assertOk()->assertSee('Studio Collection');
+ }
+
  public function test_seller_creates_bundle_via_http_and_public_page_renders(): void
  {
   $a = $this->product('Alpha', '60.00');

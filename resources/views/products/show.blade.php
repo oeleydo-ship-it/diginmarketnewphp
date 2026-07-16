@@ -241,6 +241,29 @@
                 </div>
             </div>
 
+            @if($bundles->isNotEmpty())
+            <!-- Bundle cross-sell: this product ships inside these bundles -->
+            <div class="overflow-hidden rounded-2xl border border-primary/30 bg-primary/5 shadow-sm">
+                <div class="flex items-center gap-2 border-b border-primary/20 p-5">
+                    <span class="material-symbols-outlined text-primary">package_2</span>
+                    <h3 class="text-[17px] font-semibold">Save with a bundle</h3>
+                </div>
+                <div class="divide-y divide-primary/10">
+                    @foreach($bundles as $bundle)
+                        @php($compareAt = $bundle->products->sum(fn ($p) => (float) $p->regular_price))
+                        @php($saving = $compareAt > (float) $bundle->price ? round((1 - (float) $bundle->price / $compareAt) * 100) : 0)
+                        <a href="{{ route('bundles.show', $bundle->slug) }}" class="block p-5 transition-colors hover:bg-primary/10">
+                            <div class="flex items-start justify-between gap-3">
+                                <span class="font-semibold leading-snug">{{ $bundle->title }}</span>
+                                @if($saving > 0)<span class="shrink-0 rounded-full bg-secondary-container/40 px-2 py-0.5 text-xs font-bold text-on-secondary-container">-{{ $saving }}%</span>@endif
+                            </div>
+                            <p class="mt-1 text-sm text-on-surface-variant">{{ $bundle->products_count }} products for <strong class="text-primary">${{ number_format((float) $bundle->price, 0) }}</strong>@if($saving > 0) <span class="line-through">${{ number_format($compareAt, 0) }}</span>@endif</p>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <!-- Product Specifications -->
             <div class="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
                 <div class="border-b border-outline-variant bg-surface-container-low p-5">

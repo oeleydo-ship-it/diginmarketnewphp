@@ -54,6 +54,7 @@ Route::get('/products', [MarketplaceProductController::class, 'index'])->name('p
 Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->name('products.show');
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
+Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index'])->name('bundles.index');
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');

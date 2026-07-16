@@ -3,6 +3,7 @@ return [
  'nav' => [
   'browse' => 'تصفح',
   'categories' => 'الفئات',
+  'bundles' => 'الحزم',
   'blog' => 'المدونة',
   'support' => 'الدعم',
   'sell' => 'ابدأ البيع',

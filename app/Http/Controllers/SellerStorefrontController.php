@@ -22,6 +22,7 @@ class SellerStorefrontController extends Controller
    'rating'=>round((float)($ratingAgg->avg??0),1),
    'rating_count'=>(int)($ratingAgg->count??0),
   ];
-  return view('sellers.show',compact('seller','products','featured','stats'));
+  $bundles=\App\Models\Bundle::purchasable()->where('seller_id',$user->id)->with('products')->withCount('products')->latest()->limit(6)->get();
+  return view('sellers.show',compact('seller','products','featured','stats','bundles'));
  }
 }
