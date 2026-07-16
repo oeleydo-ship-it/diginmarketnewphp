@@ -68,6 +68,35 @@ class SellerFinanceTest extends TestCase
   $this->assertEquals(80,(float)$wallet->available_balance);
  }
 
+ public function test_admin_force_releases_a_pending_earning_before_its_clearance_date():void
+ {
+  config(['marketplace.earnings_clearance_days'=>14]);
+  $sale=$this->sale();
+  app(PaymentFulfillmentService::class)->fulfill($sale['order']->id,'pi_force');
+  $entry=\App\Models\WalletTransaction::where('type','sale_credit')->firstOrFail();
+  $this->assertTrue($entry->available_at->isFuture());
+  $admin=User::factory()->create();$admin->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'administrator'],['name'=>'Administrator']));
+  $this->actingAs($admin)->post(route('admin.earnings.release',$entry))->assertRedirect();
+  $wallet=SellerWallet::where('seller_id',$sale['seller']->id)->firstOrFail();
+  $this->assertEquals(0,(float)$wallet->pending_balance);
+  $this->assertEquals(80,(float)$wallet->available_balance);
+  $this->assertNotNull($entry->fresh()->cleared_at);
+  $this->assertDatabaseHas('audit_logs',['action'=>'earnings.released','entity_id'=>$entry->id]);
+  // Releasing again is rejected — the ledger can never double-credit.
+  $this->actingAs($admin)->post(route('admin.earnings.release',$entry))->assertStatus(422);
+  $this->assertEquals(80,(float)$wallet->fresh()->available_balance);
+ }
+
+ public function test_pending_earnings_page_lists_entries_and_is_admin_only():void
+ {
+  config(['marketplace.earnings_clearance_days'=>14]);
+  $sale=$this->sale();
+  app(PaymentFulfillmentService::class)->fulfill($sale['order']->id,'pi_page');
+  $admin=User::factory()->create();$admin->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'administrator'],['name'=>'Administrator']));
+  $this->actingAs($admin)->get('/admin/earnings')->assertOk()->assertSee('Pending earnings')->assertSee('$80.00')->assertSee('Release now');
+  $this->actingAs(User::factory()->create())->get('/admin/earnings')->assertForbidden();
+ }
+
  public function test_admin_can_run_clearance_now():void
  {
   config(['marketplace.earnings_clearance_days'=>0]);

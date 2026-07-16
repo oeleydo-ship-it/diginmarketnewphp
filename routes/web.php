@@ -175,6 +175,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
         Route::post('/users/{user}/impersonate', [\App\Http\Controllers\ImpersonationController::class, 'start'])->name('users.impersonate');
         Route::post('/system/clear-earnings', [SystemHealthController::class, 'clearEarnings'])->name('system.clear-earnings');
+        Route::get('/earnings', [\App\Http\Controllers\Admin\EarningsController::class, 'index'])->name('earnings.index');
+        Route::post('/earnings/{transaction}/release', [\App\Http\Controllers\Admin\EarningsController::class, 'release'])->name('earnings.release');
         Route::get('/notifications/{id}/open', [\App\Http\Controllers\Admin\NotificationController::class, 'open'])->name('notifications.open');
         Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
