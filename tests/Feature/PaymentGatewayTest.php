@@ -93,6 +93,18 @@ class PaymentGatewayTest extends TestCase
   $this->get('/purchases/'.$order->id)->assertOk()->assertSee('Extend 6 months');
  }
 
+ public function test_admin_orders_directory_lists_ordered_product_titles(): void
+ {
+  $this->fakeStripe();
+  $product=$this->product();
+  $customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$product->id,['license_type_id'=>LicenseType::first()->id]);
+  $this->post('/checkout',['payment_provider'=>'stripe']);
+  $admin=User::factory()->create();
+  $admin->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'administrator'],['name'=>'Administrator']));
+  $this->actingAs($admin)->get('/admin/orders')->assertOk()->assertSee($product->title);
+ }
+
  public function test_checkout_persists_chosen_provider(): void
  {
   $this->fakeStripe();$product=$this->product();$customer=User::factory()->create();

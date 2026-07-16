@@ -46,8 +46,8 @@ class OrderDirectoryController extends Controller
   $orders=$this->filteredOrders()->with(['user','items'])->latest()->get();
   return response()->streamDownload(function() use ($orders): void {
    $handle=fopen('php://output','w');
-   fputcsv($handle,['Order ID','Customer','Email','Date','Amount','Currency','Payment status','Order status','License']);
-   foreach($orders as $order) fputcsv($handle,[$order->number,$order->user?->name,$order->user?->email,$order->created_at->toDateString(),$order->total,$order->currency,$order->payment_status,$order->status,$order->items->first()?->license_name]);
+   fputcsv($handle,['Order ID','Customer','Email','Date','Amount','Currency','Payment status','Order status','Products','Items']);
+   foreach($orders as $order) fputcsv($handle,[$order->number,$order->user?->name,$order->user?->email,$order->created_at->toDateString(),$order->total,$order->currency,$order->payment_status,$order->status,$order->items->map(fn($item)=>$item->product_title.' ('.$item->license_name.')')->implode(' | '),$order->items->count()]);
    fclose($handle);
   },'orders-'.now()->format('Y-m-d').'.csv',['Content-Type'=>'text/csv']);
  }
