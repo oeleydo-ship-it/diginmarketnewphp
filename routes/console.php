@@ -16,3 +16,8 @@ Schedule::call(fn () => app(\App\Services\SellerWalletService::class)->clearElig
 Schedule::command('marketplace:backup')
     ->dailyAt('02:30')
     ->withoutOverlapping();
+
+Schedule::call(fn () => app(\App\Services\SubscriptionService::class)->expireDue())
+    ->name('expire-seller-subscriptions')
+    ->hourly()
+    ->withoutOverlapping();

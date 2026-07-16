@@ -95,6 +95,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
     Route::post('/cart/{product}', [CartController::class, 'add'])->name('cart.add');
     Route::delete('/cart/items/{item}', [CartController::class, 'remove'])->name('cart.remove');
+    // Direct GET navigation (bookmark, back button, typed URL) lands on the cart instead of a 405.
+    Route::get('/checkout', fn () => redirect()->route('cart.index'));
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/{order}/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/{order}/bank-transfer', [CheckoutController::class, 'bankTransfer'])->name('checkout.bank-transfer');
@@ -122,6 +124,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/finance', SellerFinanceController::class)->name('finance');
         Route::get('/settings', [\App\Http\Controllers\SellerSettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [\App\Http\Controllers\SellerSettingsController::class, 'update'])->name('settings.update');
+        Route::get('/subscription', [\App\Http\Controllers\SellerSubscriptionController::class, 'index'])->name('subscription.index');
+        Route::post('/subscription/{plan}', [\App\Http\Controllers\SellerSubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+        Route::post('/subscription/{subscription}/cancel', [\App\Http\Controllers\SellerSubscriptionController::class, 'cancel'])->name('subscription.cancel');
         Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
         Route::put('/payout-settings', [\App\Http\Controllers\SellerPayoutSettingsController::class, 'update'])->name('payout-settings.update');
         Route::get('/stripe-connect', [StripeConnectController::class, 'start'])->name('connect.start');
@@ -174,6 +179,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/support/{supportTicket}', [SupportManagementController::class, 'show'])->name('support.show');
         Route::post('/support/{supportTicket}/reply', [SupportManagementController::class, 'reply'])->name('support.reply');
         Route::put('/support/{supportTicket}/status', [SupportManagementController::class, 'updateStatus'])->name('support.status');
+        Route::get('/subscription-plans', [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'index'])->name('subscription-plans.index');
+        Route::post('/subscription-plans', [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'store'])->name('subscription-plans.store');
+        Route::put('/subscription-plans/{plan}', [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'update'])->name('subscription-plans.update');
+        Route::delete('/subscription-plans/{plan}', [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'destroy'])->name('subscription-plans.destroy');
+        Route::post('/subscriptions/{subscription}/activate', [\App\Http\Controllers\Admin\SubscriptionPlanController::class, 'activate'])->name('subscriptions.activate');
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::post('/settings/sections/{section}', [SettingController::class, 'updateSection'])->name('settings.sections.update');

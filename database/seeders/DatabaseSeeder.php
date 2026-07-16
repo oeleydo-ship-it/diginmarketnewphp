@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
   foreach(['PHP Scripts','Laravel Applications','WordPress Themes','JavaScript Applications','Mobile Applications','UI Templates'] as $index=>$name)Category::updateOrCreate(['slug'=>str($name)->slug()],['name'=>$name,'display_order'=>$index]);
   LicenseType::updateOrCreate(['slug'=>'regular'],['name'=>'Regular License','description'=>'Use in one end product where end users are not charged.','allows_paid_end_product'=>false]);LicenseType::updateOrCreate(['slug'=>'extended'],['name'=>'Business License','description'=>'Use in one end product where end users may be charged.','allows_paid_end_product'=>true]);
   foreach([['footer-legal','Privacy Policy','/pages/privacy-policy',0],['footer-legal','Terms of Service','/pages/terms-of-service',1],['footer-legal','Seller Agreement','/pages/seller-agreement',2],['footer-resources','Blog','/blog',0]] as [$location,$label,$url,$order])\App\Models\MenuItem::updateOrCreate(['location'=>$location,'label'=>$label],['url'=>$url,'display_order'=>$order,'is_active'=>true]);
+  $this->call(SubscriptionPlanSeeder::class);
   $this->call(ProductSeeder::class);
  }
 }
