@@ -21,6 +21,13 @@
 </head>
 <body class="min-h-screen bg-surface font-sans text-on-surface antialiased">
 <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-primary">Skip to main content</a>
+@if(session()->has(\App\Http\Controllers\ImpersonationController::SESSION_KEY))
+<div class="fixed inset-x-0 bottom-0 z-[70] flex flex-wrap items-center justify-center gap-3 bg-amber-500 px-4 py-2.5 text-sm font-semibold text-amber-950">
+    <span class="material-symbols-outlined text-[18px]" aria-hidden="true">theater_comedy</span>
+    Impersonating {{ auth()->user()?->name }} — this session ends automatically.
+    <form method="POST" action="{{ route('impersonation.stop') }}">@csrf<button class="rounded-lg bg-amber-950 px-3 py-1 text-xs font-bold text-amber-50">Stop impersonating</button></form>
+</div>
+@endif
 @php
     $cartCount = auth()->check() ? (auth()->user()->cart()->first()?->items()->count() ?? 0) : 0;
     $isSeller = auth()->check() && auth()->user()->hasRole('seller');

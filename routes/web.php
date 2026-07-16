@@ -72,6 +72,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post('/impersonation/stop', [\App\Http\Controllers\ImpersonationController::class, 'stop'])->name('impersonation.stop');
     Route::get('/admin', OperationsDashboardController::class)->middleware('role:administrator')->name('admin.dashboard');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
@@ -144,6 +145,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/versions/{version}/reject', [ProductReviewController::class, 'rejectVersion'])->name('versions.reject');
         Route::get('/users', [UserDirectoryController::class, 'index'])->name('users.index');
         Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
+        Route::post('/users/{user}/impersonate', [\App\Http\Controllers\ImpersonationController::class, 'start'])->name('users.impersonate');
         Route::get('/orders', [OrderDirectoryController::class, 'index'])->name('orders.index');
         Route::get('/orders/export', [OrderDirectoryController::class, 'export'])->name('orders.export');
         Route::get('/disputes', [DisputeReviewController::class, 'index'])->name('disputes.index');

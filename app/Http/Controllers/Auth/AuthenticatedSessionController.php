@@ -12,6 +12,8 @@ class AuthenticatedSessionController extends Controller
         if (! Auth::attempt($request->safe()->only('email', 'password'), $request->boolean('remember'))) throw ValidationException::withMessages(['email' => __('auth.failed')]);
         if (! $request->user()->isActive()) { Auth::logout(); throw ValidationException::withMessages(['email' => 'This account is not active.']); }
         $request->session()->regenerate();
+        $request->user()->forceFill(['last_login_at' => now()])->save();
+        \App\Models\LoginActivity::create(['user_id' => $request->user()->id, 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(), 'logged_in_at' => now()]);
         return redirect()->intended(route('dashboard'));
     }
     public function destroy(): RedirectResponse
