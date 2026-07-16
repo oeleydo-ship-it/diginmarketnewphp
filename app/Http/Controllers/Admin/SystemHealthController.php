@@ -49,7 +49,19 @@ class SystemHealthController extends Controller
         return back()->with('status', 'Backup created.');
     }
 
-    /** Run the earnings clearance on demand instead of waiting for the 01:00 scheduler. */
+    /** Apply an uploaded release zip: validated, backed up, migrated, audited. */
+ public function update(\App\Services\ApplicationUpdateService $updater): RedirectResponse
+ {
+  request()->validate(['package'=>['required','file','mimes:zip','max:262144']]);
+  try{
+   $result=$updater->apply(request()->file('package'),auth()->user());
+  }catch(\RuntimeException $e){
+   return back()->withErrors(['package'=>$e->getMessage()]);
+  }
+  return back()->with('status','Update applied: version '.$result['version'].' ('.$result['files'].' files). Caches cleared and migrations run.');
+ }
+
+ /** Run the earnings clearance on demand instead of waiting for the 01:00 scheduler. */
     public function clearEarnings(SellerWalletService $wallets): RedirectResponse
     {
         $count = $wallets->clearEligible();

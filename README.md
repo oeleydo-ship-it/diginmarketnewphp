@@ -76,6 +76,30 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 6. **Storage**: product archives live on the private local disk (or S3 via `FILESYSTEM_DISK`); they are only ever served through signed, license-checked download routes. Run `php artisan storage:link` for public branding uploads.
 7. **Security**: HTTPS is required (HSTS is emitted on secure responses); a CSP and hardened headers are applied by `App\Http\Middleware\SecurityHeaders`.
 
+### Web installer
+
+Fresh deployments without shell access can install from the browser: visiting any page
+before installation redirects to `/install`. Step 1 configures the database (MySQL/MariaDB
+credentials are verified with a live connection before being written to `.env`, or SQLite for
+small sites); step 2 creates the marketplace name and administrator account, runs migrations,
+seeds roles/license types, and writes the install lock (`storage/app/installed.lock`).
+
+### Updating (upload a release zip)
+
+Admins apply updates from **Admin → System health → Application update** by uploading a
+release zip — the CodeCanyon-style flow, no shell required:
+
+1. The archive is validated: no path traversal, and only application paths (`app/`, `config/`,
+   `resources/`, `routes/`, `database/`, `vendor/`, …) may be touched. `.env`, `storage/`, and
+   uploaded files are never modified.
+2. A database backup is taken, the site enters maintenance mode, files are replaced,
+   `php artisan migrate --force` runs, caches are cleared, and the site comes back up.
+3. An optional `update-manifest.json` (`{"version": "x.y.z"}`) at the zip root records the new
+   version, shown on the System health page. Every update is written to the audit log.
+
+Zips that wrap everything in a single top-level folder (GitHub-style archives) are handled
+automatically.
+
 ### Backup & restore
 
 - Back up the database and `storage/app` (private product files) together; licenses, orders, and ledger entries are only meaningful alongside the files they gate.

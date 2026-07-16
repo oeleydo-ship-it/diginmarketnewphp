@@ -33,6 +33,16 @@
  </div>
  <div class="mt-6 rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
   <div class="flex flex-wrap items-center justify-between gap-3">
+   <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">system_update_alt</span>Application update</h2>
+   <p class="mt-2 text-sm text-[#626576]">Current version: <strong>{{ \App\Models\Setting::get('system.version') ?? '1.0.0' }}</strong>. Upload a release zip — a backup is taken, the site enters maintenance mode while files are replaced, migrations run, and caches are cleared. Your .env, storage and uploads are never touched.</p>
+   @error('package')<p class="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{{ $message }}</p>@enderror
+   <form method="POST" action="{{ route('admin.system.update') }}" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-center gap-3" onsubmit="return confirm('Apply this update now? The site will be briefly unavailable.')">@csrf
+    <input type="file" name="package" accept=".zip" required class="text-sm">
+    <button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Apply update</button>
+   </form>
+  </section>
+
+  <section class="mt-8 rounded-2xl border border-[#cfd2e1] bg-white p-6 shadow-sm">
    <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">backup</span>Backups</h2>
    <form method="POST" action="{{ route('admin.system.backup') }}">@csrf<button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Run backup now</button></form>
   </div>

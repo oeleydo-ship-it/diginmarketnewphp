@@ -49,6 +49,7 @@ use App\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Route;
 Route::get('/install', [InstallController::class, 'show'])->name('install.show');
 Route::post('/install', [InstallController::class, 'store'])->middleware('throttle:6,1')->name('install.store');
+Route::post('/install/database', [InstallController::class, 'database'])->middleware('throttle:6,1')->name('install.database');
 Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [MarketplaceProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->name('products.show');
@@ -176,6 +177,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
         Route::post('/users/{user}/impersonate', [\App\Http\Controllers\ImpersonationController::class, 'start'])->name('users.impersonate');
         Route::post('/system/clear-earnings', [SystemHealthController::class, 'clearEarnings'])->name('system.clear-earnings');
+        Route::post('/system/update', [SystemHealthController::class, 'update'])->name('system.update');
         Route::get('/earnings', [\App\Http\Controllers\Admin\EarningsController::class, 'index'])->name('earnings.index');
         Route::post('/earnings/{transaction}/release', [\App\Http\Controllers\Admin\EarningsController::class, 'release'])->name('earnings.release');
         Route::get('/notifications/{id}/open', [\App\Http\Controllers\Admin\NotificationController::class, 'open'])->name('notifications.open');

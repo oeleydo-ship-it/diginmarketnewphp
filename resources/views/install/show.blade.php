@@ -26,7 +26,7 @@ button:disabled{background:#a9a6d8;cursor:not-allowed}
 <div class="wrap">
  <span class="badge">DiginMarket Setup</span>
  <h1>Install your marketplace</h1>
- <p class="lead">Verify the server requirements, then create the administrator account. Database credentials are read from your <code>.env</code> file.</p>
+ <p class="lead">Verify the server requirements, connect your database, then create the administrator account.</p>
  <div class="card">
   <h2>Server requirements</h2>
   <ul class="reqs">
@@ -36,8 +36,30 @@ button:disabled{background:#a9a6d8;cursor:not-allowed}
   </ul>
  </div>
  <div class="card">
-  <h2>Administrator account</h2>
-  @if($errors->any())<div class="errors">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
+  <h2>Step 1 — Database</h2>
+  @if(session('db_status'))<div class="errors" style="background:#eefaf3;border-color:#bfe6d2;color:#0a7d4f">{{ session('db_status') }}</div>@endif
+  @error('database')<div class="errors">{{ $message }}</div>@enderror
+  <form method="POST" action="{{ route('install.database') }}">
+   @csrf
+   <label for="connection">Database driver</label>
+   <select id="connection" name="connection" style="width:100%;box-sizing:border-box;border:1px solid #d7d9e5;background:#fafbff;border-radius:8px;padding:11px 12px;font-size:14px">
+    <option value="mysql" @selected(old('connection','mysql')==='mysql')>MySQL / MariaDB</option>
+    <option value="sqlite" @selected(old('connection')==='sqlite')>SQLite (single file, small sites)</option>
+   </select>
+   <div id="mysql-fields">
+    <p style="font-size:12px;color:#626576;margin:12px 0 0">MySQL settings — ignored when SQLite is selected.</p>
+    <label for="host">Host</label><input id="host" name="host" value="{{ old('host','127.0.0.1') }}">
+    <label for="port">Port</label><input id="port" name="port" type="number" value="{{ old('port',3306) }}">
+    <label for="database">Database name</label><input id="database" name="database" value="{{ old('database') }}">
+    <label for="username">Username</label><input id="username" name="username" value="{{ old('username') }}">
+    <label for="password">Password</label><input id="password" name="password" type="password" value="">
+   </div>
+   <button type="submit">Test connection &amp; save</button>
+  </form>
+ </div>
+ <div class="card">
+  <h2>Step 2 — Administrator account</h2>
+  @if($errors->any() && !$errors->has('database'))<div class="errors">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
   <form method="POST" action="{{ route('install.store') }}">
    @csrf
    <label for="site_name">Marketplace name</label><input id="site_name" name="site_name" required value="{{ old('site_name','DiginMarket') }}">
