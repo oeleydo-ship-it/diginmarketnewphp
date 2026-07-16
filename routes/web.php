@@ -55,6 +55,7 @@ Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->n
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');

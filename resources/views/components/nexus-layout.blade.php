@@ -1,6 +1,6 @@
 @props(['title' => null, 'description' => null])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ config('locales.available.'.app()->getLocale().'.dir', 'ltr') }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -46,20 +46,39 @@
                 @endif
             </a>
             <nav class="hidden items-center gap-6 md:flex">
-                <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">Browse</a>
-                <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">Categories</a>
-                <a href="{{ route('support.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">Support</a>
+                <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.browse') }}</a>
+                <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.categories') }}</a>
+                <a href="{{ route('support.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.support') }}</a>
             </nav>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
             <form action="{{ route('products.index') }}" method="GET" class="relative hidden lg:block">
                 <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
-                <input name="q" value="{{ request('q') }}" type="text" placeholder="Search assets..." aria-label="Search assets"
+                <input name="q" value="{{ request('q') }}" type="text" placeholder="{{ __('messages.nav.search') }}" aria-label="{{ __('messages.nav.search') }}"
                     class="w-64 rounded-xl border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20">
             </form>
             <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}"
-                class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">Start Selling</a>
-            <button data-theme-toggle type="button" class="p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Toggle dark mode" aria-pressed="false">
+                class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">{{ __('messages.nav.sell') }}</a>
+            @php($locales = (array) config('locales.available'))
+            @if(count($locales) > 1)
+                <details class="group relative">
+                    <summary class="flex cursor-pointer list-none items-center gap-1 p-2 text-on-surface-variant transition-colors hover:text-primary [&::-webkit-details-marker]:hidden" aria-label="{{ __('messages.nav.language') }}">
+                        <span class="material-symbols-outlined text-[22px]">language</span>
+                        <span class="hidden text-xs font-semibold uppercase sm:inline">{{ app()->getLocale() }}</span>
+                    </summary>
+                    <div class="absolute end-0 z-50 mt-2 w-40 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest py-1 shadow-lg">
+                        @foreach($locales as $code => $meta)
+                            <form method="POST" action="{{ route('locale.update', $code) }}">@csrf
+                                <button type="submit" class="flex w-full items-center justify-between px-4 py-2 text-sm {{ app()->getLocale() === $code ? 'font-bold text-primary' : 'text-on-surface hover:bg-surface-container-low' }}">
+                                    <span>{{ $meta['native'] }}</span>
+                                    @if(app()->getLocale() === $code)<span class="material-symbols-outlined text-[18px]">check</span>@endif
+                                </button>
+                            </form>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
+            <button data-theme-toggle type="button" class="p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="{{ __('messages.nav.toggle_theme') }}" aria-pressed="false">
                 <span data-theme-icon class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
             </button>
             @auth
@@ -76,7 +95,7 @@
                     <span class="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container font-display text-sm font-bold text-on-primary-container">{{ str(auth()->user()->name)->substr(0, 1)->upper() }}</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="px-3 py-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-primary">Sign in</a>
+                <a href="{{ route('login') }}" class="px-3 py-2 text-sm font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.login') }}</a>
             @endauth
             <button data-nav-toggle class="p-2 text-on-surface-variant md:hidden" aria-label="Menu">
                 <span class="material-symbols-outlined">menu</span>
@@ -85,10 +104,10 @@
     </div>
     <nav data-nav-menu class="hidden border-t border-outline-variant bg-surface px-6 py-4 md:hidden">
         <div class="flex flex-col gap-3 text-sm font-semibold text-on-surface-variant">
-            <a href="{{ route('products.index') }}">Browse</a>
-            <a href="{{ route('home') }}#categories">Categories</a>
-            <a href="{{ route('support.index') }}">Support</a>
-            <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">Start Selling</a>
+            <a href="{{ route('products.index') }}">{{ __('messages.nav.browse') }}</a>
+            <a href="{{ route('home') }}#categories">{{ __('messages.nav.categories') }}</a>
+            <a href="{{ route('support.index') }}">{{ __('messages.nav.support') }}</a>
+            <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">{{ __('messages.nav.sell') }}</a>
         </div>
     </nav>
 </header>
