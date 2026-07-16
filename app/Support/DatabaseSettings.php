@@ -37,9 +37,25 @@ class DatabaseSettings
         if ($value('mail.encryption') === 'ssl') config(['mail.mailers.smtp.scheme' => 'smtps']);
         if ($from = $value('mail.from_address')) config(['mail.from.address' => $from]);
         if ($fromName = $value('mail.from_name')) config(['mail.from.name' => $fromName]);
-        if ($pk = $value('payments.stripe_publishable_key')) config(['services.stripe.key' => $pk]);
-        if ($sk = $value('payments.stripe_secret_key')) config(['services.stripe.secret' => $sk]);
-        if ($ws = $value('payments.stripe_webhook_secret')) config(['services.stripe.webhook_secret' => $ws]);
+        // Gateway credentials: admin-managed values win over env so a marketplace can be
+        // reconfigured from the panel. Setting key => config key.
+        foreach ([
+            'payments.stripe_publishable_key' => 'services.stripe.key',
+            'payments.stripe_secret_key' => 'services.stripe.secret',
+            'payments.stripe_webhook_secret' => 'services.stripe.webhook_secret',
+            'payments.paypal_client_id' => 'services.paypal.client_id',
+            'payments.paypal_secret' => 'services.paypal.secret',
+            'payments.paypal_mode' => 'services.paypal.mode',
+            'payments.paypal_webhook_id' => 'services.paypal.webhook_id',
+            'payments.razorpay_key' => 'services.razorpay.key',
+            'payments.razorpay_secret' => 'services.razorpay.secret',
+            'payments.razorpay_webhook_secret' => 'services.razorpay.webhook_secret',
+            'payments.paystack_public_key' => 'services.paystack.public_key',
+            'payments.paystack_secret' => 'services.paystack.secret',
+            'payments.bank_transfer_instructions' => 'services.bank_transfer.instructions',
+        ] as $key => $config) {
+            if ($v = $value($key)) config([$config => $v]);
+        }
 
         // Commerce tuning: numeric marketplace levers managed from the admin panel.
         foreach (['commerce.default_commission_rate' => 'marketplace.default_commission_rate', 'commerce.affiliate_commission_rate' => 'marketplace.affiliate_commission_rate', 'commerce.withdrawal_fee_rate' => 'marketplace.withdrawal_fee_rate'] as $key => $config) {

@@ -11,7 +11,7 @@
             </div>
             <h1 class="mb-2 font-display text-4xl font-bold tracking-tight text-primary md:text-5xl">{{ $paid ? 'Payment Successful' : 'Confirming Your Payment' }}</h1>
             <p class="mx-auto max-w-md text-on-surface-variant">
-                {{ $paid ? 'Thank you for your purchase! Your order' : 'We are waiting for Stripe to confirm your payment for order' }}
+                {{ $paid ? 'Thank you for your purchase! Your order' : 'We are waiting for your payment provider to confirm order' }}
                 <span class="rounded bg-surface-container px-2 py-0.5 font-mono text-xs font-medium">{{ $order->number }}</span>
                 {{ $paid ? 'has been confirmed.' : '— this usually takes a few seconds.' }}
             </p>

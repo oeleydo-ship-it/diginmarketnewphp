@@ -1,14 +1,31 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\RefundRequest;
+use App\Services\PaymentFulfillmentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 class OrderDirectoryController extends Controller
 {
+ /**
+  * Bank transfers arrive outside any gateway, so an administrator confirming receipt is the
+  * only signal that funds landed. Fulfilment stays in the same idempotent path a webhook uses.
+  */
+ public function confirmTransfer(Order $order,PaymentFulfillmentService $fulfillment): RedirectResponse
+ {
+  abort_unless($order->payment_provider==='bank_transfer',404);
+  abort_unless($order->payment_status==='pending',422,'This order is no longer awaiting payment.');
+  $reference=request()->validate(['reference'=>['required','string','max:120']])['reference'];
+  $fulfillment->fulfill($order->id,'bt:'.$reference,'bank_transfer',['confirmed_by'=>auth()->id(),'reference'=>$reference]);
+  AuditLog::create(['user_id'=>auth()->id(),'action'=>'order.transfer_confirmed','entity_type'=>Order::class,'entity_id'=>$order->id,'old_values'=>['payment_status'=>'pending'],'new_values'=>['payment_status'=>'paid','reference'=>$reference],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
+  return back()->with('status','Transfer confirmed for order '.$order->number.'.');
+ }
+
  public function index(): View
  {
   $orders=$this->filteredOrders()->with(['user','items'])->latest()->paginate(10)->withQueryString();

@@ -117,10 +117,30 @@
                     </div>
                     <form method="POST" action="{{ route('checkout.store') }}">
                         @csrf
-                        <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
-                            <span>Proceed to Payment</span>
-                            <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
+                        @if(count($methods) === 0)
+                            <p class="rounded-xl border border-error/40 bg-error/5 p-4 text-sm text-error">{{ __('No payment method is available for your currency yet. Please contact support.') }}</p>
+                        @else
+                            @if(count($methods) > 1)
+                                <fieldset class="mb-4 space-y-2">
+                                    <legend class="mb-2 text-sm font-semibold text-on-surface-variant">{{ __('Payment method') }}</legend>
+                                    @foreach($methods as $methodKey => $method)
+                                        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-outline-variant/40 p-3 transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                            <input type="radio" name="payment_provider" value="{{ $methodKey }}" @checked($loop->first) class="mt-1 accent-primary">
+                                            <span>
+                                                <span class="block font-semibold">{{ $method['label'] }}</span>
+                                                <span class="block text-xs text-on-surface-variant">{{ $method['description'] }}</span>
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </fieldset>
+                            @else
+                                <input type="hidden" name="payment_provider" value="{{ array_key_first($methods) }}">
+                            @endif
+                            <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
+                                <span>{{ __('Proceed to Payment') }}</span>
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        @endif
                     </form>
                     <div class="mt-8 space-y-4">
                         <div class="flex items-center gap-4 rounded-lg border border-outline-variant/30 bg-surface/50 p-4">

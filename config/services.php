@@ -7,6 +7,28 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'paypal' => [
+        'client_id' => env('PAYPAL_CLIENT_ID'),
+        'secret' => env('PAYPAL_SECRET'),
+        'mode' => env('PAYPAL_MODE', 'sandbox'),
+        'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
+    ],
+
+    'razorpay' => [
+        'key' => env('RAZORPAY_KEY'),
+        'secret' => env('RAZORPAY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
+
+    'paystack' => [
+        'secret' => env('PAYSTACK_SECRET'),
+        'public_key' => env('PAYSTACK_PUBLIC_KEY'),
+    ],
+
+    'bank_transfer' => [
+        'instructions' => env('BANK_TRANSFER_INSTRUCTIONS'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

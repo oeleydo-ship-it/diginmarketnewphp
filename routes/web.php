@@ -17,6 +17,7 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SellerFinanceController;
@@ -57,7 +58,9 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
-Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+Route::post('/payments/{provider}/webhook', PaymentWebhookController::class)->name('payments.webhook');
+// Kept so Stripe dashboards configured before multi-gateway support keep delivering to us.
+Route::post('/stripe/webhook', PaymentWebhookController::class)->defaults('provider', 'stripe')->name('stripe.webhook');
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
@@ -84,6 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/items/{item}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/{order}/success', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::get('/checkout/{order}/bank-transfer', [CheckoutController::class, 'bankTransfer'])->name('checkout.bank-transfer');
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/purchases/{order}', [PurchaseController::class, 'show'])->name('purchases.show');
     Route::get('/downloads/{license}', DownloadController::class)->name('downloads.show');
@@ -150,6 +154,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/{user}/impersonate', [\App\Http\Controllers\ImpersonationController::class, 'start'])->name('users.impersonate');
         Route::get('/orders', [OrderDirectoryController::class, 'index'])->name('orders.index');
         Route::get('/orders/export', [OrderDirectoryController::class, 'export'])->name('orders.export');
+        Route::post('/orders/{order}/confirm-transfer', [OrderDirectoryController::class, 'confirmTransfer'])->name('orders.confirm-transfer');
         Route::get('/disputes', [DisputeReviewController::class, 'index'])->name('disputes.index');
         Route::post('/disputes/{dispute}/uphold', [DisputeReviewController::class, 'uphold'])->name('disputes.uphold');
         Route::post('/disputes/{dispute}/dismiss', [DisputeReviewController::class, 'dismiss'])->name('disputes.dismiss');

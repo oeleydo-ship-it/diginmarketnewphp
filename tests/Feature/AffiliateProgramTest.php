@@ -1,6 +1,5 @@
 <?php
 namespace Tests\Feature;
-use App\Contracts\CheckoutGateway;
 use App\Enums\ProductStatus;
 use App\Enums\ProductVersionStatus;
 use App\Http\Middleware\TrackAffiliateReferral;
@@ -24,7 +23,7 @@ class AffiliateProgramTest extends TestCase
   $type=LicenseType::create(['name'=>'Regular','slug'=>'regular','description'=>'Regular']);
   $product=Product::create(['seller_id'=>$seller->id,'category_id'=>$category->id,'title'=>'Referral Kit','slug'=>'referral-kit','short_description'=>'Refer.','description'=>str_repeat('Complete referral kit. ',4),'regular_price'=>'100.00','status'=>ProductStatus::Published,'published_at'=>now()]);
   $product->versions()->create(['version_number'=>'1.0.0','release_title'=>'Stable','status'=>ProductVersionStatus::Published,'published_at'=>now()]);
-  $this->app->bind(CheckoutGateway::class,fn()=>new class implements CheckoutGateway{public function createCheckout(\App\Models\Order $order):array{return ['id'=>'cs_aff_'.$order->id,'url'=>'https://checkout.stripe.test/session/'.$order->id];}});
+  $this->app->bind(\App\Services\Gateways\StripeCheckoutGateway::class,fn()=>new class extends \App\Services\Gateways\StripeCheckoutGateway{public function isConfigured():bool{return true;}public function createCheckout(\App\Models\Order $order):array{return ['id'=>'cs_aff_'.$order->id,'url'=>'https://checkout.stripe.test/session/'.$order->id];}});
   return compact('seller','type','product');
  }
  public function test_enrolling_creates_profile_and_referral_click_sets_cookie(): void

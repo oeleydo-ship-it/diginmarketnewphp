@@ -1,6 +1,5 @@
 <?php
 namespace Tests\Feature;
-use App\Contracts\CheckoutGateway;
 use App\Enums\ProductStatus;
 use App\Models\Category;
 use App\Models\Coupon;
@@ -22,7 +21,7 @@ class SellerCouponTest extends TestCase
   $regular=LicenseType::create(['name'=>'Regular','slug'=>'regular','description'=>'Regular']);
   $productA=Product::create(['seller_id'=>$sellerA->id,'category_id'=>$category->id,'title'=>'Alpha App','slug'=>'alpha-app','short_description'=>'App','description'=>str_repeat('Details ',10),'regular_price'=>'100.00','status'=>ProductStatus::Published,'published_at'=>now()]);
   $productB=Product::create(['seller_id'=>$sellerB->id,'category_id'=>$category->id,'title'=>'Beta App','slug'=>'beta-app','short_description'=>'App','description'=>str_repeat('Details ',10),'regular_price'=>'60.00','status'=>ProductStatus::Published,'published_at'=>now()]);
-  $this->app->bind(CheckoutGateway::class,fn()=>new class implements CheckoutGateway{public function createCheckout(\App\Models\Order $order):array{return ['id'=>'cs_sc_'.$order->id,'url'=>'https://checkout.stripe.test/'.$order->id];}});
+  $this->app->bind(\App\Services\Gateways\StripeCheckoutGateway::class,fn()=>new class extends \App\Services\Gateways\StripeCheckoutGateway{public function isConfigured():bool{return true;}public function createCheckout(\App\Models\Order $order):array{return ['id'=>'cs_sc_'.$order->id,'url'=>'https://checkout.stripe.test/'.$order->id];}});
   return compact('sellerA','sellerB','regular','productA','productB');
  }
  public function test_seller_coupon_discounts_only_that_sellers_items_in_mixed_cart(): void

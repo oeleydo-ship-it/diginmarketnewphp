@@ -36,9 +36,11 @@
      <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">{{ $section['icon'] }}</span>{{ $section['title'] }}</h2>
      <div class="mt-5 grid content-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
       @foreach($section['fields'] as $key => $field)
-       <div class="flex flex-col gap-1 {{ str_contains($key, 'description') || str_contains($key, 'publishable') ? 'sm:col-span-2' : '' }}">
+       <div class="flex flex-col gap-1 {{ str_contains($key, 'description') || str_contains($key, 'publishable') || $field['type'] === 'textarea' ? 'sm:col-span-2' : '' }}">
         <label class="{{ $labelCls }}">{{ $field['label'] }}</label>
-        @if($field['type'] === 'select')
+        @if($field['type'] === 'textarea')
+         <textarea name="{{ str_replace('.', '__', $key) }}" rows="5" class="{{ $input }}">{{ $field['value'] }}</textarea>
+        @elseif($field['type'] === 'select')
          <select name="{{ str_replace('.', '__', $key) }}" class="{{ $input }}">
           @foreach($field['options'] as $option)<option value="{{ $option }}" @selected($field['value'] === $option)>{{ $option === '' ? 'None' : strtoupper($option) }}</option>@endforeach
          </select>
@@ -54,6 +56,7 @@
           placeholder="{{ ($field['encrypted'] ?? false) ? (($field['configured'] ?? false) ? '•••••••• (configured — enter to replace)' : 'Not configured') : '' }}"
           @if($field['type'] === 'password') autocomplete="new-password" @endif class="{{ $input }}">
         @endif
+        @if(!empty($field['hint']))<p class="text-xs text-[#777a8a] dark:text-slate-400">{{ $field['hint'] }}</p>@endif
        </div>
       @endforeach
      </div>
