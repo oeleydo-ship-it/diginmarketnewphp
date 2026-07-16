@@ -48,6 +48,19 @@
                                 </span>
                             @endif
                         </div>
+                        @if($item->license->support_expires_at)
+                            <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[18px]">support_agent</span>
+                                Support {{ $item->license->support_expires_at->isFuture() ? 'until '.$item->license->support_expires_at->toFormattedDateString() : 'expired '.$item->license->support_expires_at->toFormattedDateString() }}
+                                @if($item->license->status === 'active' && $item->product?->support_extension_price !== null)
+                                    <form method="POST" action="{{ route('licenses.extend-support', $item->license) }}">@csrf
+                                        <button class="rounded-lg border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/5">
+                                            Extend {{ $item->product->support_extension_months }} months — ${{ number_format((float) $item->product->support_extension_price, 2) }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endif
                         @if($item->license->status === 'active')
                             <div class="mt-6 grid gap-5 border-t border-outline-variant pt-6 md:grid-cols-3">
                                 <form method="POST" action="{{ route('reviews.store', $item) }}" class="space-y-2 rounded-lg border border-outline-variant/50 bg-surface-container-low p-4">

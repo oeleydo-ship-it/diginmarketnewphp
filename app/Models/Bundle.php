@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class Bundle extends Model
+{
+    protected $fillable = ['seller_id', 'title', 'slug', 'description', 'price', 'is_active'];
+
+    protected function casts(): array
+    {
+        return ['price' => 'decimal:2', 'is_active' => 'boolean'];
+    }
+
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
+    /** Purchasable only while every included product is still published. */
+    public function isPurchasable(): bool
+    {
+        return $this->is_active && $this->products()->count() >= 2 && $this->products()->where('status', '!=', 'published')->doesntExist();
+    }
+
+    /** Sum of the products' individual regular prices, for showing the saving. */
+    public function compareAtPrice(): float
+    {
+        return (float) $this->products()->sum('regular_price');
+    }
+}

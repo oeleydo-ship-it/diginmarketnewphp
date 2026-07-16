@@ -54,6 +54,7 @@ Route::get('/products', [MarketplaceProductController::class, 'index'])->name('p
 Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->name('products.show');
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
+Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
@@ -103,6 +104,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/purchases/{order}', [PurchaseController::class, 'show'])->name('purchases.show');
     Route::get('/downloads/{license}', DownloadController::class)->name('downloads.show');
+    Route::post('/bundles/{bundle}/buy', [\App\Http\Controllers\BundleController::class, 'buy'])->name('bundles.buy');
+    Route::post('/licenses/{license}/extend-support', [\App\Http\Controllers\SupportExtensionController::class, 'buy'])->name('licenses.extend-support');
     Route::post('/reviews/{orderItem}', [ReviewController::class, 'store'])->name('reviews.store');
     Route::post('/products/{product}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
@@ -124,6 +127,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/finance', SellerFinanceController::class)->name('finance');
         Route::get('/settings', [\App\Http\Controllers\SellerSettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [\App\Http\Controllers\SellerSettingsController::class, 'update'])->name('settings.update');
+        Route::get('/bundles', [\App\Http\Controllers\SellerBundleController::class, 'index'])->name('bundles.index');
+        Route::post('/bundles', [\App\Http\Controllers\SellerBundleController::class, 'store'])->name('bundles.store');
+        Route::put('/bundles/{bundle}', [\App\Http\Controllers\SellerBundleController::class, 'update'])->name('bundles.update');
+        Route::delete('/bundles/{bundle}', [\App\Http\Controllers\SellerBundleController::class, 'destroy'])->name('bundles.destroy');
         Route::get('/subscription', [\App\Http\Controllers\SellerSubscriptionController::class, 'index'])->name('subscription.index');
         Route::post('/subscription/{plan}', [\App\Http\Controllers\SellerSubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
         Route::post('/subscription/{subscription}/cancel', [\App\Http\Controllers\SellerSubscriptionController::class, 'cancel'])->name('subscription.cancel');

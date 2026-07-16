@@ -4,6 +4,7 @@
     ['route' => 'seller.sales', 'match' => 'seller.sales', 'icon' => 'receipt_long', 'label' => 'Sales'],
     ['route' => 'seller.customers', 'match' => 'seller.customers', 'icon' => 'group', 'label' => 'Customers'],
     ['route' => 'seller.coupons.index', 'match' => 'seller.coupons.*', 'icon' => 'sell', 'label' => 'Coupons'],
+    ['route' => 'seller.bundles.index', 'match' => 'seller.bundles.*', 'icon' => 'package_2', 'label' => 'Bundles'],
     ['route' => 'seller.finance', 'match' => 'seller.finance', 'icon' => 'account_balance_wallet', 'label' => 'Earnings'],
     ['route' => 'seller.subscription.index', 'match' => 'seller.subscription.*', 'icon' => 'workspace_premium', 'label' => 'Plan'],
     ['route' => 'seller.settings.edit', 'match' => 'seller.settings.*', 'icon' => 'settings', 'label' => 'Settings'],
