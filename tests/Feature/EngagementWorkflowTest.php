@@ -30,6 +30,30 @@ class EngagementWorkflowTest extends TestCase
  {
   $p=$this->purchase();app(ReviewService::class)->create($p['buyer'],$p['item']->load('order','license'),['rating'=>4,'title'=>'Very useful','content'=>'A detailed genuine review.']);$this->assertEquals(4,$p['product']->fresh()->average_rating);$ticket=app(SupportService::class)->open($p['buyer'],$p['license']->load('orderItem.order'),['subject'=>'Installation help','message'=>'Please help me configure the application.']);$this->assertSame($p['seller']->id,$ticket->seller_id);$this->assertDatabaseHas('support_messages',['support_ticket_id'=>$ticket->id,'user_id'=>$p['buyer']->id]);
  }
+ public function test_resubmitting_a_review_updates_it_instead_of_erroring():void
+ {
+  $p=$this->purchase();
+  $this->actingAs($p['buyer'])->post('/reviews/'.$p['item']->id,['rating'=>5,'title'=>'First impression','content'=>'A detailed genuine review.'])->assertRedirect();
+  // Same buyer, same product, second purchase — resubmitting must edit, not 500 on the unique index.
+  $secondOrder=Order::create(['number'=>'DM-ENGAGE-2','user_id'=>$p['buyer']->id,'currency'=>'USD','subtotal'=>100,'total'=>100,'payment_status'=>'paid','status'=>'completed','paid_at'=>now()]);
+  $secondItem=$secondOrder->items()->create(['product_id'=>$p['product']->id,'seller_id'=>$p['seller']->id,'license_type_id'=>$p['license']->license_type_id,'product_title'=>'Helpdesk','seller_name'=>$p['seller']->name,'license_name'=>'Regular','unit_price'=>100,'platform_commission'=>20,'seller_earning'=>80,'total'=>100]);
+  License::create(['license_key'=>'DM-ENGAGE-LICENSE-2','product_id'=>$p['product']->id,'user_id'=>$p['buyer']->id,'order_item_id'=>$secondItem->id,'license_type_id'=>$p['license']->license_type_id,'status'=>'active']);
+  $this->actingAs($p['buyer'])->post('/reviews/'.$secondItem->id,['rating'=>3,'title'=>'Revised opinion','content'=>'An updated genuine review.'])->assertRedirect()->assertSessionHas('status','Your review has been updated.');
+  $this->assertSame(1,\App\Models\Review::where('product_id',$p['product']->id)->where('user_id',$p['buyer']->id)->count());
+  $this->assertDatabaseHas('reviews',['product_id'=>$p['product']->id,'user_id'=>$p['buyer']->id,'rating'=>3,'title'=>'Revised opinion']);
+  // The product's average reflects the edited rating.
+  $this->assertEquals(3,$p['product']->fresh()->average_rating);
+ }
+
+ public function test_admin_rejected_review_stays_rejected_when_buyer_resubmits():void
+ {
+  $p=$this->purchase();
+  app(ReviewService::class)->create($p['buyer'],$p['item']->load('order','license'),['rating'=>5,'title'=>'Great','content'=>'A detailed genuine review.']);
+  \App\Models\Review::query()->update(['status'=>'rejected']);
+  app(ReviewService::class)->create($p['buyer'],$p['item']->load('order','license'),['rating'=>5,'title'=>'Trying again','content'=>'A detailed genuine review.']);
+  $this->assertDatabaseHas('reviews',['product_id'=>$p['product']->id,'status'=>'rejected','title'=>'Trying again']);
+ }
+
  public function test_public_comments_support_threaded_replies():void
  {
   $p=$this->purchase();$this->actingAs($p['buyer'])->post('/products/'.$p['product']->id.'/comments',['content'=>'Does this support multiple teams?'])->assertRedirect();$parent=$p['product']->comments()->firstOrFail();$this->actingAs($p['seller'])->post('/products/'.$p['product']->id.'/comments',['content'=>'Yes, unlimited teams are supported.','parent_id'=>$parent->id])->assertRedirect();$this->assertDatabaseHas('comments',['parent_id'=>$parent->id,'user_id'=>$p['seller']->id]);
