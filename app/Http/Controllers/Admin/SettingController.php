@@ -53,6 +53,11 @@ class SettingController extends Controller
    'payments.paystack_public_key'=>['label'=>'Public key','group'=>'payments','type'=>'text'],
    'payments.paystack_secret'=>['label'=>'Secret key','group'=>'payments','type'=>'password','encrypted'=>true,'hint'=>'Also verifies inbound webhook signatures.'],
   ]],
+  'payouts'=>['title'=>'Payout Methods','icon'=>'account_balance_wallet','fields'=>[
+   'payouts.stripe.enabled'=>['label'=>'Stripe Connect payouts','group'=>'payouts','type'=>'toggle','default'=>'1','hint'=>'Hides the Connect Stripe button and the Stripe option on withdrawals when disabled.'],
+   'payouts.paypal.enabled'=>['label'=>'PayPal payouts','group'=>'payouts','type'=>'toggle','default'=>'1'],
+   'payouts.bank.enabled'=>['label'=>'Bank transfer payouts','group'=>'payouts','type'=>'toggle','default'=>'1'],
+  ]],
   'payments_bank'=>['title'=>'Bank Transfer','icon'=>'account_balance','fields'=>[
    'payments.bank_transfer.enabled'=>['label'=>'Offer bank transfer at checkout','group'=>'payments','type'=>'toggle','default'=>'0'],
    'payments.bank_transfer_instructions'=>['label'=>'Transfer instructions shown to buyers','group'=>'payments','type'=>'textarea','hint'=>'Account name, IBAN/SWIFT and reference guidance. Orders stay unpaid until an admin confirms receipt.'],

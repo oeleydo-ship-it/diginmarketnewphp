@@ -5,7 +5,9 @@
             <p class="font-mono text-xs font-medium uppercase tracking-wider text-primary">Seller Wallet</p>
             <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">Earnings & Payouts</h1>
         </div>
-        @if(!$connected?->payouts_enabled)
+        @if(! \App\Support\PayoutMethods::isEnabled('stripe'))
+            {{-- Stripe Connect payouts switched off by the admin: no connect prompt at all. --}}
+        @elseif(!$connected?->payouts_enabled)
             <a href="{{ route('seller.connect.start') }}" class="flex h-fit items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
                 <span class="material-symbols-outlined text-[20px]">account_balance</span>
                 Connect Stripe
@@ -85,6 +87,10 @@
                             <p class="mt-2 text-on-surface-variant">Your available balance is below the ${{ number_format($minWithdrawal, 2) }} minimum. Keep selling — earnings appear here once they clear.</p>
                         @endif
                     </div>
+                @elseif($profile?->hasDefaultPayout() && ! \App\Support\PayoutMethods::isEnabled($dm))
+                    {{-- Saved default was disabled by the admin: explain and fall back to the full form. --}}
+                    <p class="mt-4 rounded-lg border border-tertiary-fixed-dim/50 bg-tertiary-fixed/10 p-3 text-sm text-on-surface-variant">Your saved payout method ({{ $labels[$dm] ?? $dm }}) is no longer offered. Choose another method below and save it as your new default.</p>
+                    @include('seller.partials.withdrawal-form', ['fld' => $fld, 'wallet' => $wallet, 'dm' => null, 'dd' => [], 'showSaveDefault' => true])
                 @elseif($profile?->hasDefaultPayout())
                     <div class="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
                         <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary"><span class="material-symbols-outlined text-[16px]">bookmark</span>Saved payout method</p>
@@ -117,15 +123,21 @@
                     <p class="mb-4 text-sm text-on-surface-variant">Save your default payout method once — future withdrawals only need an amount.</p>
                     <form method="POST" action="{{ route('seller.payout-settings.update') }}" class="space-y-3" data-payout-form>
                         @csrf @method('PUT')
+                        @php($enabledMethods = \App\Support\PayoutMethods::enabled())
                         <select name="payout_method" data-payout-method class="{{ $fld }}">
-                            <option value="stripe" @selected(($dm ?? 'stripe') === 'stripe')>Stripe Connect</option>
-                            <option value="paypal" @selected($dm === 'paypal')>PayPal</option>
-                            <option value="bank" @selected($dm === 'bank')>Bank transfer</option>
+                            @foreach($enabledMethods as $method)
+                                <option value="{{ $method }}" @selected(($dm ?? $enabledMethods[0] ?? '') === $method)>{{ \App\Support\PayoutMethods::LABELS[$method] }}</option>
+                            @endforeach
                         </select>
+                        @if(in_array('stripe', $enabledMethods, true))
                         <div data-payout-fields="stripe" class="rounded-lg bg-surface-container-high p-3 text-xs text-on-surface-variant">Paid to your connected Stripe account.</div>
+                        @endif
+                        @if(in_array('paypal', $enabledMethods, true))
                         <div data-payout-fields="paypal" class="hidden">
                             <input name="paypal_email" type="email" value="{{ $dd['email'] ?? '' }}" placeholder="PayPal email" class="{{ $fld }}">
                         </div>
+                        @endif
+                        @if(in_array('bank', $enabledMethods, true))
                         <div data-payout-fields="bank" class="hidden space-y-2">
                             <input name="bank_name" value="{{ $dd['bank_name'] ?? '' }}" placeholder="Bank name" class="{{ $fld }}">
                             <input name="account_name" value="{{ $dd['account_name'] ?? '' }}" placeholder="Account holder name" class="{{ $fld }}">
@@ -135,6 +147,7 @@
                                 <input name="swift" value="{{ $dd['swift'] ?? '' }}" placeholder="SWIFT/BIC (optional)" class="{{ $fld }}">
                             </div>
                         </div>
+                        @endif
                         <button class="w-full rounded-lg border border-primary py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary hover:text-on-primary active:scale-95">Save default</button>
                     </form>
                 </div>

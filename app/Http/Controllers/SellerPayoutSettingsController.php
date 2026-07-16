@@ -7,7 +7,7 @@ class SellerPayoutSettingsController extends Controller
  public function update(): RedirectResponse
  {
   $data=request()->validate([
-   'payout_method'=>['required',Rule::in(['stripe','paypal','bank'])],
+   'payout_method'=>['required',Rule::in(\App\Support\PayoutMethods::enabled())],
    'paypal_email'=>['required_if:payout_method,paypal','nullable','email','max:255'],
    'bank_name'=>['required_if:payout_method,bank','nullable','string','max:120'],
    'account_name'=>['required_if:payout_method,bank','nullable','string','max:120'],

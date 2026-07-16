@@ -107,6 +107,34 @@ class SellerFinanceTest extends TestCase
   $this->assertEquals(80,(float)SellerWallet::where('seller_id',$sale['seller']->id)->value('available_balance'));
  }
 
+ public function test_admin_disabled_payout_methods_are_hidden_and_rejected():void
+ {
+  \App\Models\Setting::put('payouts.stripe.enabled','0','payouts');
+  $seller=$this->seller();
+  // Give the seller an available balance so the withdrawal form renders.
+  $wallet=SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>100,'lifetime_earnings'=>100]);
+  $page=$this->actingAs($seller)->get('/seller/finance');
+  $page->assertOk()->assertDontSee('Connect Stripe')->assertDontSee('Stripe Connect')->assertSee('PayPal');
+  // Server-side: a stripe withdrawal is rejected even if the request is forged.
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>50,'payout_method'=>'stripe'])->assertSessionHasErrors('payout_method');
+  $this->assertDatabaseCount('withdrawal_requests',0);
+  // Enabled methods still work.
+  $this->actingAs($seller)->post('/seller/withdrawals',['amount'=>50,'payout_method'=>'paypal','paypal_email'=>'p@example.com'])->assertRedirect();
+  $this->assertDatabaseHas('withdrawal_requests',['payout_method'=>'paypal']);
+ }
+
+ public function test_saved_default_using_disabled_method_cannot_quick_withdraw():void
+ {
+  $seller=$this->seller();
+  $seller->sellerProfile->update(['default_payout_method'=>'paypal','default_payout_details'=>['email'=>'p@example.com']]);
+  SellerWallet::create(['seller_id'=>$seller->id,'currency'=>'USD','available_balance'=>100,'lifetime_earnings'=>100]);
+  \App\Models\Setting::put('payouts.paypal.enabled','0','payouts');
+  $this->actingAs($seller)->post('/seller/withdrawals',['use_default'=>1,'amount'=>50])->assertStatus(422);
+  $this->assertDatabaseCount('withdrawal_requests',0);
+  // The finance page falls back to the full form with a notice instead of the quick form.
+  $this->actingAs($seller)->get('/seller/finance')->assertOk()->assertSee('no longer offered');
+ }
+
  public function test_seller_saves_default_payout_method():void
  {
   $seller=$this->seller();

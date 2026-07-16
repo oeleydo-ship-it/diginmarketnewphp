@@ -4,18 +4,24 @@
     <input name="amount" type="number" step="0.01" required min="{{ (float) config('marketplace.minimum_withdrawal') }}" max="{{ $wallet->available_balance }}" value="{{ old('amount') }}" placeholder="Amount" class="{{ $fld }}">
     <div>
         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Payout method</label>
+        @php($enabledMethods = \App\Support\PayoutMethods::enabled())
         <select name="payout_method" data-payout-method class="{{ $fld }}">
-            <option value="stripe" @selected(old('payout_method', $dm ?? 'stripe') === 'stripe')>Stripe Connect</option>
-            <option value="paypal" @selected(old('payout_method', $dm) === 'paypal')>PayPal</option>
-            <option value="bank" @selected(old('payout_method', $dm) === 'bank')>Bank transfer</option>
+            @foreach($enabledMethods as $method)
+                <option value="{{ $method }}" @selected(old('payout_method', $dm ?? $enabledMethods[0]) === $method)>{{ \App\Support\PayoutMethods::LABELS[$method] }}</option>
+            @endforeach
         </select>
     </div>
+    @if(in_array('stripe', $enabledMethods, true))
     <div data-payout-fields="stripe" class="rounded-lg bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
         Paid to your connected Stripe account.
     </div>
+    @endif
+    @if(in_array('paypal', $enabledMethods, true))
     <div data-payout-fields="paypal" class="hidden">
         <input name="paypal_email" type="email" value="{{ old('paypal_email', $dd['email'] ?? '') }}" placeholder="PayPal email" class="{{ $fld }}">
     </div>
+    @endif
+    @if(in_array('bank', $enabledMethods, true))
     <div data-payout-fields="bank" class="hidden space-y-2">
         <input name="bank_name" value="{{ old('bank_name', $dd['bank_name'] ?? '') }}" placeholder="Bank name" class="{{ $fld }}">
         <input name="account_name" value="{{ old('account_name', $dd['account_name'] ?? '') }}" placeholder="Account holder name" class="{{ $fld }}">
@@ -25,6 +31,7 @@
             <input name="swift" value="{{ old('swift', $dd['swift'] ?? '') }}" placeholder="SWIFT/BIC (optional)" class="{{ $fld }}">
         </div>
     </div>
+    @endif
     @if($showSaveDefault ?? false)
         <label class="flex items-center gap-2 text-sm text-on-surface-variant">
             <input type="checkbox" name="save_default" value="1" class="rounded border-outline-variant text-primary focus:ring-primary/20">
