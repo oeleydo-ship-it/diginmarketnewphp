@@ -5,6 +5,7 @@
     ['route' => 'seller.customers', 'match' => 'seller.customers', 'icon' => 'group', 'label' => 'Customers'],
     ['route' => 'seller.coupons.index', 'match' => 'seller.coupons.*', 'icon' => 'sell', 'label' => 'Coupons'],
     ['route' => 'seller.finance', 'match' => 'seller.finance', 'icon' => 'account_balance_wallet', 'label' => 'Earnings'],
+    ['route' => 'seller.settings.edit', 'match' => 'seller.settings.*', 'icon' => 'settings', 'label' => 'Settings'],
 ])
 <div class="mb-8 flex gap-1 overflow-x-auto border-b border-outline-variant">
     @foreach($tabs as $tab)
