@@ -35,6 +35,7 @@ class PaymentFulfillmentService
         });
         if (! $wasPaid && $order->payment_status === 'paid') {
             $this->mailer->orderPaid($order);
+            app(AdminNotifier::class)->notify('order', 'New paid order '.$order->number.' — $'.number_format((float) $order->total, 2), route('admin.orders.index'));
         }
 
         return $order;

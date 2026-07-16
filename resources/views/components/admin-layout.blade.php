@@ -30,7 +30,39 @@
   <div class="min-w-0 lg:col-start-2">
    <header class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[#d7d9e5] bg-[#f8f9ff]/95 px-5 backdrop-blur md:px-8">
     <div class="flex items-center gap-3"><button data-admin-toggle class="rounded-lg p-2 hover:bg-[#eef1fa] lg:hidden" aria-label="Open navigation"><span class="material-symbols-outlined">menu</span></button><form action="{{ route('admin.orders.index') }}" class="relative hidden sm:block"><span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#555868]">search</span><input name="q" class="w-[min(42vw,480px)] rounded-xl border-0 bg-[#edf2ff] py-3 pl-12 pr-4 text-sm outline-none ring-[#4338db]/20 focus:ring-2" placeholder="Search orders, IDs, customers..."></form></div>
-    <div class="flex items-center gap-4"><span class="material-symbols-outlined">notifications</span><span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#4338db] font-bold text-white">{{ str(auth()->user()->name)->substr(0,1)->upper() }}</span><strong class="hidden text-sm sm:block">Admin Panel</strong></div>
+    <div class="flex items-center gap-4">
+     @php($unreadCount = auth()->user()->unreadNotifications()->count())
+     @php($recentNotifications = auth()->user()->notifications()->latest()->limit(10)->get())
+     @php($kindIcons = ['order' => 'shopping_cart', 'seller' => 'store', 'review' => 'rate_review', 'withdrawal' => 'payments', 'refund' => 'assignment_return', 'dispute' => 'gavel', 'subscription' => 'workspace_premium'])
+     <details class="relative">
+      <summary class="relative flex cursor-pointer list-none items-center rounded-lg p-2 hover:bg-[#eef1fa] [&::-webkit-details-marker]:hidden" aria-label="Notifications">
+       <span class="material-symbols-outlined">notifications</span>
+       @if($unreadCount > 0)<span class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
+      </summary>
+      <div class="absolute right-0 z-50 mt-2 w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-xl">
+       <div class="flex items-center justify-between border-b border-[#eceef5] px-4 py-3">
+        <p class="text-sm font-bold">Notifications</p>
+        @if($unreadCount > 0)
+         <form method="POST" action="{{ route('admin.notifications.read-all') }}">@csrf<button class="text-xs font-semibold text-[#3525cd] hover:underline">Mark all read</button></form>
+        @endif
+       </div>
+       <div class="max-h-[420px] divide-y divide-[#eceef5] overflow-y-auto">
+        @forelse($recentNotifications as $notification)
+         <a href="{{ route('admin.notifications.open', $notification->id) }}" class="flex items-start gap-3 px-4 py-3 transition hover:bg-[#f6f8ff] {{ $notification->read_at ? 'opacity-60' : '' }}">
+          <span class="material-symbols-outlined mt-0.5 text-[20px] text-[#3525cd]">{{ $kindIcons[$notification->data['kind'] ?? ''] ?? 'notifications' }}</span>
+          <span class="min-w-0 flex-1">
+           <span class="block truncate text-sm {{ $notification->read_at ? '' : 'font-semibold' }}">{{ $notification->data['title'] ?? 'Notification' }}</span>
+           <span class="text-xs text-[#777a8a]">{{ $notification->created_at->diffForHumans() }}</span>
+          </span>
+          @unless($notification->read_at)<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#3525cd]"></span>@endunless
+         </a>
+        @empty
+         <p class="px-4 py-10 text-center text-sm text-[#777a8a]">Nothing yet — new orders, applications and requests appear here.</p>
+        @endforelse
+       </div>
+      </div>
+     </details>
+     <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#4338db] font-bold text-white">{{ str(auth()->user()->name)->substr(0,1)->upper() }}</span><strong class="hidden text-sm sm:block">Admin Panel</strong></div>
    </header>
    <main>@if(session('status'))<div class="mx-auto mt-5 max-w-[1400px] px-5 md:px-8"><div class="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"><span class="material-symbols-outlined">check_circle</span>{{ session('status') }}</div></div>@endif{{ $slot }}</main>
   </div>

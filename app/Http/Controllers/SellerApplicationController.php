@@ -16,5 +16,5 @@ class SellerApplicationController extends Controller
   }
   return view('seller.apply');
  }
- public function store(StoreSellerApplicationRequest $request): RedirectResponse { abort_unless(\App\Models\Setting::enabled('features.seller_applications'),403,'Seller applications are currently closed.');$request->user()->sellerProfile()->create($request->validated()+['status'=>SellerStatus::Pending]);return redirect()->route('dashboard')->with('status','Seller application submitted for review.'); }
+ public function store(StoreSellerApplicationRequest $request): RedirectResponse { abort_unless(\App\Models\Setting::enabled('features.seller_applications'),403,'Seller applications are currently closed.');$profile=$request->user()->sellerProfile()->create($request->validated()+['status'=>SellerStatus::Pending]);app(\App\Services\AdminNotifier::class)->notify('seller','New seller application: '.$profile->display_name,route('admin.sellers.index'));return redirect()->route('dashboard')->with('status','Seller application submitted for review.'); }
 }

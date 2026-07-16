@@ -30,6 +30,8 @@ class SubscriptionService
             ]);
             if ($plan->isFree()) {
                 $this->activate($subscription, 'free-plan');
+            } else {
+                app(AdminNotifier::class)->notify('subscription', 'Subscription awaiting activation: '.$plan->name.' for '.$seller->name, route('admin.subscription-plans.index'));
             }
 
             return $subscription->fresh();

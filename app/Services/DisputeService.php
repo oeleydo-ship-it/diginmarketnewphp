@@ -13,11 +13,13 @@ class DisputeService
  {
   if($item->order->user_id!==$user->id||!in_array($item->order->payment_status,['paid','partially_refunded'],true))throw ValidationException::withMessages(['order'=>'Only paid purchases can be disputed.']);
   if(Dispute::where('order_item_id',$item->id)->exists())throw ValidationException::withMessages(['order'=>'A dispute already exists for this purchase.']);
-  return DB::transaction(function()use($user,$item,$data){
+  $dispute=DB::transaction(function()use($user,$item,$data){
    $dispute=Dispute::create(['number'=>'DP-'.str()->upper(str()->random(10)),'user_id'=>$user->id,'order_id'=>$item->order_id,'order_item_id'=>$item->id,'product_id'=>$item->product_id,'seller_id'=>$item->seller_id,'type'=>$data['type'],'description'=>$data['description'],'disputed_amount'=>$item->total,'status'=>'open']);
    if($item->license&&$item->license->status==='active')$item->license->update(['status'=>'suspended']);
    return $dispute;
   });
+  app(AdminNotifier::class)->notify('dispute','Dispute opened: '.$dispute->number.' for '.$item->product_title,route('admin.disputes.index'));
+  return $dispute;
  }
  public function uphold(Dispute $dispute,User $admin,float $amount,string $decision=''):void
  {
