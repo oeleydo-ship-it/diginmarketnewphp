@@ -47,6 +47,36 @@ class PaymentGatewayTest extends TestCase
   $this->assertNotContains('razorpay',$manager->availableKeysFor('USD'));
  }
 
+ public function test_success_page_fulfils_immediately_when_provider_verifies_payment(): void
+ {
+  // Gateway whose synchronous verification reports the order as paid (as Stripe's API would).
+  $this->app->bind(StripeCheckoutGateway::class,fn()=>new class extends StripeCheckoutGateway{public function isConfigured():bool{return true;}public function createCheckout(Order $order):array{return ['id'=>'cs_'.$order->id,'url'=>'https://checkout.stripe.test/'.$order->id];}public function verifyReturn(Order $order):?array{return ['payment_id'=>'pi_return_'.$order->id,'payload'=>['source'=>'return_verification']];}});
+  $product=$this->product();$customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$product->id,['license_type_id'=>LicenseType::first()->id]);
+  $this->post('/checkout',['payment_provider'=>'stripe']);
+  $order=$customer->orders()->firstOrFail();
+  $this->assertSame('pending',$order->payment_status);
+  // Landing on the success page verifies with the provider and unlocks the purchase at once.
+  $this->get('/checkout/'.$order->id.'/success')->assertOk()->assertSee('Payment Successful');
+  $this->assertSame('paid',$order->fresh()->payment_status);
+  $this->assertDatabaseCount('licenses',1);
+  // Idempotent: revisiting (or a late webhook) cannot double-fulfil.
+  $this->get('/checkout/'.$order->id.'/success')->assertOk();
+  $this->assertDatabaseCount('payments',1);
+ }
+
+ public function test_success_page_stays_pending_when_provider_has_not_confirmed(): void
+ {
+  $this->app->bind(StripeCheckoutGateway::class,fn()=>new class extends StripeCheckoutGateway{public function isConfigured():bool{return true;}public function createCheckout(Order $order):array{return ['id'=>'cs_'.$order->id,'url'=>'https://checkout.stripe.test/'.$order->id];}public function verifyReturn(Order $order):?array{return null;}});
+  $product=$this->product();$customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$product->id,['license_type_id'=>LicenseType::first()->id]);
+  $this->post('/checkout',['payment_provider'=>'stripe']);
+  $order=$customer->orders()->firstOrFail();
+  $this->get('/checkout/'.$order->id.'/success')->assertOk()->assertSee('Confirming Your Payment');
+  $this->assertSame('pending',$order->fresh()->payment_status);
+  $this->assertDatabaseCount('licenses',0);
+ }
+
  public function test_checkout_persists_chosen_provider(): void
  {
   $this->fakeStripe();$product=$this->product();$customer=User::factory()->create();

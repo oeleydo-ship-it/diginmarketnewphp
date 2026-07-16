@@ -39,4 +39,10 @@ abstract class Gateway implements CheckoutGateway
     {
         return hash_equals($expected, $received);
     }
+
+    /** Default: no synchronous verification — the webhook is the only confirmation path. */
+    public function verifyReturn(Order $order): ?array
+    {
+        return null;
+    }
 }

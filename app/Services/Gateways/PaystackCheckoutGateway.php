@@ -28,6 +28,20 @@ class PaystackCheckoutGateway extends Gateway
         return ['id' => (string) $response->json('data.reference'), 'url' => (string) $response->json('data.authorization_url')];
     }
 
+    /** Paystack's verify endpoint confirms a transaction by reference (we use the order number). */
+    public function verifyReturn(Order $order): ?array
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+        $response = Http::withToken((string) config('services.paystack.secret'))->get('https://api.paystack.co/transaction/verify/'.rawurlencode($order->number));
+        if ($response->failed() || $response->json('data.status') !== 'success') {
+            return null;
+        }
+
+        return ['payment_id' => (string) ($order->number), 'payload' => ['source' => 'return_verification', 'paystack_id' => $response->json('data.id')]];
+    }
+
     public function parseWebhook(string $payload, array $headers): ?array
     {
         // Paystack signs with SHA512 over the raw body using the same secret key as the API.

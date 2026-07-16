@@ -26,6 +26,21 @@ class StripeCheckoutGateway extends Gateway
         return ['id' => $session->id, 'url' => $session->url];
     }
 
+    /** Retrieve the stored checkout session from Stripe's API and confirm it is actually paid. */
+    public function verifyReturn(Order $order): ?array
+    {
+        if (! $order->provider_checkout_id || ! $this->isConfigured()) {
+            return null;
+        }
+        $stripe = new StripeClient((string) config('services.stripe.secret'));
+        $session = $stripe->checkout->sessions->retrieve($order->provider_checkout_id);
+        if ($session->payment_status !== 'paid') {
+            return null;
+        }
+
+        return ['payment_id' => (string) ($session->payment_intent ?: $session->id), 'payload' => ['source' => 'return_verification', 'session_id' => $session->id, 'payment_status' => $session->payment_status]];
+    }
+
     public function parseWebhook(string $payload, array $headers): ?array
     {
         $event = Webhook::constructEvent($payload, (string) ($headers['stripe-signature'] ?? ''), (string) config('services.stripe.webhook_secret'));
