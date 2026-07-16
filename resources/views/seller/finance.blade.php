@@ -66,11 +66,26 @@
                 $dd = $profile?->default_payout_details ?? [];
                 $defaultDest = $dm === 'paypal' ? ($dd['email'] ?? '') : ($dm === 'bank' ? trim(($dd['bank_name'] ?? '').' ····'.substr($dd['account_number'] ?? '', -4)) : 'Connected Stripe account');
             @endphp
+            @php($minWithdrawal = (float) config('marketplace.minimum_withdrawal'))
+            @php($canWithdraw = (float) $wallet->available_balance >= $minWithdrawal)
             <div class="rounded-xl border border-outline-variant bg-surface-container-high p-6">
                 <h2 class="font-display text-xl font-semibold">Request Withdrawal</h2>
                 <p class="mt-2 text-sm text-on-surface-variant">Minimum ${{ config('marketplace.minimum_withdrawal') }}. Funds are reserved during review.</p>
 
-                @if($profile?->hasDefaultPayout())
+                @if(! $canWithdraw)
+                    {{-- Nothing withdrawable yet: explain the clearance window instead of rendering a form that can only fail. --}}
+                    <div class="mt-5 rounded-lg border border-tertiary-fixed-dim/50 bg-tertiary-fixed/10 p-4 text-sm">
+                        <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[18px]">hourglass_top</span>No funds available to withdraw yet</p>
+                        @if((float) $wallet->pending_balance > 0)
+                            <p class="mt-2 text-on-surface-variant">
+                                ${{ number_format((float) $wallet->pending_balance, 2) }} is pending clearance — new earnings are held for {{ (int) config('marketplace.earnings_clearance_days') }} days to cover the refund window.
+                                @if($nextClearance)Your earliest earning becomes available on <strong>{{ $nextClearance->toFormattedDateString() }}</strong>.@endif
+                            </p>
+                        @else
+                            <p class="mt-2 text-on-surface-variant">Your available balance is below the ${{ number_format($minWithdrawal, 2) }} minimum. Keep selling — earnings appear here once they clear.</p>
+                        @endif
+                    </div>
+                @elseif($profile?->hasDefaultPayout())
                     <div class="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
                         <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary"><span class="material-symbols-outlined text-[16px]">bookmark</span>Saved payout method</p>
                         <p class="mt-1 font-semibold">{{ $labels[$dm] ?? 'Stripe Connect' }}</p>
@@ -78,7 +93,7 @@
                         <form method="POST" action="{{ route('seller.withdrawals.store') }}" class="mt-3 flex gap-2">
                             @csrf
                             <input type="hidden" name="use_default" value="1">
-                            <input name="amount" type="number" step="0.01" max="{{ $wallet->available_balance }}" placeholder="Amount" class="{{ $fld }}">
+                            <input name="amount" type="number" step="0.01" required min="{{ $minWithdrawal }}" max="{{ $wallet->available_balance }}" placeholder="Amount" class="{{ $fld }}">
                             <button class="whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Withdraw</button>
                         </form>
                     </div>

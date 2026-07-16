@@ -44,6 +44,40 @@ class SellerFinanceTest extends TestCase
   \App\Models\SellerProfile::create(['user_id'=>$u->id,'display_name'=>'S','username'=>'s-'.$u->id,'country'=>'AE','biography'=>'x','status'=>\App\Enums\SellerStatus::Approved]);
   return $u;
  }
+ public function test_finance_page_explains_pending_clearance_instead_of_withdrawal_form():void
+ {
+  config(['marketplace.earnings_clearance_days'=>14]);
+  $sale=$this->sale();$seller=$sale['seller'];$seller->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'seller'],['name'=>'Seller']));
+  app(PaymentFulfillmentService::class)->fulfill($sale['order']->id,'pi_pending_ui');
+  $response=$this->actingAs($seller)->get('/seller/finance');
+  $response->assertOk()->assertSee('No funds available to withdraw yet')->assertSee('pending clearance')->assertDontSee('Request Withdrawal</h2><form',false);
+ }
+
+ public function test_lowering_clearance_days_releases_already_pending_earnings():void
+ {
+  config(['marketplace.earnings_clearance_days'=>14]);
+  $sale=$this->sale();
+  app(PaymentFulfillmentService::class)->fulfill($sale['order']->id,'pi_release');
+  // Stamped to clear in 14 days, so nothing is eligible yet.
+  $this->assertSame(0,app(SellerWalletService::class)->clearEligible());
+  // Admin lowers the window to 0 — the pending earning clears on the next run.
+  config(['marketplace.earnings_clearance_days'=>0]);
+  $this->assertSame(1,app(SellerWalletService::class)->clearEligible());
+  $wallet=SellerWallet::where('seller_id',$sale['seller']->id)->firstOrFail();
+  $this->assertEquals(0,(float)$wallet->pending_balance);
+  $this->assertEquals(80,(float)$wallet->available_balance);
+ }
+
+ public function test_admin_can_run_clearance_now():void
+ {
+  config(['marketplace.earnings_clearance_days'=>0]);
+  $sale=$this->sale();
+  app(PaymentFulfillmentService::class)->fulfill($sale['order']->id,'pi_admin_clear');
+  $admin=User::factory()->create();$admin->roles()->attach(\App\Models\Role::firstOrCreate(['slug'=>'administrator'],['name'=>'Administrator']));
+  $this->actingAs($admin)->post('/admin/system/clear-earnings')->assertRedirect();
+  $this->assertEquals(80,(float)SellerWallet::where('seller_id',$sale['seller']->id)->value('available_balance'));
+ }
+
  public function test_seller_saves_default_payout_method():void
  {
   $seller=$this->seller();

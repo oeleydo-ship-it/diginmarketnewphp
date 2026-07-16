@@ -1,7 +1,7 @@
 {{-- Full withdrawal form with method picker. Pre-filled from the saved default ($dm/$dd) when present. --}}
 <form method="POST" action="{{ route('seller.withdrawals.store') }}" class="mt-4 space-y-3" data-payout-form>
     @csrf
-    <input name="amount" type="number" step="0.01" max="{{ $wallet->available_balance }}" value="{{ old('amount') }}" placeholder="Amount" class="{{ $fld }}">
+    <input name="amount" type="number" step="0.01" required min="{{ (float) config('marketplace.minimum_withdrawal') }}" max="{{ $wallet->available_balance }}" value="{{ old('amount') }}" placeholder="Amount" class="{{ $fld }}">
     <div>
         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Payout method</label>
         <select name="payout_method" data-payout-method class="{{ $fld }}">
