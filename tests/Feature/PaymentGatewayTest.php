@@ -77,6 +77,22 @@ class PaymentGatewayTest extends TestCase
   $this->assertDatabaseCount('licenses',0);
  }
 
+ public function test_purchase_page_renders_for_multi_item_orders(): void
+ {
+  // Two items matter: the lazy-loading guard only throws on collections of ≥2, so a
+  // single-item fixture would pass while a real two-product order 500s.
+  $this->fakeStripe();
+  $first=$this->product();
+  $second=Product::create(['seller_id'=>$first->seller_id,'category_id'=>$first->category_id,'title'=>'Kit Two','slug'=>'kit-two','short_description'=>'Second kit.','description'=>str_repeat('Kit two. ',5),'regular_price'=>'25.00','support_extension_price'=>'9.00','status'=>\App\Enums\ProductStatus::Published,'published_at'=>now()]);
+  $customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$first->id,['license_type_id'=>LicenseType::first()->id]);
+  $this->post('/cart/'.$second->id,['license_type_id'=>LicenseType::first()->id]);
+  $this->post('/checkout',['payment_provider'=>'stripe']);
+  $order=$customer->orders()->firstOrFail();
+  app(PaymentFulfillmentService::class)->fulfill($order->id,'pi_multi');
+  $this->get('/purchases/'.$order->id)->assertOk()->assertSee('Extend 6 months');
+ }
+
  public function test_checkout_persists_chosen_provider(): void
  {
   $this->fakeStripe();$product=$this->product();$customer=User::factory()->create();
