@@ -114,10 +114,11 @@
         @if($product->images->count() < 6)
             <form method="POST" action="{{ route('seller.products.images.store', $product) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
                 @csrf
-                <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60">
-                    <span class="material-symbols-outlined text-[28px] text-primary">add_photo_alternate</span>
-                    <span class="text-sm text-on-surface-variant">Add images — they upload as soon as you choose them</span>
-                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple data-auto-submit class="text-sm">
+                <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
+                    <span class="material-symbols-outlined text-[28px] text-primary" aria-hidden="true">add_photo_alternate</span>
+                    <span class="text-sm text-on-surface-variant" data-file-label>Add images — they upload as soon as you choose them</span>
+                    <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · 5 MB each · recommended 1280×720 px (16:9) or larger</span>
+                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple data-auto-submit data-file-input class="sr-only">
                 </label>
                 <div class="flex flex-1 flex-col gap-1.5">
                     <label class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Or paste image URLs (one per line)</label>

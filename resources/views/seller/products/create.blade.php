@@ -50,18 +50,20 @@
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="{{ $label }}">Product ZIP</label>
-            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60">
-                <span class="material-symbols-outlined text-[32px] text-primary">upload_file</span>
-                <span class="text-sm text-on-surface-variant">Drop your ZIP here or click to browse</span>
-                <input name="archive" type="file" accept=".zip" required class="text-sm">
+            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
+                <span class="material-symbols-outlined text-[32px] text-primary" aria-hidden="true">upload_file</span>
+                <span class="text-sm text-on-surface-variant" data-file-label>Drop your ZIP here or click to browse</span>
+                <span class="text-xs text-on-surface-variant/70">ZIP only · up to 100 MB</span>
+                <input name="archive" type="file" accept=".zip" required class="sr-only" data-file-input>
             </label>
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
-            <label class="{{ $label }}">Product images <span class="font-normal normal-case text-on-surface-variant">(optional — up to 6, JPG/PNG/WebP, 5&nbsp;MB each; the first becomes the cover)</span></label>
-            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60">
-                <span class="material-symbols-outlined text-[32px] text-primary">add_photo_alternate</span>
-                <span class="text-sm text-on-surface-variant">Add screenshots or cover art</span>
-                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="text-sm">
+            <label class="{{ $label }}">Product images <span class="font-normal normal-case text-on-surface-variant">(optional — up to 6; the first becomes the cover)</span></label>
+            <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
+                <span class="material-symbols-outlined text-[32px] text-primary" aria-hidden="true">add_photo_alternate</span>
+                <span class="text-sm text-on-surface-variant" data-file-label>Add screenshots or cover art</span>
+                <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · 5 MB each · recommended 1280×720 px (16:9) or larger — covers are displayed cropped to 16:9</span>
+                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" data-file-input>
             </label>
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">

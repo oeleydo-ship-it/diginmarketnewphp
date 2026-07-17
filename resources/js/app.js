@@ -38,6 +38,20 @@ document.querySelectorAll('input[type="file"][data-auto-submit]').forEach((input
     });
 });
 
+// Styled dropzones hide the native input (.sr-only); reflect the chosen file names
+// in the [data-file-label] span so sellers get feedback that the pick registered.
+document.querySelectorAll('input[type="file"][data-file-input]').forEach((input) => {
+    const label = input.closest('label')?.querySelector('[data-file-label]');
+    if (!label) return;
+    const original = label.textContent;
+    input.addEventListener('change', () => {
+        const names = Array.from(input.files).map((file) => file.name);
+        label.textContent = names.length ? names.join(', ') : original;
+        label.classList.toggle('font-semibold', names.length > 0);
+        label.classList.toggle('text-primary', names.length > 0);
+    });
+});
+
 // Dismissible modals: any [data-modal-dismiss] (backdrop or button) closes the
 // nearest [data-modal]; Escape closes any open modal.
 document.querySelectorAll('[data-modal]').forEach((modal) => {
