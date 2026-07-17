@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -40,6 +41,21 @@ class PaystackCheckoutGateway extends Gateway
         }
 
         return ['payment_id' => (string) ($order->number), 'payload' => ['source' => 'return_verification', 'paystack_id' => $response->json('data.id')]];
+    }
+
+    /** Paystack refunds by transaction reference; we stored the order number as the reference. */
+    public function refund(Payment $payment, float $amount): array
+    {
+        $response = Http::withToken((string) config('services.paystack.secret'))->post('https://api.paystack.co/refund', [
+            'transaction' => $payment->provider_payment_id,
+            'amount' => $this->amountMinorUnits($amount, $payment->currency),
+        ]);
+        if ($response->failed() || ! $response->json('status')) {
+            throw new RuntimeException('Paystack refund failed: '.$response->body());
+        }
+
+        // Paystack processes refunds asynchronously; an accepted request is our success signal.
+        return ['id' => (string) ($response->json('data.id') ?? $payment->provider_payment_id), 'status' => 'succeeded'];
     }
 
     public function parseWebhook(string $payload, array $headers): ?array

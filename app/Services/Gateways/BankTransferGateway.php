@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Models\Order;
+use App\Models\Payment;
 
 class BankTransferGateway extends Gateway
 {
@@ -29,5 +30,14 @@ class BankTransferGateway extends Gateway
     public function parseWebhook(string $payload, array $headers): ?array
     {
         return null;
+    }
+
+    /**
+     * There is no provider API: the admin wires the money back manually, and approving the
+     * refund records that fact. Succeeding here lets the ledger/order state update proceed.
+     */
+    public function refund(Payment $payment, float $amount): array
+    {
+        return ['id' => 'manual-refund:'.$payment->id, 'status' => 'succeeded'];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -26,6 +27,17 @@ class RazorpayCheckoutGateway extends Gateway
         }
 
         return ['id' => (string) $response->json('id'), 'url' => (string) $response->json('short_url')];
+    }
+
+    public function refund(Payment $payment, float $amount): array
+    {
+        $response = Http::withBasicAuth((string) config('services.razorpay.key'), (string) config('services.razorpay.secret'))
+            ->post('https://api.razorpay.com/v1/payments/'.$payment->provider_payment_id.'/refund', ['amount' => $this->amountMinorUnits($amount, $payment->currency)]);
+        if ($response->failed()) {
+            throw new RuntimeException('Razorpay refund failed: '.$response->body());
+        }
+
+        return ['id' => (string) $response->json('id'), 'status' => in_array($response->json('status'), ['processed', 'pending'], true) ? 'succeeded' : (string) $response->json('status')];
     }
 
     public function parseWebhook(string $payload, array $headers): ?array

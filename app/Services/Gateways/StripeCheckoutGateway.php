@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Stripe\StripeClient;
 use Stripe\Webhook;
 
@@ -39,6 +40,13 @@ class StripeCheckoutGateway extends Gateway
         }
 
         return ['payment_id' => (string) ($session->payment_intent ?: $session->id), 'payload' => ['source' => 'return_verification', 'session_id' => $session->id, 'payment_status' => $session->payment_status]];
+    }
+
+    public function refund(Payment $payment, float $amount): array
+    {
+        $refund = (new StripeClient((string) config('services.stripe.secret')))->refunds->create(['payment_intent' => $payment->provider_payment_id, 'amount' => $this->amountMinorUnits($amount, $payment->currency), 'metadata' => ['order_id' => (string) $payment->order_id]]);
+
+        return ['id' => (string) $refund->id, 'status' => $refund->status === 'succeeded' ? 'succeeded' : (string) $refund->status];
     }
 
     public function parseWebhook(string $payload, array $headers): ?array

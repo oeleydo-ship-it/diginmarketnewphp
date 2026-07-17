@@ -31,4 +31,11 @@ interface CheckoutGateway
      * @return array{payment_id:string,payload?:array}|null
      */
     public function verifyReturn(Order $order): ?array;
+
+    /**
+     * Refund (part of) a payment taken through this provider.
+     *
+     * @return array{id:string,status:string} status 'succeeded' when the provider accepted it.
+     */
+    public function refund(\App\Models\Payment $payment, float $amount): array;
 }

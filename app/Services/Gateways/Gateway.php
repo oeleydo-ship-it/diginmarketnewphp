@@ -4,6 +4,7 @@ namespace App\Services\Gateways;
 
 use App\Contracts\CheckoutGateway;
 use App\Models\Order;
+use App\Models\Payment;
 
 abstract class Gateway implements CheckoutGateway
 {
@@ -44,5 +45,19 @@ abstract class Gateway implements CheckoutGateway
     public function verifyReturn(Order $order): ?array
     {
         return null;
+    }
+
+    /** Default: refunds unsupported — drivers that can refund override this. */
+    public function refund(Payment $payment, float $amount): array
+    {
+        throw new \RuntimeException('Refunds are not supported for the '.$this->key().' payment method.');
+    }
+
+    /** Amount in the provider's minor units for an arbitrary value (refunds use partial amounts). */
+    protected function amountMinorUnits(float $amount, string $currency): int
+    {
+        $factor = in_array(strtoupper($currency), (array) config('payments.zero_decimal_currencies'), true) ? 1 : 100;
+
+        return (int) round($amount * $factor);
     }
 }

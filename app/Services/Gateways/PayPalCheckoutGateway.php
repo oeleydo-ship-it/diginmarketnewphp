@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -31,6 +32,20 @@ class PayPalCheckoutGateway extends Gateway
         }
 
         return (string) $response->json('access_token');
+    }
+
+    /** The stored payment id is the capture id, which is exactly what the refund API wants. */
+    public function refund(Payment $payment, float $amount): array
+    {
+        $decimals = in_array(strtoupper($payment->currency), (array) config('payments.zero_decimal_currencies'), true) ? 0 : 2;
+        $response = Http::withToken($this->token())->post($this->baseUrl().'/v2/payments/captures/'.$payment->provider_payment_id.'/refund', [
+            'amount' => ['currency_code' => strtoupper($payment->currency), 'value' => number_format($amount, $decimals, '.', '')],
+        ]);
+        if ($response->failed()) {
+            throw new RuntimeException('PayPal refund failed: '.$response->body());
+        }
+
+        return ['id' => (string) $response->json('id'), 'status' => in_array($response->json('status'), ['COMPLETED', 'PENDING'], true) ? 'succeeded' : (string) $response->json('status')];
     }
 
     public function createCheckout(Order $order): array
