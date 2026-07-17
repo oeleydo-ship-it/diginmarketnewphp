@@ -14,6 +14,11 @@
                                 <span class="material-symbols-outlined text-[14px]">star</span> Featured Author
                             </span>
                         @endif
+                        @foreach($badges as $badge)
+                            <span class="flex items-center gap-1 rounded-full bg-secondary-container/40 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-on-secondary-container">
+                                <span class="material-symbols-outlined text-[14px]">{{ $badge['icon'] }}</span> {{ $badge['label'] }}
+                            </span>
+                        @endforeach
                     </div>
                     <h1 class="mt-1 font-display text-4xl font-semibold tracking-tight">{{ $seller->display_name }}</h1>
                     @if($seller->business_name)

@@ -224,6 +224,22 @@
                         <span class="material-symbols-outlined text-[20px]">favorite</span> Add to Wishlist
                     </button>
                 </form>
+                <details class="mt-3">
+                    <summary class="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-outline-variant py-3 text-sm font-semibold text-on-surface-variant transition-colors hover:border-primary hover:text-primary [&::-webkit-details-marker]:hidden">
+                        <span class="material-symbols-outlined text-[20px]">bookmark_add</span> Save to collection
+                    </summary>
+                    <form method="POST" action="{{ route('collections.add', $product) }}" class="mt-3 space-y-2 rounded-xl border border-outline-variant bg-surface-container-low p-4">
+                        @csrf
+                        @php($myCollections = auth()->user()->collections()->orderBy('title')->get(['id', 'title']))
+                        @if($myCollections->isNotEmpty())
+                            <select name="collection_id" class="w-full rounded-lg border border-outline-variant bg-surface p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                @foreach($myCollections as $mine)<option value="{{ $mine->id }}">{{ $mine->title }}</option>@endforeach
+                            </select>
+                        @endif
+                        <input name="new_title" maxlength="120" placeholder="{{ $myCollections->isEmpty() ? 'Name your first collection' : 'Or create a new collection…' }}" @if($myCollections->isEmpty()) required @endif class="w-full rounded-lg border border-outline-variant bg-surface p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+                        <button class="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-on-primary transition-all hover:opacity-90">Save</button>
+                    </form>
+                </details>
                 @endauth
                 <div class="mt-6 space-y-3 border-t border-outline-variant pt-6">
                     <div class="flex items-center gap-3 text-on-surface-variant">

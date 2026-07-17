@@ -56,6 +56,7 @@ Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('cat
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
 Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index'])->name('bundles.index');
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
+Route::get('/collections/{slug}', [\App\Http\Controllers\CollectionController::class, 'show'])->name('collections.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
@@ -107,6 +108,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/account/two-factor', [\App\Http\Controllers\TwoFactorController::class, 'disable'])->name('two-factor.disable');
     Route::post('/account/two-factor/recovery-codes', [\App\Http\Controllers\TwoFactorController::class, 'recoveryCodes'])->name('two-factor.recovery-codes');
     Route::get('/admin', OperationsDashboardController::class)->middleware('role:administrator')->name('admin.dashboard');
+    Route::get('/collections', [\App\Http\Controllers\CollectionController::class, 'index'])->name('collections.index');
+    Route::post('/collections', [\App\Http\Controllers\CollectionController::class, 'store'])->name('collections.store');
+    Route::post('/collections/add/{product}', [\App\Http\Controllers\CollectionController::class, 'add'])->name('collections.add');
+    Route::delete('/collections/{collection}/products/{product}', [\App\Http\Controllers\CollectionController::class, 'remove'])->name('collections.remove');
+    Route::delete('/collections/{collection}', [\App\Http\Controllers\CollectionController::class, 'destroy'])->name('collections.destroy');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/authors/{sellerProfile}/follow', [SellerFollowController::class, 'toggle'])->name('sellers.follow');

@@ -130,6 +130,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->roles()->where('slug', $role)->exists();
     }
 
+    public function collections(): HasMany
+    {
+        return $this->hasMany(ProductCollection::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
