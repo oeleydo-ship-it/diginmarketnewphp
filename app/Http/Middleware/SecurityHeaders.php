@@ -25,8 +25,14 @@ class SecurityHeaders
         $vite = app()->isLocal() ? ' http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173' : '';
         $ws = app()->isLocal() ? ' ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173' : '';
 
+        // Tawk.to live chat loads scripts, sockets and an iframe from *.tawk.to — allowed
+        // only while an admin has actually configured a property id.
+        $tawkScript = config('services.tawk.property_id') ? ' https://embed.tawk.to https://*.tawk.to' : '';
+        $tawkConnect = config('services.tawk.property_id') ? ' https://*.tawk.to wss://*.tawk.to' : '';
+        $tawkFrame = config('services.tawk.property_id') ? ' https://tawk.to https://*.tawk.to' : '';
+
         // Google Fonts serves the marketplace typefaces (Inter, Geist, JetBrains Mono, Material Symbols).
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'{$vite}{$ws}; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}{$tawkScript}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}{$tawkScript}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com{$tawkScript}; connect-src 'self'{$vite}{$ws}{$tawkConnect}; frame-src https://www.youtube-nocookie.com https://player.vimeo.com{$tawkFrame}; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

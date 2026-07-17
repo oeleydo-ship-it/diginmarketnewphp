@@ -181,5 +181,22 @@
         </div>
     </div>
 </footer>
+
+@if(\App\Models\Setting::enabled('features.cookie_consent', true) && ! request()->cookie('dm_cookie_consent'))
+    <div data-cookie-banner class="fixed inset-x-0 bottom-0 z-[90] border-t border-outline-variant bg-surface-container-lowest/95 p-4 shadow-2xl backdrop-blur">
+        <div class="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <p class="text-sm text-on-surface-variant">{{ __('messages.cookies.notice') }}</p>
+            <div class="flex shrink-0 gap-2">
+                <button data-cookie-choice="essential" class="rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface-variant transition-colors hover:bg-surface-container">{{ __('messages.cookies.essential') }}</button>
+                <button data-cookie-choice="all" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90">{{ __('messages.cookies.accept') }}</button>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if(config('services.tawk.property_id'))
+    {{-- app.js reads this and injects the tawk.to script; CSP allows *.tawk.to only when configured. --}}
+    <meta name="tawk-embed" content="{{ config('services.tawk.property_id') }}/{{ config('services.tawk.widget_id') ?: 'default' }}">
+@endif
 </body>
 </html>

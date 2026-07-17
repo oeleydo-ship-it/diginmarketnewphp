@@ -53,6 +53,10 @@ class DatabaseSettings
             'payments.paystack_public_key' => 'services.paystack.public_key',
             'payments.paystack_secret' => 'services.paystack.secret',
             'payments.bank_transfer_instructions' => 'services.bank_transfer.instructions',
+            'auth.google_client_id' => 'services.google.client_id',
+            'auth.google_client_secret' => 'services.google.secret',
+            'integrations.tawk_property_id' => 'services.tawk.property_id',
+            'integrations.tawk_widget_id' => 'services.tawk.widget_id',
         ] as $key => $config) {
             if ($v = $value($key)) config([$config => $v]);
         }

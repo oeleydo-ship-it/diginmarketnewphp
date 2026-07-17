@@ -20,6 +20,11 @@ return [
   'toggle_theme' => 'Toggle dark mode',
   'language' => 'Language',
  ],
+ 'cookies' => [
+  'notice' => 'We use cookies to keep you signed in and understand how the marketplace is used. Essential cookies are always on.',
+  'accept' => 'Accept all',
+  'essential' => 'Essential only',
+ ],
  'common' => [
   'save' => 'Save',
   'cancel' => 'Cancel',

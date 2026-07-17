@@ -69,12 +69,22 @@ class SettingController extends Controller
    'commerce.minimum_withdrawal'=>['label'=>'Minimum withdrawal amount','group'=>'commerce','type'=>'decimal','min'=>1,'max'=>100000],
    'commerce.earnings_clearance_days'=>['label'=>'Earnings clearance (days)','group'=>'commerce','type'=>'number','min'=>0,'max'=>90],
   ]],
+  'auth'=>['title'=>'Social Login','icon'=>'passkey','fields'=>[
+   'auth.google.enabled'=>['label'=>'Sign in with Google','group'=>'auth','type'=>'toggle','default'=>'0'],
+   'auth.google_client_id'=>['label'=>'Google OAuth client ID','group'=>'auth','type'=>'text','hint'=>'Authorized redirect URI: /auth/google/callback'],
+   'auth.google_client_secret'=>['label'=>'Google OAuth client secret','group'=>'auth','type'=>'password','encrypted'=>true],
+  ]],
+  'integrations'=>['title'=>'Integrations','icon'=>'extension','fields'=>[
+   'integrations.tawk_property_id'=>['label'=>'Tawk.to property ID','group'=>'integrations','type'=>'text','hint'=>'From your tawk.to dashboard URL; leave blank to disable live chat.'],
+   'integrations.tawk_widget_id'=>['label'=>'Tawk.to widget ID','group'=>'integrations','type'=>'text','hint'=>'Usually "default".'],
+  ]],
   'features'=>['title'=>'Features','icon'=>'toggle_on','fields'=>[
    'features.registration'=>['label'=>'Customer registration','group'=>'features','type'=>'toggle'],
    'features.seller_applications'=>['label'=>'Seller applications','group'=>'features','type'=>'toggle'],
    'features.reviews'=>['label'=>'Product reviews','group'=>'features','type'=>'toggle'],
    'features.comments'=>['label'=>'Product comments','group'=>'features','type'=>'toggle'],
    'features.blog'=>['label'=>'Public blog','group'=>'features','type'=>'toggle'],
+   'features.cookie_consent'=>['label'=>'Cookie consent banner','group'=>'features','type'=>'toggle','default'=>'1'],
   ]],
   'social'=>['title'=>'Social Links','icon'=>'share','fields'=>[
    'social.website'=>['label'=>'Website URL','group'=>'social','type'=>'url'],

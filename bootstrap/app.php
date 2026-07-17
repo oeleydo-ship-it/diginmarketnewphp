@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: ['stripe/webhook', 'payments/*/webhook']);
+        // Set by plain JS in the consent banner, so it cannot be an encrypted Laravel cookie.
+        $middleware->encryptCookies(except: ['dm_cookie_consent']);
         $middleware->web(prepend: [\App\Http\Middleware\EnsureInstalled::class]);
         $middleware->web(append: [\App\Http\Middleware\SetLocale::class, \App\Http\Middleware\HandleImpersonationExpiry::class, \App\Http\Middleware\SecurityHeaders::class, \App\Http\Middleware\TrackAffiliateReferral::class]);
         $middleware->alias([

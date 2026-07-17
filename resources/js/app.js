@@ -52,6 +52,27 @@ document.querySelectorAll('input[type="file"][data-file-input]').forEach((input)
     });
 });
 
+// Cookie consent: either choice stores the decision for a year and hides the banner.
+document.querySelectorAll('[data-cookie-choice]').forEach((button) => {
+    button.addEventListener('click', () => {
+        document.cookie = 'dm_cookie_consent=' + button.dataset.cookieChoice + ';path=/;max-age=31536000;SameSite=Lax';
+        document.querySelector('[data-cookie-banner]')?.remove();
+    });
+});
+
+// Tawk.to live chat: the layout emits a meta tag only when an admin configured a property id.
+const tawk = document.querySelector('meta[name="tawk-embed"]');
+if (tawk?.content) {
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
+    const script = document.createElement('script');
+    script.src = 'https://embed.tawk.to/' + tawk.content;
+    script.async = true;
+    script.charset = 'UTF-8';
+    script.setAttribute('crossorigin', '*');
+    document.body.appendChild(script);
+}
+
 // Dismissible modals: any [data-modal-dismiss] (backdrop or button) closes the
 // nearest [data-modal]; Escape closes any open modal.
 document.querySelectorAll('[data-modal]').forEach((modal) => {
