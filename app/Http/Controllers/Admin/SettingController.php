@@ -75,6 +75,9 @@ class SettingController extends Controller
    'auth.google.enabled'=>['label'=>'Sign in with Google','group'=>'auth','type'=>'toggle','default'=>'0'],
    'auth.google_client_id'=>['label'=>'Google OAuth client ID','group'=>'auth','type'=>'text','hint'=>'Authorized redirect URI: /auth/google/callback'],
    'auth.google_client_secret'=>['label'=>'Google OAuth client secret','group'=>'auth','type'=>'password','encrypted'=>true],
+   'auth.facebook.enabled'=>['label'=>'Sign in with Facebook','group'=>'auth','type'=>'toggle','default'=>'0'],
+   'auth.facebook_client_id'=>['label'=>'Facebook app ID','group'=>'auth','type'=>'text','hint'=>'Valid OAuth redirect URI: /auth/facebook/callback'],
+   'auth.facebook_client_secret'=>['label'=>'Facebook app secret','group'=>'auth','type'=>'password','encrypted'=>true],
   ]],
   'integrations'=>['title'=>'Integrations','icon'=>'extension','fields'=>[
    'integrations.tawk_property_id'=>['label'=>'Tawk.to property ID','group'=>'integrations','type'=>'text','hint'=>'From your tawk.to dashboard URL; leave blank to disable live chat.'],

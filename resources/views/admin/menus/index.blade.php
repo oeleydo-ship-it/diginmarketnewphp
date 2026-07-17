@@ -19,7 +19,7 @@
       <label class="flex items-center gap-1 text-xs text-[#555868]"><input type="checkbox" name="is_active" value="1" @checked($item->is_active)>Active</label>
       <button class="rounded-lg border border-emerald-300 px-3 py-1.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-50">Save</button>
      </form>
-     <form method="POST" action="{{ route('admin.menus.destroy',$item) }}" onsubmit="return confirm('Remove this menu item?')">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50">Remove</button></form>
+     <form method="POST" action="{{ route('admin.menus.destroy',$item) }}" data-confirm="Remove this menu item?">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50">Remove</button></form>
     </div>
    @empty<p class="rounded-lg border border-dashed border-[#d7d9e5] p-6 text-center text-sm text-[#777a8a]">No items — the footer shows its default links.</p>@endforelse
    </div>

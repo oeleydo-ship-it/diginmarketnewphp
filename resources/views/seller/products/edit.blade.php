@@ -103,7 +103,7 @@
                     <div class="group relative overflow-hidden rounded-xl border border-outline-variant">
                         <img src="{{ $image->url() }}" alt="{{ $image->alt ?? $product->title }}" class="aspect-video w-full object-cover">
                         @if($loop->first)<span class="absolute left-2 top-2 rounded-full bg-primary px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-on-primary">Cover</span>@endif
-                        <form method="POST" action="{{ route('seller.products.images.destroy', [$product, $image]) }}" onsubmit="return confirm('Remove this image?')" class="absolute right-2 top-2">
+                        <form method="POST" action="{{ route('seller.products.images.destroy', [$product, $image]) }}" data-confirm="Remove this image?" class="absolute right-2 top-2">
                             @csrf @method('DELETE')
                             <button class="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-error shadow-sm transition-all hover:bg-error hover:text-on-error" aria-label="Remove image"><span class="material-symbols-outlined text-[16px]">delete</span></button>
                         </form>

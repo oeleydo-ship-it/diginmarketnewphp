@@ -52,6 +52,13 @@ document.querySelectorAll('input[type="file"][data-file-input]').forEach((input)
     });
 });
 
+// Confirm dialogs for destructive forms. Inline onsubmit handlers are blocked by the CSP,
+// so forms declare data-confirm="message" and this delegated listener enforces it.
+document.addEventListener('submit', (event) => {
+    const form = event.target.closest('form[data-confirm]');
+    if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
+});
+
 // Invoice print button (inline onclick is blocked by the CSP).
 document.querySelectorAll('[data-print]').forEach((button) => {
     button.addEventListener('click', () => window.print());

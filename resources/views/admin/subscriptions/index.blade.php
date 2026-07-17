@@ -46,7 +46,7 @@
                     <label class="flex items-center gap-2"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" value="1" @checked($plan->is_active)> Active</label>
                     <button class="rounded-lg bg-[#3525cd] px-4 py-2 font-semibold text-white">Save</button>
                 </form>
-                <form method="POST" action="{{ route('admin.subscription-plans.destroy', $plan) }}" class="mt-3" onsubmit="return confirm('Deactivate this plan?')">@csrf @method('DELETE')<button class="text-sm font-semibold text-red-600 hover:underline">Deactivate</button></form>
+                <form method="POST" action="{{ route('admin.subscription-plans.destroy', $plan) }}" class="mt-3" data-confirm="Deactivate this plan?">@csrf @method('DELETE')<button class="text-sm font-semibold text-red-600 hover:underline">Deactivate</button></form>
             </div>
         @endforeach
     </section>

@@ -34,6 +34,11 @@ return [
         'secret' => env('GOOGLE_CLIENT_SECRET'),
     ],
 
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'secret' => env('FACEBOOK_CLIENT_SECRET'),
+    ],
+
     'tawk' => [
         'property_id' => env('TAWK_PROPERTY_ID'),
         'widget_id' => env('TAWK_WIDGET_ID', 'default'),

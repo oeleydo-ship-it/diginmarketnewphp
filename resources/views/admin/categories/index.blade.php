@@ -26,7 +26,7 @@
     <div class="relative flex h-32 items-center justify-center overflow-hidden bg-[#edf2ff]">
      @if($category->imageUrl())
       <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="h-full w-full object-cover">
-      <form method="POST" action="{{ route('admin.categories.image.remove', $category) }}" class="absolute right-2 top-2" onsubmit="return confirm('Remove this image?')">@csrf @method('DELETE')<button class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-sm hover:bg-red-600 hover:text-white" aria-label="Remove image"><span class="material-symbols-outlined text-[16px]">delete</span></button></form>
+      <form method="POST" action="{{ route('admin.categories.image.remove', $category) }}" class="absolute right-2 top-2" data-confirm="Remove this image?">@csrf @method('DELETE')<button class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-sm hover:bg-red-600 hover:text-white" aria-label="Remove image"><span class="material-symbols-outlined text-[16px]">delete</span></button></form>
      @else
       <span class="material-symbols-outlined text-5xl text-[#3525cd]">{{ $category->icon ?: 'category' }}</span>
      @endif
@@ -50,7 +50,7 @@
     <div class="flex flex-wrap items-center gap-2 border-t border-[#e2e4ec] px-5 py-3">
      <form method="POST" action="{{ route('admin.categories.toggle', $category) }}">@csrf @method('PUT')<button class="rounded-lg border border-[#d7d9e5] px-4 py-1.5 text-sm font-semibold text-[#555868] hover:bg-[#f4f6fd]">{{ $category->is_active ? 'Hide' : 'Activate' }}</button></form>
      @if(!$category->products_count)
-      <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Delete category {{ $category->name }}?')">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50">Delete</button></form>
+      <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" data-confirm="Delete category {{ $category->name }}?">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-4 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50">Delete</button></form>
      @endif
     </div>
    </div>

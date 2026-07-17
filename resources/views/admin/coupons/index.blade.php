@@ -37,7 +37,7 @@
      <td class="px-5 py-4">
       <div class="flex justify-end gap-2">
        <form method="POST" action="{{ route('admin.coupons.toggle',$coupon) }}">@csrf @method('PUT')<button class="rounded-lg border border-[#d7d9e5] px-3 py-1.5 text-xs font-semibold hover:bg-[#f4f6fd]">{{ $coupon->is_active ? 'Deactivate' : 'Activate' }}</button></form>
-       @if(!$coupon->usages_count)<form method="POST" action="{{ route('admin.coupons.destroy',$coupon) }}" onsubmit="return confirm('Delete coupon {{ $coupon->code }}?')">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button></form>@endif
+       @if(!$coupon->usages_count)<form method="POST" action="{{ route('admin.coupons.destroy',$coupon) }}" data-confirm="Delete coupon {{ $coupon->code }}?">@csrf @method('DELETE')<button class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">Delete</button></form>@endif
       </div>
      </td>
     </tr>

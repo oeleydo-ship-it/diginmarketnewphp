@@ -27,7 +27,7 @@
                     <button class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">Enable</button>
                 </form>
             @elseif($enabled)
-                <form method="POST" action="{{ route('two-factor.disable') }}" onsubmit="return confirm('Turn off two-factor authentication?')">@csrf @method('DELETE')
+                <form method="POST" action="{{ route('two-factor.disable') }}" data-confirm="Turn off two-factor authentication?">@csrf @method('DELETE')
                     <button class="rounded-xl border border-error/40 px-5 py-2.5 text-sm font-semibold text-error transition-colors hover:bg-error/5">Turn off</button>
                 </form>
             @endif

@@ -38,7 +38,7 @@
        @endif
       </td>
       <td class="px-5 py-4 text-right">
-       <form method="POST" action="{{ route('admin.earnings.release', $entry) }}" onsubmit="return confirm('Release ${{ number_format((float) $entry->amount, 2) }} to {{ $entry->wallet?->seller?->name }}? Confirm the gateway payment settled first.')">@csrf
+       <form method="POST" action="{{ route('admin.earnings.release', $entry) }}" data-confirm="Release ${{ number_format((float) $entry->amount, 2) }} to {{ $entry->wallet?->seller?->name }}? Confirm the gateway payment settled first.">@csrf
         <button class="rounded-lg border border-[#3525cd] px-4 py-2 text-xs font-semibold text-[#3525cd] transition hover:bg-[#3525cd] hover:text-white">Release now</button>
        </form>
       </td>

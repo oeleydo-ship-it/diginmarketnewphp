@@ -59,7 +59,7 @@
     </div>
 
     @if($current && (float) $current->price > 0)
-        <form method="POST" action="{{ route('seller.subscription.cancel', $current) }}" class="mt-8" onsubmit="return confirm('Cancel your current subscription?')">@csrf
+        <form method="POST" action="{{ route('seller.subscription.cancel', $current) }}" class="mt-8" data-confirm="Cancel your current subscription?">@csrf
             <button class="text-sm font-semibold text-on-surface-variant hover:text-error">Cancel current subscription</button>
         </form>
     @endif

@@ -24,7 +24,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <a href="{{ route('bundles.show', $bundle->slug) }}" class="text-sm font-semibold text-primary hover:underline">View</a>
-                            <form method="POST" action="{{ route('seller.bundles.destroy', $bundle) }}" onsubmit="return confirm('Delete this bundle?')">@csrf @method('DELETE')
+                            <form method="POST" action="{{ route('seller.bundles.destroy', $bundle) }}" data-confirm="Delete this bundle?">@csrf @method('DELETE')
                                 <button class="text-sm font-semibold text-on-surface-variant hover:text-error">Delete</button>
                             </form>
                         </div>

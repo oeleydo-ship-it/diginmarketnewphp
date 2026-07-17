@@ -55,6 +55,8 @@ class DatabaseSettings
             'payments.bank_transfer_instructions' => 'services.bank_transfer.instructions',
             'auth.google_client_id' => 'services.google.client_id',
             'auth.google_client_secret' => 'services.google.secret',
+            'auth.facebook_client_id' => 'services.facebook.client_id',
+            'auth.facebook_client_secret' => 'services.facebook.secret',
             'integrations.tawk_property_id' => 'services.tawk.property_id',
             'integrations.tawk_widget_id' => 'services.tawk.widget_id',
         ] as $key => $config) {
