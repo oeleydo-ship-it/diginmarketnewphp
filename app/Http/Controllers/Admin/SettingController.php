@@ -68,6 +68,8 @@ class SettingController extends Controller
    'commerce.withdrawal_fee_rate'=>['label'=>'Withdrawal fee %','group'=>'commerce','type'=>'decimal','min'=>0,'max'=>100],
    'commerce.minimum_withdrawal'=>['label'=>'Minimum withdrawal amount','group'=>'commerce','type'=>'decimal','min'=>1,'max'=>100000],
    'commerce.earnings_clearance_days'=>['label'=>'Earnings clearance (days)','group'=>'commerce','type'=>'number','min'=>0,'max'=>90],
+   'commerce.tax_rate'=>['label'=>'Tax rate % (0 = no tax)','group'=>'commerce','type'=>'decimal','min'=>0,'max'=>50],
+   'commerce.tax_label'=>['label'=>'Tax label shown to buyers','group'=>'commerce','type'=>'text','hint'=>'e.g. VAT, GST, Sales tax'],
   ]],
   'auth'=>['title'=>'Social Login','icon'=>'passkey','fields'=>[
    'auth.google.enabled'=>['label'=>'Sign in with Google','group'=>'auth','type'=>'toggle','default'=>'0'],

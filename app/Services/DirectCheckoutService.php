@@ -33,7 +33,8 @@ class DirectCheckoutService
             $bundleCents = (int) round(((float) $bundle->price) * 100);
             $baseCents = $products->map(fn ($p) => (int) round(((float) $p->regular_price) * 100));
             $baseTotal = max(1, $baseCents->sum());
-            $order = Order::create(['number' => 'DM-'.now()->format('Ymd').'-'.str()->upper(str()->random(10)), 'user_id' => $buyer->id, 'payment_provider' => $provider, 'currency' => $currency, 'subtotal' => $bundleCents / 100, 'discount' => 0, 'tax' => 0, 'fees' => 0, 'total' => $bundleCents / 100, 'customer_ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
+            $taxCents = (int) round($bundleCents * max(0.0, (float) config('marketplace.tax_rate', 0)) / 100);
+            $order = Order::create(['number' => 'DM-'.now()->format('Ymd').'-'.str()->upper(str()->random(10)), 'user_id' => $buyer->id, 'payment_provider' => $provider, 'currency' => $currency, 'subtotal' => $bundleCents / 100, 'discount' => 0, 'tax' => $taxCents / 100, 'fees' => 0, 'total' => ($bundleCents + $taxCents) / 100, 'customer_ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
             $allocated = 0;
             foreach ($products as $index => $product) {
                 $share = $index === $products->count() - 1 ? $bundleCents - $allocated : (int) floor($bundleCents * $baseCents[$index] / $baseTotal);
@@ -60,7 +61,8 @@ class DirectCheckoutService
         $order = DB::transaction(function () use ($license, $buyer, $product, $currency, $provider) {
             $price = (float) $product->support_extension_price;
             $commission = $this->commissions->resolve($product, $price);
-            $order = Order::create(['number' => 'DM-'.now()->format('Ymd').'-'.str()->upper(str()->random(10)), 'user_id' => $buyer->id, 'payment_provider' => $provider, 'currency' => $currency, 'subtotal' => $price, 'discount' => 0, 'tax' => 0, 'fees' => 0, 'total' => $price, 'customer_ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
+            $tax = round($price * max(0.0, (float) config('marketplace.tax_rate', 0)) / 100, 2);
+            $order = Order::create(['number' => 'DM-'.now()->format('Ymd').'-'.str()->upper(str()->random(10)), 'user_id' => $buyer->id, 'payment_provider' => $provider, 'currency' => $currency, 'subtotal' => $price, 'discount' => 0, 'tax' => $tax, 'fees' => 0, 'total' => $price + $tax, 'customer_ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
             $order->items()->create(['product_id' => $product->id, 'seller_id' => $product->seller_id, 'product_version_id' => $license->product_version_id, 'license_type_id' => $license->license_type_id, 'item_type' => 'support_extension', 'license_id' => $license->id, 'product_title' => $product->title, 'seller_name' => $product->seller()->value('name'), 'license_name' => 'Support extension +'.$product->support_extension_months.' months', 'unit_price' => $price, 'platform_commission' => $commission['commission'], 'seller_earning' => $commission['seller_earning'], 'total' => $price]);
 
             return $order->load(['user', 'items']);

@@ -52,6 +52,11 @@ document.querySelectorAll('input[type="file"][data-file-input]').forEach((input)
     });
 });
 
+// Invoice print button (inline onclick is blocked by the CSP).
+document.querySelectorAll('[data-print]').forEach((button) => {
+    button.addEventListener('click', () => window.print());
+});
+
 // Cookie consent: either choice stores the decision for a year and hides the banner.
 document.querySelectorAll('[data-cookie-choice]').forEach((button) => {
     button.addEventListener('click', () => {

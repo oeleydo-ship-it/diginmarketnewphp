@@ -105,10 +105,12 @@
                             <span class="font-mono text-secondary">−${{ number_format($totals['discount'], 2) }}</span>
                         </div>
                         @endif
+                        @if($totals['tax'] > 0)
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-on-surface-variant">Tax</span>
+                            <span class="text-on-surface-variant">{{ config('marketplace.tax_label', 'Tax') }} ({{ rtrim(rtrim(number_format((float) config('marketplace.tax_rate', 0), 2), '0'), '.') }}%)</span>
                             <span class="font-mono">${{ number_format($totals['tax'], 2) }}</span>
                         </div>
+                        @endif
                         </div>
                     </div>
                     <div class="mb-8 flex items-end justify-between">

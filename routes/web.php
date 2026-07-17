@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/{order}/bank-transfer', [CheckoutController::class, 'bankTransfer'])->name('checkout.bank-transfer');
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/purchases/{order}', [PurchaseController::class, 'show'])->name('purchases.show');
+    Route::get('/purchases/{order}/invoice', [PurchaseController::class, 'invoice'])->name('purchases.invoice');
     Route::get('/downloads/{license}', DownloadController::class)->name('downloads.show');
     Route::post('/bundles/{bundle}/buy', [\App\Http\Controllers\BundleController::class, 'buy'])->middleware('verified')->name('bundles.buy');
     Route::post('/licenses/{license}/extend-support', [\App\Http\Controllers\SupportExtensionController::class, 'buy'])->middleware('verified')->name('licenses.extend-support');

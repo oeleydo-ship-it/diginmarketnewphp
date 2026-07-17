@@ -62,7 +62,8 @@ class DatabaseSettings
         }
 
         // Commerce tuning: numeric marketplace levers managed from the admin panel.
-        foreach (['commerce.default_commission_rate' => 'marketplace.default_commission_rate', 'commerce.affiliate_commission_rate' => 'marketplace.affiliate_commission_rate', 'commerce.withdrawal_fee_rate' => 'marketplace.withdrawal_fee_rate'] as $key => $config) {
+        if ($v = $value('commerce.tax_label')) config(['marketplace.tax_label' => $v]);
+        foreach (['commerce.default_commission_rate' => 'marketplace.default_commission_rate', 'commerce.affiliate_commission_rate' => 'marketplace.affiliate_commission_rate', 'commerce.withdrawal_fee_rate' => 'marketplace.withdrawal_fee_rate', 'commerce.tax_rate' => 'marketplace.tax_rate'] as $key => $config) {
             if (($v = $value($key)) !== null && is_numeric($v)) config([$config => (float) $v]);
         }
         if (($v = $value('commerce.earnings_clearance_days')) !== null && is_numeric($v)) config(['marketplace.earnings_clearance_days' => (int) $v]);

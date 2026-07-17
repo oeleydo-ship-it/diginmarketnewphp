@@ -22,7 +22,12 @@ class StripeCheckoutGateway extends Gateway
     public function createCheckout(Order $order): array
     {
         $stripe = new StripeClient((string) config('services.stripe.secret'));
-        $session = $stripe->checkout->sessions->create(['mode' => 'payment', 'customer_email' => $order->user->email, 'line_items' => $order->items->map(fn ($item) => ['quantity' => 1, 'price_data' => ['currency' => strtolower($order->currency), 'unit_amount' => (int) round(((float) $item->total) * (in_array(strtoupper($order->currency), (array) config('payments.zero_decimal_currencies'), true) ? 1 : 100)), 'product_data' => ['name' => $item->product_title.' — '.$item->license_name]]])->all(), 'success_url' => $this->successUrl($order).'?session_id={CHECKOUT_SESSION_ID}', 'cancel_url' => $this->cancelUrl(), 'metadata' => ['order_id' => (string) $order->id, 'order_number' => $order->number]]);
+        $lineItems = $order->items->map(fn ($item) => ['quantity' => 1, 'price_data' => ['currency' => strtolower($order->currency), 'unit_amount' => $this->amountMinorUnits((float) $item->total, $order->currency), 'product_data' => ['name' => $item->product_title.' — '.$item->license_name]]])->all();
+        // Item totals are net of tax; the order-level tax must be its own charged line.
+        if ((float) $order->tax > 0) {
+            $lineItems[] = ['quantity' => 1, 'price_data' => ['currency' => strtolower($order->currency), 'unit_amount' => $this->amountMinorUnits((float) $order->tax, $order->currency), 'product_data' => ['name' => (string) config('marketplace.tax_label', 'Tax')]]];
+        }
+        $session = $stripe->checkout->sessions->create(['mode' => 'payment', 'customer_email' => $order->user->email, 'line_items' => $lineItems, 'success_url' => $this->successUrl($order).'?session_id={CHECKOUT_SESSION_ID}', 'cancel_url' => $this->cancelUrl(), 'metadata' => ['order_id' => (string) $order->id, 'order_number' => $order->number]]);
 
         return ['id' => $session->id, 'url' => $session->url];
     }

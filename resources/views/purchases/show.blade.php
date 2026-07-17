@@ -13,9 +13,16 @@
                 </p>
             </div>
             @php($paid = $order->payment_status === 'paid')
-            <span class="rounded px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider {{ $paid ? 'bg-secondary-container/40 text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed-variant' }}">
-                {{ str($order->payment_status)->headline() }}
-            </span>
+            <div class="flex items-center gap-3">
+                @if(in_array($order->payment_status, ['paid', 'partially_refunded'], true))
+                    <a href="{{ route('purchases.invoice', $order) }}" class="flex items-center gap-1.5 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface transition-colors hover:border-primary hover:text-primary">
+                        <span class="material-symbols-outlined text-[18px]">receipt_long</span> Invoice
+                    </a>
+                @endif
+                <span class="rounded px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider {{ $paid ? 'bg-secondary-container/40 text-on-secondary-container' : 'bg-tertiary-fixed text-on-tertiary-fixed-variant' }}">
+                    {{ str($order->payment_status)->headline() }}
+                </span>
+            </div>
         </div>
     </header>
     <div class="space-y-6">
