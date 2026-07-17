@@ -109,4 +109,5 @@ automatically.
 
 - Money is stored as fixed-precision decimals; seller balances change only through immutable `wallet_transactions` rows written inside DB transactions.
 - Sensitive admin actions (approvals, rejections, payouts, settings changes) are written to `audit_logs` and visible at `/admin/audits`.
-- The health endpoint is `/up`; the license verification API is under `/api/v1/licenses` (license-key auth, rate-limited).
+- The health endpoint is `/up`; the license verification API is under `/api/v1/licenses` (license-key auth, rate-limited) — full reference in [docs/API.md](docs/API.md).
+- Product uploads are scanned before download release: set `CLAMAV_PATH` to a ClamAV binary for real malware scanning; without it a zip-integrity check runs and anything suspicious is flagged for admin review.
