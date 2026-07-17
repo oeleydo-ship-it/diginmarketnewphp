@@ -21,6 +21,7 @@
                 Remember me
             </label>
             <button class="w-full rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">Sign in</button>
+            <p class="text-right text-sm"><a href="{{ route('password.request') }}" class="font-semibold text-primary hover:underline">Forgot password?</a></p>
         </form>
         @if(\App\Models\Setting::enabled('auth.google.enabled', false) && config('services.google.client_id'))
             <div class="mt-5 flex items-center gap-3 text-xs uppercase tracking-wide text-on-surface-variant"><span class="h-px flex-1 bg-outline-variant"></span>or<span class="h-px flex-1 bg-outline-variant"></span></div>

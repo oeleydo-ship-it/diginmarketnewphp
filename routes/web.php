@@ -19,7 +19,6 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SellerFinanceController;
 use App\Http\Controllers\StripeConnectController;
 use App\Http\Controllers\WithdrawalController;
@@ -81,6 +80,22 @@ Route::middleware('guest')->group(function () {
         return view('auth.register');
     })->name('register');
     Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:6,1')->name('register.store');
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetController::class, 'email'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('/reset-password', [\App\Http\Controllers\Auth\PasswordResetController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::view('/verify-email', 'auth.verify-email')->name('verification.notice');
+    Route::get('/verify-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('dashboard')->with('status', 'Email verified — welcome aboard!');
+    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/verify-email/resend', function () {
+        request()->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->middleware('throttle:6,1')->name('verification.send');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -102,14 +117,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/items/{item}', [CartController::class, 'remove'])->name('cart.remove');
     // Direct GET navigation (bookmark, back button, typed URL) lands on the cart instead of a 405.
     Route::get('/checkout', fn () => redirect()->route('cart.index'));
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('verified')->name('checkout.store');
     Route::get('/checkout/{order}/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/{order}/bank-transfer', [CheckoutController::class, 'bankTransfer'])->name('checkout.bank-transfer');
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/purchases/{order}', [PurchaseController::class, 'show'])->name('purchases.show');
     Route::get('/downloads/{license}', DownloadController::class)->name('downloads.show');
-    Route::post('/bundles/{bundle}/buy', [\App\Http\Controllers\BundleController::class, 'buy'])->name('bundles.buy');
-    Route::post('/licenses/{license}/extend-support', [\App\Http\Controllers\SupportExtensionController::class, 'buy'])->name('licenses.extend-support');
+    Route::post('/bundles/{bundle}/buy', [\App\Http\Controllers\BundleController::class, 'buy'])->middleware('verified')->name('bundles.buy');
+    Route::post('/licenses/{license}/extend-support', [\App\Http\Controllers\SupportExtensionController::class, 'buy'])->middleware('verified')->name('licenses.extend-support');
     Route::post('/reviews/{orderItem}', [ReviewController::class, 'store'])->name('reviews.store');
     Route::post('/products/{product}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
@@ -123,7 +138,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notification-preferences', [NotificationPreferenceController::class, 'edit'])->name('notifications.preferences');
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update'])->name('notifications.preferences.update');
     Route::get('/sell/apply', [SellerApplicationController::class, 'create'])->name('seller.apply');
-    Route::post('/sell/apply', [SellerApplicationController::class, 'store'])->name('seller.apply.store');
+    Route::post('/sell/apply', [SellerApplicationController::class, 'store'])->middleware('verified')->name('seller.apply.store');
     Route::middleware('role:seller')->prefix('seller')->name('seller.')->group(function () {
         Route::get('/', \App\Http\Controllers\SellerDashboardController::class)->name('dashboard');
         Route::get('/sales', \App\Http\Controllers\SellerSalesController::class)->name('sales');
