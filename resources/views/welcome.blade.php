@@ -29,9 +29,6 @@
             All assets <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </a>
     </div>
-    @php
-        $catIcons = ['php-scripts' => 'code', 'laravel-applications' => 'terminal', 'wordpress-themes' => 'view_quilt', 'javascript-applications' => 'javascript', 'mobile-applications' => 'smartphone', 'ui-templates' => 'palette'];
-    @endphp
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
         @foreach($categories as $category)
             <a href="{{ route('categories.show', $category->slug) }}"
@@ -40,7 +37,7 @@
                     @if($category->imageUrl())
                         <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="h-full w-full object-cover" loading="lazy">
                     @else
-                        <span class="material-symbols-outlined text-[28px]">{{ $category->icon ?: ($catIcons[$category->slug] ?? 'deployed_code') }}</span>
+                        <span class="material-symbols-outlined text-[28px]">{{ $category->displayIcon() }}</span>
                     @endif
                 </span>
                 <div>

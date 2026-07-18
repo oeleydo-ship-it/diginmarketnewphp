@@ -10,7 +10,7 @@
   <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">add_circle</span>New category</h2>
   <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">@csrf
    <div class="flex flex-col gap-1"><label class="{{ $label }}">Name</label><input name="name" required value="{{ old('name') }}" placeholder="e.g. PHP Scripts" class="{{ $input }}"></div>
-   <div class="flex flex-col gap-1"><label class="{{ $label }}">Material icon <a href="https://fonts.google.com/icons" target="_blank" rel="noopener" class="font-normal normal-case text-[#3525cd]">(browse)</a></label><input name="icon" value="{{ old('icon') }}" placeholder="e.g. code" class="{{ $input }} font-mono"></div>
+   <div class="flex flex-col gap-1"><label class="{{ $label }}">Material icon <a href="https://fonts.google.com/icons" target="_blank" rel="noopener" class="font-normal normal-case text-[#3525cd]">(browse)</a></label><input name="icon" value="{{ old('icon') }}" placeholder="auto-picked from the name when blank" class="{{ $input }} font-mono"></div>
    <div class="flex flex-col gap-1"><label class="{{ $label }}">Display order</label><input name="display_order" type="number" min="0" value="{{ old('display_order', 0) }}" class="{{ $input }}"></div>
    <div class="flex flex-col gap-1"><label class="{{ $label }}">Commission % override</label><input name="commission_rate" type="number" step="0.01" min="0" max="100" value="{{ old('commission_rate') }}" placeholder="Default" class="{{ $input }}"></div>
    <div class="flex flex-col gap-1 sm:col-span-2"><label class="{{ $label }}">Description</label><input name="description" value="{{ old('description') }}" placeholder="Short blurb shown on the category page" class="{{ $input }}"></div>
@@ -28,7 +28,7 @@
       <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="h-full w-full object-cover">
       <form method="POST" action="{{ route('admin.categories.image.remove', $category) }}" class="absolute right-2 top-2" data-confirm="Remove this image?">@csrf @method('DELETE')<button class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-sm hover:bg-red-600 hover:text-white" aria-label="Remove image"><span class="material-symbols-outlined text-[16px]">delete</span></button></form>
      @else
-      <span class="material-symbols-outlined text-5xl text-[#3525cd]">{{ $category->icon ?: 'category' }}</span>
+      <span class="material-symbols-outlined text-5xl text-[#3525cd]">{{ $category->displayIcon() }}</span>
      @endif
      <span class="absolute left-2 top-2 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider {{ $category->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' }}">{{ $category->is_active ? 'Active' : 'Hidden' }}</span>
     </div>

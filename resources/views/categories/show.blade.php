@@ -8,7 +8,7 @@
 <div class="mx-auto max-w-[1400px] px-4 py-8 md:px-6 lg:py-10">
     <header class="mb-8 flex items-start gap-5">
         <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-container/30 text-primary">
-            <span class="material-symbols-outlined text-[30px]">{{ $category->icon ?: 'category' }}</span>
+            <span class="material-symbols-outlined text-[30px]">{{ $category->displayIcon() }}</span>
         </span>
         <div>
             <p class="font-mono text-xs font-medium uppercase tracking-wider text-primary">Category</p>
