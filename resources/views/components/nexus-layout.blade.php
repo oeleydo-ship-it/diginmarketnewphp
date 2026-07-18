@@ -46,10 +46,17 @@
                 @endif
             </a>
             <nav class="hidden items-center gap-6 md:flex">
-                <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.browse') }}</a>
-                <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.categories') }}</a>
-                <a href="{{ route('bundles.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('bundles.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.bundles') }}</a>
-                <a href="{{ route('support.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.support') }}</a>
+                @php($headerMenu = \App\Models\MenuItem::forLocation('header'))
+                @if($headerMenu->isNotEmpty())
+                    @foreach($headerMenu as $item)
+                        <a href="{{ $item->url }}" class="text-[15px] font-semibold {{ url()->current() === url($item->url) ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ $item->label }}</a>
+                    @endforeach
+                @else
+                    <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.browse') }}</a>
+                    <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.categories') }}</a>
+                    <a href="{{ route('bundles.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('bundles.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.bundles') }}</a>
+                    <a href="{{ route('support.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.support') }}</a>
+                @endif
             </nav>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
@@ -105,10 +112,15 @@
     </div>
     <nav data-nav-menu class="hidden border-t border-outline-variant bg-surface px-6 py-4 md:hidden">
         <div class="flex flex-col gap-3 text-sm font-semibold text-on-surface-variant">
-            <a href="{{ route('products.index') }}">{{ __('messages.nav.browse') }}</a>
-            <a href="{{ route('home') }}#categories">{{ __('messages.nav.categories') }}</a>
-            <a href="{{ route('bundles.index') }}">{{ __('messages.nav.bundles') }}</a>
-            <a href="{{ route('support.index') }}">{{ __('messages.nav.support') }}</a>
+            @php($mobileHeaderMenu = \App\Models\MenuItem::forLocation('header'))
+            @if($mobileHeaderMenu->isNotEmpty())
+                @foreach($mobileHeaderMenu as $item)<a href="{{ $item->url }}">{{ $item->label }}</a>@endforeach
+            @else
+                <a href="{{ route('products.index') }}">{{ __('messages.nav.browse') }}</a>
+                <a href="{{ route('home') }}#categories">{{ __('messages.nav.categories') }}</a>
+                <a href="{{ route('bundles.index') }}">{{ __('messages.nav.bundles') }}</a>
+                <a href="{{ route('support.index') }}">{{ __('messages.nav.support') }}</a>
+            @endif
             <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}" class="text-primary">{{ __('messages.nav.sell') }}</a>
         </div>
     </nav>

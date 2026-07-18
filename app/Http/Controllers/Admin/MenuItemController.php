@@ -34,6 +34,6 @@ class MenuItemController extends Controller
  }
  private function validated(): array
  {
-  return request()->validate(['location'=>['required','in:footer-legal,footer-resources'],'label'=>['required','string','max:100'],'url'=>['required','string','max:500'],'display_order'=>['nullable','integer','min:0'],'is_active'=>['nullable','boolean']])+['display_order'=>(int)request('display_order',0),'is_active'=>request()->boolean('is_active',true)];
+  return request()->validate(['location'=>['required','in:header,footer-legal,footer-resources'],'label'=>['required','string','max:100'],'url'=>['required','string','max:500'],'display_order'=>['nullable','integer','min:0'],'is_active'=>['nullable','boolean']])+['display_order'=>(int)request('display_order',0),'is_active'=>request()->boolean('is_active',true)];
  }
 }
