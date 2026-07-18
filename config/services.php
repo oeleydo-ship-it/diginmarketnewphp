@@ -29,6 +29,28 @@ return [
         'instructions' => env('BANK_TRANSFER_INSTRUCTIONS'),
     ],
 
+    'mollie' => [
+        'api_key' => env('MOLLIE_API_KEY'),
+    ],
+
+    'flutterwave' => [
+        'secret' => env('FLUTTERWAVE_SECRET_KEY'),
+        'secret_hash' => env('FLUTTERWAVE_SECRET_HASH'),
+    ],
+
+    'instamojo' => [
+        'api_key' => env('INSTAMOJO_API_KEY'),
+        'auth_token' => env('INSTAMOJO_AUTH_TOKEN'),
+        'salt' => env('INSTAMOJO_SALT'),
+        'mode' => env('INSTAMOJO_MODE', 'test'),
+    ],
+
+    'sslcommerz' => [
+        'store_id' => env('SSLCOMMERZ_STORE_ID'),
+        'store_password' => env('SSLCOMMERZ_STORE_PASSWORD'),
+        'mode' => env('SSLCOMMERZ_MODE', 'sandbox'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'secret' => env('GOOGLE_CLIENT_SECRET'),

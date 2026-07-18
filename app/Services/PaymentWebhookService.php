@@ -20,13 +20,15 @@ class PaymentWebhookService
         if (! $event) {
             return;
         }
-        $record = PaymentWebhookEvent::firstOrCreate(['provider' => $provider, 'event_id' => $event['event_id']], ['event_type' => $event['type'], 'payload' => json_decode($payload, true), 'processing_status' => 'pending']);
+        // Some providers (Mollie, Instamojo, SslCommerz) deliver form-encoded bodies, not JSON.
+        $decoded = json_decode($payload, true) ?? ['raw' => $payload];
+        $record = PaymentWebhookEvent::firstOrCreate(['provider' => $provider, 'event_id' => $event['event_id']], ['event_type' => $event['type'], 'payload' => $decoded, 'processing_status' => 'pending']);
         if (! $record->wasRecentlyCreated || $record->processing_status === 'processed') {
             return;
         }
         try {
             if ($event['paid'] && $event['order_id']) {
-                $this->fulfillment->fulfill($event['order_id'], (string) $event['payment_id'], $provider, json_decode($payload, true));
+                $this->fulfillment->fulfill($event['order_id'], (string) $event['payment_id'], $provider, $decoded);
             }
             $record->update(['processing_status' => 'processed', 'processed_at' => now()]);
         } catch (\Throwable $e) {

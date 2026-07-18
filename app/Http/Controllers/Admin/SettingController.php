@@ -58,6 +58,28 @@ class SettingController extends Controller
    'payouts.paypal.enabled'=>['label'=>'PayPal payouts','group'=>'payouts','type'=>'toggle','default'=>'1'],
    'payouts.bank.enabled'=>['label'=>'Bank transfer payouts','group'=>'payouts','type'=>'toggle','default'=>'1'],
   ]],
+  'payments_mollie'=>['title'=>'Mollie','icon'=>'euro','fields'=>[
+   'payments.mollie.enabled'=>['label'=>'Offer Mollie at checkout','group'=>'payments','type'=>'toggle','default'=>'0'],
+   'payments.mollie_api_key'=>['label'=>'API key','group'=>'payments','type'=>'password','encrypted'=>true,'hint'=>'Webhook is announced automatically per payment — no dashboard setup needed.'],
+  ]],
+  'payments_flutterwave'=>['title'=>'Flutterwave','icon'=>'flutter_dash','fields'=>[
+   'payments.flutterwave.enabled'=>['label'=>'Offer Flutterwave at checkout','group'=>'payments','type'=>'toggle','default'=>'0'],
+   'payments.flutterwave_secret'=>['label'=>'Secret key','group'=>'payments','type'=>'password','encrypted'=>true],
+   'payments.flutterwave_secret_hash'=>['label'=>'Webhook secret hash','group'=>'payments','type'=>'password','encrypted'=>true,'hint'=>'Set the same value in the Flutterwave dashboard webhook settings; deliveries go to /payments/flutterwave/webhook.'],
+  ]],
+  'payments_instamojo'=>['title'=>'Instamojo','icon'=>'currency_rupee','fields'=>[
+   'payments.instamojo.enabled'=>['label'=>'Offer Instamojo at checkout (INR)','group'=>'payments','type'=>'toggle','default'=>'0'],
+   'payments.instamojo_api_key'=>['label'=>'API key','group'=>'payments','type'=>'password','encrypted'=>true],
+   'payments.instamojo_auth_token'=>['label'=>'Auth token','group'=>'payments','type'=>'password','encrypted'=>true],
+   'payments.instamojo_salt'=>['label'=>'Salt (webhook signatures)','group'=>'payments','type'=>'password','encrypted'=>true],
+   'payments.instamojo_mode'=>['label'=>'Mode','group'=>'payments','type'=>'select','options'=>['test','live']],
+  ]],
+  'payments_sslcommerz'=>['title'=>'SslCommerz','icon'=>'account_balance','fields'=>[
+   'payments.sslcommerz.enabled'=>['label'=>'Offer SslCommerz at checkout','group'=>'payments','type'=>'toggle','default'=>'0'],
+   'payments.sslcommerz_store_id'=>['label'=>'Store ID','group'=>'payments','type'=>'text'],
+   'payments.sslcommerz_store_password'=>['label'=>'Store password','group'=>'payments','type'=>'password','encrypted'=>true],
+   'payments.sslcommerz_mode'=>['label'=>'Mode','group'=>'payments','type'=>'select','options'=>['sandbox','live']],
+  ]],
   'payments_bank'=>['title'=>'Bank Transfer','icon'=>'account_balance','fields'=>[
    'payments.bank_transfer.enabled'=>['label'=>'Offer bank transfer at checkout','group'=>'payments','type'=>'toggle','default'=>'0'],
    'payments.bank_transfer_instructions'=>['label'=>'Transfer instructions shown to buyers','group'=>'payments','type'=>'textarea','hint'=>'Account name, IBAN/SWIFT and reference guidance. Orders stay unpaid until an admin confirms receipt.'],

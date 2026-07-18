@@ -17,6 +17,10 @@ return [
   'paypal'=>['label'=>'PayPal','driver'=>PayPalCheckoutGateway::class,'currencies'=>['USD','EUR','GBP','AUD','CAD','JPY','CHF','SEK','SGD','HKD','NZD','MXN','BRL','PLN','DKK','NOK','CZK','HUF','ILS','PHP','TWD','THB'],'description'=>'Pay with a PayPal balance, card or bank.'],
   'razorpay'=>['label'=>'Razorpay','driver'=>RazorpayCheckoutGateway::class,'currencies'=>['INR'],'description'=>'UPI, netbanking, wallets and cards for India.'],
   'paystack'=>['label'=>'Paystack','driver'=>PaystackCheckoutGateway::class,'currencies'=>['NGN','GHS','ZAR','KES','USD'],'description'=>'Cards, bank transfer and mobile money for Africa.'],
+  'mollie'=>['label'=>'Mollie','driver'=>\App\Services\Gateways\MollieCheckoutGateway::class,'currencies'=>['EUR','USD','GBP','CHF','SEK','NOK','DKK','PLN','CZK','HUF','AUD','CAD'],'description'=>'iDEAL, Bancontact, SEPA, cards and more for Europe.'],
+  'flutterwave'=>['label'=>'Flutterwave','driver'=>\App\Services\Gateways\FlutterwaveCheckoutGateway::class,'currencies'=>['NGN','GHS','KES','UGX','TZS','RWF','ZAR','XAF','XOF','USD','EUR','GBP'],'description'=>'Cards, bank and mobile money across Africa.'],
+  'instamojo'=>['label'=>'Instamojo','driver'=>\App\Services\Gateways\InstamojoCheckoutGateway::class,'currencies'=>['INR'],'description'=>'UPI, netbanking, wallets and cards for India.'],
+  'sslcommerz'=>['label'=>'SslCommerz','driver'=>\App\Services\Gateways\SslCommerzCheckoutGateway::class,'currencies'=>['BDT','USD','EUR','GBP'],'description'=>'Cards, bKash, Nagad and banking for Bangladesh.'],
   'bank_transfer'=>['label'=>'Bank transfer','driver'=>BankTransferGateway::class,'currencies'=>[],'description'=>'Transfer manually; access unlocks once an administrator confirms receipt.'],
  ],
 ];
