@@ -76,6 +76,8 @@ class InstallController extends Controller
         LicenseType::updateOrCreate(['slug' => 'regular'], ['name' => 'Regular License', 'description' => 'Use in one end product where end users are not charged.', 'allows_paid_end_product' => false]);
         LicenseType::updateOrCreate(['slug' => 'extended'], ['name' => 'Extended License', 'description' => 'Use in one end product where end users may be charged.', 'allows_paid_end_product' => true]);
         Setting::updateOrCreate(['key' => 'marketplace.name'], ['group' => 'general', 'value' => $data['site_name'], 'is_public' => true]);
+        // Stamp the shipped baseline so the System Health page reports a real version from day one.
+        Setting::put('system.version', (string) config('marketplace.version', '1.0.0'), 'system');
         $admin = User::updateOrCreate(['email' => $data['admin_email']], ['name' => $data['admin_name'], 'password' => bcrypt($data['admin_password']), 'status' => 'active', 'email_verified_at' => now()]);
         $admin->roles()->syncWithoutDetaching([Role::where('slug', 'administrator')->firstOrFail()->id]);
         file_put_contents(EnsureInstalled::lockPath(), json_encode(['installed_at' => now()->toIso8601String(), 'admin' => $admin->email, 'version' => app()->version()]));

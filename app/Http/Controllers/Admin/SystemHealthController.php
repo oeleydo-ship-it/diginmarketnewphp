@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\PaymentWebhookEvent;
 use App\Models\ProductFile;
 use App\Models\WalletTransaction;
+use App\Services\ApplicationUpdateService;
 use App\Services\SellerWalletService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -49,19 +50,20 @@ class SystemHealthController extends Controller
         return back()->with('status', 'Backup created.');
     }
 
-    /** Apply an uploaded release zip: validated, backed up, migrated, audited. */
- public function update(\App\Services\ApplicationUpdateService $updater): RedirectResponse
- {
-  request()->validate(['package'=>['required','file','mimes:zip','max:262144']]);
-  try{
-   $result=$updater->apply(request()->file('package'),auth()->user());
-  }catch(\RuntimeException $e){
-   return back()->withErrors(['package'=>$e->getMessage()]);
-  }
-  return back()->with('status','Update applied: version '.$result['version'].' ('.$result['files'].' files). Caches cleared and migrations run.');
- }
+    /** Apply an uploaded release zip: validated, versioned, backed up, migrated, audited. */
+    public function update(ApplicationUpdateService $updater): RedirectResponse
+    {
+        request()->validate(['package' => ['required', 'file', 'mimes:zip', 'max:262144']]);
+        try {
+            $result = $updater->apply(request()->file('package'), auth()->user(), request()->boolean('allow_downgrade'));
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['package' => $e->getMessage()]);
+        }
 
- /** Run the earnings clearance on demand instead of waiting for the 01:00 scheduler. */
+        return back()->with('status', 'Updated '.$result['previous'].' → '.$result['version'].' ('.$result['files'].' files). Caches cleared and migrations run.');
+    }
+
+    /** Run the earnings clearance on demand instead of waiting for the 01:00 scheduler. */
     public function clearEarnings(SellerWalletService $wallets): RedirectResponse
     {
         $count = $wallets->clearEligible();

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AuditLog;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\AppVersion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
@@ -23,7 +24,7 @@ class ApplicationUpdateService
     /** Paths inside allowed roots that must survive an update untouched. */
     private const PROTECTED = ['public/storage', 'bootstrap/cache'];
 
-    public function apply(UploadedFile $zip, User $admin): array
+    public function apply(UploadedFile $zip, User $admin, bool $allowDowngrade = false): array
     {
         $target = rtrim((string) (config('marketplace.update_target') ?: base_path()), '/\\');
         $archive = new ZipArchive;
@@ -32,6 +33,18 @@ class ApplicationUpdateService
         }
         [$entries, $prefix] = $this->validated($archive);
         $manifest = $this->manifest($archive, $prefix);
+
+        // Versioning: every release must identify itself, and by default only a NEWER version
+        // applies — so re-uploading the current zip or an old package is caught before any
+        // file is touched. allowDowngrade is the explicit escape hatch for rollbacks.
+        $current = AppVersion::current();
+        $version = (string) ($manifest['version'] ?? '');
+        if (! AppVersion::isValid($version)) {
+            throw new RuntimeException('The package has no valid update-manifest.json version (expected e.g. {"version": "1.2.0"} at the zip root).');
+        }
+        if (! $allowDowngrade && ! AppVersion::isNewer($version)) {
+            throw new RuntimeException('This package is version '.$version.' but the marketplace is already on '.$current.'. Tick "allow same or older version" to reinstall or roll back deliberately.');
+        }
 
         // Backup + maintenance mode guard the real deployment; the test suite copies into a
         // scratch target and must not toggle the developer's live storage/framework/down.
@@ -72,11 +85,13 @@ class ApplicationUpdateService
             }
         }
 
-        $version = (string) ($manifest['version'] ?? 'unversioned');
-        Setting::updateOrCreate(['key' => 'system.version'], ['group' => 'system', 'value' => $version]);
-        AuditLog::create(['user_id' => $admin->id, 'action' => 'system.update_applied', 'entity_type' => null, 'entity_id' => null, 'new_values' => ['version' => $version, 'files' => $copied, 'archive' => $zip->getClientOriginalName()], 'ip_address' => request()->ip(), 'user_agent' => request()->userAgent()]);
+        // Setting::put busts the per-key cache — updateOrCreate would leave stale reads behind.
+        Setting::put('system.previous_version', $current, 'system');
+        Setting::put('system.version', $version, 'system');
+        Setting::put('system.updated_at', now()->toIso8601String(), 'system');
+        AuditLog::create(['user_id' => $admin->id, 'action' => 'system.update_applied', 'entity_type' => null, 'entity_id' => null, 'old_values' => ['version' => $current], 'new_values' => ['version' => $version, 'files' => $copied, 'archive' => $zip->getClientOriginalName()], 'ip_address' => request()->ip(), 'user_agent' => request()->userAgent()]);
 
-        return ['version' => $version, 'files' => $copied];
+        return ['version' => $version, 'previous' => $current, 'files' => $copied];
     }
 
     /**

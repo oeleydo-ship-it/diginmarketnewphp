@@ -115,6 +115,45 @@ class InstallerDatabaseAndUpdateTest extends TestCase
   $this->assertSame([], glob($this->updateTarget.'/*') ?: []);
  }
 
+ public function test_update_without_manifest_version_is_rejected(): void
+ {
+  $upload = $this->zip(['app/NoManifest.php' => '<?php // x']);
+  $this->actingAs($this->admin())->post('/admin/system/update', ['package' => $upload])->assertSessionHasErrors('package');
+  $this->assertSame([], glob($this->updateTarget.'/*') ?: []);
+ }
+
+ public function test_same_or_older_version_is_blocked_unless_downgrade_allowed(): void
+ {
+  \App\Models\Setting::put('system.version', '2.5.0', 'system');
+  $admin = $this->admin();
+  $older = $this->zip(['app/Old.php' => '<?php // old', 'update-manifest.json' => json_encode(['version' => '2.4.9'])]);
+  $this->actingAs($admin)->post('/admin/system/update', ['package' => $older])->assertSessionHasErrors('package');
+  $this->assertSame('2.5.0', \App\Support\AppVersion::current());
+  $this->assertSame([], glob($this->updateTarget.'/*') ?: []);
+  // Explicit rollback applies and records the transition.
+  $rollback = $this->zip(['app/Old.php' => '<?php // old', 'update-manifest.json' => json_encode(['version' => '2.4.9'])]);
+  $this->post('/admin/system/update', ['package' => $rollback, 'allow_downgrade' => 1])->assertRedirect()->assertSessionHas('status');
+  $this->assertSame('2.4.9', \App\Support\AppVersion::current());
+  $this->assertSame('2.5.0', \App\Models\Setting::get('system.previous_version'));
+ }
+
+ public function test_newer_version_applies_and_records_history(): void
+ {
+  \App\Models\Setting::put('system.version', '1.1.0', 'system');
+  $upload = $this->zip(['app/New.php' => '<?php // new', 'update-manifest.json' => json_encode(['version' => '1.2.0'])]);
+  $this->actingAs($this->admin())->post('/admin/system/update', ['package' => $upload])->assertSessionHas('status', fn ($s) => str_contains($s, '1.1.0 → 1.2.0'));
+  $this->assertSame('1.2.0', \App\Support\AppVersion::current());
+  $this->assertSame('1.1.0', \App\Models\Setting::get('system.previous_version'));
+  $this->assertNotNull(\App\Models\Setting::get('system.updated_at'));
+ }
+
+ public function test_fresh_install_stamps_the_baseline_version(): void
+ {
+  config(['marketplace.enforce_installer' => true, 'marketplace.version' => '1.1.0']);
+  $this->post('/install', ['site_name' => 'Versioned Market', 'admin_name' => 'Admin', 'admin_email' => 'admin@example.com', 'admin_password' => 'super-secret-pass', 'admin_password_confirmation' => 'super-secret-pass'])->assertRedirect();
+  $this->assertSame('1.1.0', \App\Models\Setting::get('system.version'));
+ }
+
  public function test_update_endpoint_is_admin_only(): void
  {
   $upload = $this->zip(['app/X.php' => 'x']);
