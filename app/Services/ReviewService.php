@@ -13,7 +13,7 @@ class ReviewService
 {
     public function create(User $user, OrderItem $item, array $data): Review
     {
-        if ($item->order->user_id !== $user->id || $item->order->payment_status !== 'paid' || $item->license?->status !== 'active') {
+        if ($item->order->user_id !== $user->id || ! $item->order->isSettled() || $item->license?->status !== 'active') {
             throw ValidationException::withMessages(['review' => 'Only eligible verified buyers may review this product.']);
         }
 

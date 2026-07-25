@@ -9,7 +9,9 @@ class LicenseActivationService
  public function findUsableLicense(string $key):License
  {
   $license=License::with(['product','orderItem.order'])->where('license_key',$key)->first();
-  if(!$license||$license->status!=='active'||$license->orderItem?->order?->payment_status!=='paid')throw ValidationException::withMessages(['license_key'=>'License key is not valid or not active.']);
+  // Settled — not strictly 'paid': refunding or disputing a sibling item in the same order used to
+  // invalidate every other licence on it. The licence's own status carries its revocation.
+  if(!$license||$license->status!=='active'||!$license->orderItem?->order?->isSettled())throw ValidationException::withMessages(['license_key'=>'License key is not valid or not active.']);
   return $license;
  }
  public function activate(License $license,string $instanceId,?string $label,?string $ip,?string $userAgent):LicenseActivation

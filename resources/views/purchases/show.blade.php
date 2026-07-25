@@ -43,11 +43,19 @@
                                 <code class="rounded bg-surface-container px-3 py-1.5 font-mono text-sm font-medium text-on-surface">{{ $item->license->license_key }}</code>
                             </div>
                             @if($item->license->status === 'active')
-                                <a href="{{ $item->license->download_url }}"
-                                    class="flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
-                                    <span class="material-symbols-outlined">download</span>
-                                    Download Main File
-                                </a>
+                                <div class="text-right">
+                                    @if($item->license->has_update)
+                                        <p class="mb-1.5 inline-flex items-center gap-1 rounded-full bg-tertiary-fixed px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-on-tertiary-fixed-variant">
+                                            <span class="material-symbols-outlined text-[14px]">upgrade</span>
+                                            Update available
+                                        </p>
+                                    @endif
+                                    <a href="{{ $item->license->download_url }}"
+                                        class="flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
+                                        <span class="material-symbols-outlined">download</span>
+                                        Download {{ $item->license->latest_version?->version_number ? 'v'.$item->license->latest_version->version_number : 'Main File' }}
+                                    </a>
+                                </div>
                             @else
                                 <span class="flex items-center gap-2 rounded-lg bg-error-container px-4 py-2 text-sm font-semibold text-on-error-container">
                                     <span class="material-symbols-outlined text-[18px]">block</span>
@@ -55,6 +63,36 @@
                                 </span>
                             @endif
                         </div>
+                        @if($item->license->status === 'active' && count($item->license->available_versions ?? []) > 1)
+                            <details class="mt-4 rounded-lg border border-outline-variant bg-surface-container-low">
+                                <summary class="flex cursor-pointer items-center gap-2 px-4 py-3 text-sm font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-[18px]">history</span>
+                                    All versions ({{ count($item->license->available_versions) }}) — updates are free for life
+                                </summary>
+                                <ul class="divide-y divide-outline-variant border-t border-outline-variant">
+                                    @foreach($item->license->available_versions as $entry)
+                                        <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-semibold text-on-surface">
+                                                    v{{ $entry['version']->version_number }}
+                                                    @if($entry['version']->release_title)<span class="font-normal text-on-surface-variant">— {{ $entry['version']->release_title }}</span>@endif
+                                                    @if($entry['is_purchased'])<span class="ml-1 rounded bg-surface-container px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">purchased</span>@endif
+                                                </p>
+                                                @if($entry['version']->release_notes)
+                                                    <p class="mt-1 max-w-xl text-xs leading-5 text-on-surface-variant">{{ $entry['version']->release_notes }}</p>
+                                                @endif
+                                                @if($entry['version']->published_at)
+                                                    <p class="mt-1 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">Released {{ $entry['version']->published_at->toFormattedDateString() }}</p>
+                                                @endif
+                                            </div>
+                                            <a href="{{ $entry['url'] }}" class="flex items-center gap-1.5 rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface transition-colors hover:border-primary hover:text-primary">
+                                                <span class="material-symbols-outlined text-[16px]">download</span> Download
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </details>
+                        @endif
                         @if($item->license->support_expires_at)
                             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
                                 <span class="material-symbols-outlined text-[18px]">support_agent</span>

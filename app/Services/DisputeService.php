@@ -11,7 +11,7 @@ class DisputeService
 {
  public function open(User $user,OrderItem $item,array $data):Dispute
  {
-  if($item->order->user_id!==$user->id||!in_array($item->order->payment_status,['paid','partially_refunded'],true))throw ValidationException::withMessages(['order'=>'Only paid purchases can be disputed.']);
+  if($item->order->user_id!==$user->id||!$item->order->isSettled())throw ValidationException::withMessages(['order'=>'Only paid purchases can be disputed.']);
   if(Dispute::where('order_item_id',$item->id)->exists())throw ValidationException::withMessages(['order'=>'A dispute already exists for this purchase.']);
   $dispute=DB::transaction(function()use($user,$item,$data){
    $dispute=Dispute::create(['number'=>'DP-'.str()->upper(str()->random(10)),'user_id'=>$user->id,'order_id'=>$item->order_id,'order_item_id'=>$item->id,'product_id'=>$item->product_id,'seller_id'=>$item->seller_id,'type'=>$data['type'],'description'=>$data['description'],'disputed_amount'=>$item->total,'status'=>'open']);
@@ -29,8 +29,13 @@ class DisputeService
    $amount=min($amount,(float)$dispute->disputed_amount);
    $item=$dispute->orderItem;
    $item->license?->update(['status'=>'revoked']);
-   $item->order->update(['status'=>'disputed','payment_status'=>'disputed']);
    $dispute->update(['status'=>'upheld','resolved_amount'=>$amount,'administrator_decision'=>$decision,'resolved_at'=>now()]);
+   // Only call the whole order disputed when every line has been clawed back; a single upheld
+   // dispute on a multi-item order leaves the other lines paid and downloadable.
+   $itemIds=$item->order->items()->pluck('id');
+   $clawedBack=Dispute::whereIn('order_item_id',$itemIds)->where('status','upheld')->distinct()->count('order_item_id')+\App\Models\RefundRequest::whereIn('order_item_id',$itemIds)->where('status','refunded')->distinct()->count('order_item_id');
+   $state=$clawedBack>=$itemIds->count()?'disputed':'partially_refunded';
+   $item->order->update(['status'=>$state,'payment_status'=>$state]);
    $wallet=SellerWallet::where('seller_id',$item->seller_id)->where('currency',$item->order->currency)->lockForUpdate()->first();
    if($wallet){
     $deduction=min($amount,(float)$item->seller_earning);

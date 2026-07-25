@@ -40,10 +40,10 @@ product mismatch. Unknown keys return `404`.
 ## POST /activate
 
 Register an activation (e.g. a domain or machine). Fails with `422` when the
-activation limit is reached.
+activation limit is reached. Re-activating the same `instance_id` is idempotent.
 
 ```json
-{ "license_key": "…", "instance": "customer-site.example" }
+{ "license_key": "…", "instance_id": "customer-site.example", "label": "Production" }
 ```
 
 ## POST /deactivate
@@ -51,19 +51,27 @@ activation limit is reached.
 Release a previously registered activation so it can be used elsewhere.
 
 ```json
-{ "license_key": "…", "instance": "customer-site.example" }
+{ "license_key": "…", "instance_id": "customer-site.example" }
 ```
 
 ## POST /update-check
 
-Gate updates on support status: returns the newest published version and whether
-this license's support window still covers updates.
+Returns the newest published version alongside the version this license was
+bought at.
 
 ```json
-{ "license_key": "…", "current_version": "1.2.0" }
+{ "license_key": "…" }
 ```
 
-Response includes `latest_version`, `update_available`, and `support_active`.
+Response includes `current_version`, `latest_version`, `update_available`,
+`support_active` and `support_expires_at`.
+
+`update_available` is what an in-product updater should act on: **downloading a
+newer version is free for the lifetime of the purchase**, and the buyer can fetch
+any published version from their Downloads page. `support_active` is narrower — it
+reports whether the license still entitles the buyer to seller assistance, and
+`eligible` combines the two for products that only offer updates alongside
+support.
 
 ## Payment webhooks (server-to-server)
 

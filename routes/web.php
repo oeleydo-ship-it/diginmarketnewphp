@@ -131,7 +131,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
     Route::get('/purchases/{order}', [PurchaseController::class, 'show'])->name('purchases.show');
     Route::get('/purchases/{order}/invoice', [PurchaseController::class, 'invoice'])->name('purchases.invoice');
-    Route::get('/downloads/{license}', DownloadController::class)->name('downloads.show');
+    Route::get('/downloads', [DownloadController::class, 'index'])->name('downloads.index');
+    // Optional {version}: omitted means "the newest version this licence is entitled to".
+    Route::get('/downloads/{license}/{version?}', DownloadController::class)->name('downloads.show');
     Route::post('/bundles/{bundle}/buy', [\App\Http\Controllers\BundleController::class, 'buy'])->middleware('verified')->name('bundles.buy');
     Route::post('/licenses/{license}/extend-support', [\App\Http\Controllers\SupportExtensionController::class, 'buy'])->middleware('verified')->name('licenses.extend-support');
     Route::post('/reviews/{orderItem}', [ReviewController::class, 'store'])->name('reviews.store');

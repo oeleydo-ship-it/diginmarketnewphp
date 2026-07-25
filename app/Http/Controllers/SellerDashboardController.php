@@ -9,7 +9,7 @@ class SellerDashboardController extends Controller
  {
   $sellerId=auth()->id();
   $wallet=auth()->user()->sellerWallets()->where('currency','USD')->firstOrCreate(['currency'=>'USD']);
-  $paidItems=OrderItem::where('seller_id',$sellerId)->whereHas('order',fn($q)=>$q->where('payment_status','paid'));
+  $paidItems=OrderItem::where('seller_id',$sellerId)->whereHas('order',fn($q)=>$q->settled());
   $stats=[
    'available'=>(float)$wallet->available_balance,
    'pending'=>(float)$wallet->pending_balance,
@@ -21,7 +21,7 @@ class SellerDashboardController extends Controller
    'products_published'=>Product::where('seller_id',$sellerId)->where('status','published')->count(),
    'products_pending'=>Product::where('seller_id',$sellerId)->whereIn('status',['submitted','under_review'])->count(),
   ];
-  $recentSales=OrderItem::where('seller_id',$sellerId)->whereHas('order',fn($q)=>$q->where('payment_status','paid'))->with(['order.user','product'])->latest('id')->limit(8)->get();
+  $recentSales=OrderItem::where('seller_id',$sellerId)->whereHas('order',fn($q)=>$q->settled())->with(['order.user','product'])->latest('id')->limit(8)->get();
   $topProducts=Product::where('seller_id',$sellerId)->where('status','published')->orderByDesc('sales_count')->limit(5)->get();
   return view('seller.dashboard',compact('stats','recentSales','topProducts','wallet'));
  }
