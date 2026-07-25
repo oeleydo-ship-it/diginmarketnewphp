@@ -138,8 +138,9 @@
 </main>
 <footer class="mt-24 border-t border-outline-variant bg-surface-container-highest">
     <div class="mx-auto max-w-7xl px-6 py-14">
-        <div class="mb-12 grid grid-cols-1 gap-10 md:grid-cols-4 lg:grid-cols-5">
-            <div class="col-span-1 lg:col-span-2">
+        {{-- Two link columns side by side on phones so the footer isn't one long scroll. --}}
+        <div class="mb-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 md:gap-10 lg:grid-cols-5">
+            <div class="col-span-2 md:col-span-1 lg:col-span-2">
                 <span class="mb-4 block font-display text-lg font-bold text-primary">{{ config('app.name', 'DiginMarket') }}</span>
                 <p class="mb-6 max-w-xs text-sm text-on-surface-variant">A curated marketplace for professional digital assets, scripts, and themes from independent creators.</p>
                 @php($socials=collect([['social.website','public','Website'],['social.twitter','alternate_email','X (Twitter)'],['social.community','forum','Community']])->map(fn($s)=>['url'=>\App\Models\Setting::get($s[0]),'icon'=>$s[1],'label'=>$s[2]])->filter(fn($s)=>$s['url']))
