@@ -15,6 +15,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +38,21 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('license-api', fn (Request $request) => Limit::perMinute(30)->by(($request->input('license_key') ?: 'anonymous').'|'.$request->ip()));
         Model::preventLazyLoading(! $this->app->isProduction());
         DatabaseSettings::apply();
+        $this->ignoreStaleViteHotFile();
+    }
+
+    /**
+     * `npm run dev` drops public/hot, and a release zip built from a working copy carries
+     * it along. Its presence makes @vite point every stylesheet and script at the developer's
+     * own 127.0.0.1:5173, so the deployed site renders as bare unstyled HTML. Outside local
+     * development the compiled manifest is the only correct source, so look for the hot file
+     * somewhere it will never exist.
+     */
+    private function ignoreStaleViteHotFile(): void
+    {
+        if (! $this->app->isLocal()) {
+            Vite::useHotFile(storage_path('framework/vite.hot'));
+        }
     }
 
     /**
