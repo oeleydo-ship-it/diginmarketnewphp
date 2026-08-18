@@ -3,6 +3,8 @@
 <html lang="{{ str_replace('_','-',app()->getLocale()) }}" dir="{{ config('locales.available.'.app()->getLocale().'.dir', 'ltr') }}">
 <head>
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="csrf-token" content="{{ csrf_token() }}">
+ <meta name="rich-editor-upload-url" content="{{ route('editor.images.store') }}">
  <title>{{ $title }} · DiginMarket</title>
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -34,10 +36,10 @@
      @php($unreadCount = auth()->user()->unreadNotifications()->count())
      @php($recentNotifications = auth()->user()->notifications()->latest()->limit(10)->get())
      @php($kindIcons = ['order' => 'shopping_cart', 'seller' => 'store', 'review' => 'rate_review', 'withdrawal' => 'payments', 'refund' => 'assignment_return', 'dispute' => 'gavel', 'subscription' => 'workspace_premium'])
-     <details class="relative">
+     <details class="relative" data-admin-notifications data-user-id="{{ auth()->id() }}">
       <summary class="relative flex cursor-pointer list-none items-center rounded-lg p-2 hover:bg-[#eef1fa] [&::-webkit-details-marker]:hidden" aria-label="Notifications">
        <span class="material-symbols-outlined">notifications</span>
-       @if($unreadCount > 0)<span class="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
+       <span data-admin-notification-badge data-count="{{ $unreadCount }}" class="absolute -right-0.5 -top-0.5 {{ $unreadCount > 0 ? 'flex' : 'hidden' }} h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
       </summary>
       <div class="absolute right-0 z-50 mt-2 w-[min(92vw,380px)] overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-xl">
        <div class="flex items-center justify-between border-b border-[#eceef5] px-4 py-3">
@@ -46,7 +48,7 @@
          <form method="POST" action="{{ route('admin.notifications.read-all') }}">@csrf<button class="text-xs font-semibold text-[#3525cd] hover:underline">Mark all read</button></form>
         @endif
        </div>
-       <div class="max-h-[420px] divide-y divide-[#eceef5] overflow-y-auto">
+       <div data-admin-notification-list class="max-h-[420px] divide-y divide-[#eceef5] overflow-y-auto">
         @forelse($recentNotifications as $notification)
          <a href="{{ route('admin.notifications.open', $notification->id) }}" class="flex items-start gap-3 px-4 py-3 transition hover:bg-[#f6f8ff] {{ $notification->read_at ? 'opacity-60' : '' }}">
           <span class="material-symbols-outlined mt-0.5 text-[20px] text-[#3525cd]">{{ $kindIcons[$notification->data['kind'] ?? ''] ?? 'notifications' }}</span>
@@ -57,7 +59,7 @@
           @unless($notification->read_at)<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#3525cd]"></span>@endunless
          </a>
         @empty
-         <p class="px-4 py-10 text-center text-sm text-[#777a8a]">Nothing yet — new orders, applications and requests appear here.</p>
+         <p data-admin-notification-empty class="px-4 py-10 text-center text-sm text-[#777a8a]">Nothing yet — new orders, applications and requests appear here.</p>
         @endforelse
        </div>
       </div>

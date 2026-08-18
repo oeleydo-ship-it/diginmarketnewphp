@@ -59,7 +59,7 @@
             </div>
             <div class="flex flex-col gap-1.5 sm:col-span-2">
                 <label class="{{ $labelCls }}">Full description</label>
-                <textarea name="description" rows="8" required @disabled($locked) class="{{ $input }}">{{ old('description', $product->description) }}</textarea>
+                <textarea name="description" rows="8" required @disabled($locked) class="{{ $input }}" data-rich-editor>{{ old('description', $product->description) }}</textarea>
             </div>
             <div class="flex flex-col gap-1.5">
                 <label class="{{ $labelCls }}">Live demo URL</label>
@@ -79,11 +79,12 @@
                 <label class="mt-1 flex items-center gap-2 text-sm text-on-surface-variant"><input type="checkbox" name="business_license_enabled" value="1" @checked(old('business_license_enabled', $product->business_license_enabled)) @disabled($locked) class="rounded text-primary focus:ring-primary">Offer the business license on this product</label>
             </div>
             <div class="flex flex-col gap-1.5">
-                <label class="{{ $labelCls }}">Support extension price <span class="normal-case text-on-surface-variant">(optional)</span></label>
+                <label class="{{ $labelCls }}">Updates &amp; support addon price <span class="normal-case text-on-surface-variant">(optional)</span></label>
                 <input name="support_extension_price" type="number" step="0.01" min="1" placeholder="Leave blank to not offer" value="{{ old('support_extension_price', $product->support_extension_price) }}" @disabled($locked) class="{{ $input }}">
+                <p class="text-xs text-on-surface-variant">Extra payment for another period of updates and support on an existing license. Leave blank to hide the addon.</p>
             </div>
             <div class="flex flex-col gap-1.5">
-                <label class="{{ $labelCls }}">Support extension length (months)</label>
+                <label class="{{ $labelCls }}">Addon length (months)</label>
                 <input name="support_extension_months" type="number" min="1" max="36" value="{{ old('support_extension_months', $product->support_extension_months ?? 6) }}" @disabled($locked) class="{{ $input }}">
             </div>
             @if($errors->any())

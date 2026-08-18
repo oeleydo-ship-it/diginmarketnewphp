@@ -25,7 +25,7 @@
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="{{ $label }}">Full description</label>
-            <textarea name="description" rows="8" required class="{{ $input }}"></textarea>
+            <textarea name="description" rows="8" required class="{{ $input }}" data-rich-editor>{{ old('description') }}</textarea>
         </div>
         <div class="flex flex-col gap-1.5">
             <label class="{{ $label }}">Regular price</label>
@@ -35,6 +35,15 @@
             <label class="{{ $label }}">Business license price</label>
             <input name="extended_price" type="number" step="0.01" class="{{ $input }}">
             <label class="mt-1 flex items-center gap-2 text-sm text-on-surface-variant"><input type="checkbox" name="business_license_enabled" value="1" checked class="rounded text-primary focus:ring-primary">Offer the business license on this product</label>
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="{{ $label }}">Updates &amp; support addon price <span class="font-normal normal-case text-on-surface-variant">(optional)</span></label>
+            <input name="support_extension_price" type="number" step="0.01" min="1" placeholder="Leave blank to not offer" value="{{ old('support_extension_price') }}" class="{{ $input }}">
+            <p class="text-xs text-on-surface-variant">Buyers can pay this extra amount for another 6 months of updates and support. It does not sell a second license.</p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <label class="{{ $label }}">Addon length (months)</label>
+            <input name="support_extension_months" type="number" min="1" max="36" value="{{ old('support_extension_months', 6) }}" class="{{ $input }}">
         </div>
         <div class="flex flex-col gap-1.5">
             <label class="{{ $label }}">Version</label>

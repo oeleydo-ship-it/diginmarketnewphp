@@ -15,7 +15,7 @@ class AdminSettingsTest extends TestCase
  {
   $this->actingAs($this->admin())->get('/admin/settings')->assertOk()
    ->assertSee('Commerce & Finance')->assertSee('Features')->assertSee('Social Links')
-   ->assertSee('Default commission %')->assertSee('Customer registration');
+   ->assertSee('Default commission %')->assertSee('Customer registration')->assertSee('Email verification');
  }
  public function test_commerce_section_persists_and_applies_to_config(): void
  {
@@ -87,5 +87,20 @@ class AdminSettingsTest extends TestCase
  {
   $customer=User::factory()->create();
   $this->actingAs($customer)->post('/admin/settings/sections/features',['features__registration'=>'0'])->assertForbidden();
+ }
+
+ public function test_admin_can_toggle_email_verification(): void
+ {
+  $this->actingAs($this->admin())->post('/admin/settings/sections/features',[
+   'features__registration'=>'1',
+   'features__email_verification'=>'0',
+   'features__seller_applications'=>'1',
+   'features__reviews'=>'1',
+   'features__comments'=>'1',
+   'features__blog'=>'1',
+   'features__cookie_consent'=>'1',
+  ])->assertRedirect()->assertSessionHas('status');
+
+  $this->assertDatabaseHas('settings',['key'=>'features.email_verification','value'=>'0']);
  }
 }

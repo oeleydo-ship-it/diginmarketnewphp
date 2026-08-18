@@ -36,8 +36,10 @@
         <!-- Left Column -->
         <div class="space-y-6 lg:col-span-8">
             <!-- Preview -->
-            <section class="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
-                <x-product-thumb :product="$product" class="aspect-video w-full" />
+            <section data-gallery class="overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+                <div data-gallery-main class="aspect-video w-full">
+                    <x-product-thumb :product="$product" class="h-full w-full" />
+                </div>
                 @if($product->videoEmbedUrl())
                     <div class="aspect-video w-full border-t border-outline-variant">
                         <iframe src="{{ $product->videoEmbedUrl() }}" title="{{ $product->title }} video preview" class="h-full w-full" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -46,9 +48,9 @@
                 @if($product->images->count() > 1)
                     <div class="flex gap-3 overflow-x-auto border-t border-outline-variant p-4">
                         @foreach($product->images as $image)
-                            <a href="{{ $image->url() }}" target="_blank" rel="noopener" class="shrink-0 overflow-hidden rounded-lg border border-outline-variant transition-all hover:border-primary" aria-label="View screenshot {{ $loop->iteration }} full size">
+                            <button type="button" data-gallery-thumb data-src="{{ $image->url() }}" class="shrink-0 overflow-hidden rounded-lg border border-outline-variant transition-all hover:border-primary {{ $loop->first ? 'ring-2 ring-primary' : '' }}" aria-label="Show screenshot {{ $loop->iteration }}">
                                 <img src="{{ $image->url() }}" alt="{{ $image->alt ?? $product->title.' screenshot '.$loop->iteration }}" class="h-20 w-32 object-cover" loading="lazy">
-                            </a>
+                            </button>
                         @endforeach
                     </div>
                 @endif
@@ -67,7 +69,7 @@
                 <div data-tab-panel="description" class="space-y-6 p-6">
                     <h2 class="font-display text-2xl font-semibold text-on-surface">Product Overview</h2>
                     <p class="text-on-surface-variant">{{ $product->short_description }}</p>
-                    <article class="whitespace-pre-line leading-7 text-on-surface-variant">{{ $product->description }}</article>
+                    <x-rich-content :html="$product->description" class="leading-7 text-on-surface-variant" />
                     <div class="flex flex-wrap items-center gap-3 border-t border-outline-variant pt-6">
                         <span class="rounded bg-primary/10 px-3 py-1.5 font-mono text-xs font-semibold tracking-wider text-primary">{{ str($product->category->name)->upper() }}</span>
                         @if($latestVersion)
@@ -170,7 +172,7 @@
         </div>
 
         <!-- Right Column: Sidebar -->
-        <aside class="space-y-6 lg:col-span-4">
+        <aside class="space-y-6 lg:sticky lg:top-24 lg:col-span-4 lg:self-start">
             <!-- Purchase Widget -->
             <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
                 @auth
@@ -206,8 +208,19 @@
                                     <span class="material-symbols-outlined">edit</span> This is your product — manage it
                                 </a>
                             @else
+                                @if($alreadyOwned)
+                                    <div class="rounded-xl border border-secondary/30 bg-secondary-container/25 p-4">
+                                        <p class="font-semibold text-on-surface">You already have a license</p>
+                                        <p class="mt-1 text-sm text-on-surface-variant">Download your files anytime, or add another Regular or Business license to your cart.</p>
+                                        <a href="{{ route('downloads.index') }}" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                                            <span class="material-symbols-outlined text-[18px]">download</span> Download
+                                        </a>
+                                        <span class="mx-2 text-on-surface-variant">·</span>
+                                        <a href="{{ route('purchases.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">Purchases</a>
+                                    </div>
+                                @endif
                                 <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 font-semibold text-on-primary shadow-md transition-all hover:brightness-110 active:scale-[0.98]">
-                                    <span class="material-symbols-outlined">shopping_cart</span> Add to Cart
+                                    <span class="material-symbols-outlined">shopping_cart</span> {{ $alreadyOwned ? 'Buy another license' : 'Add to Cart' }}
                                 </button>
                             @endif
                         @else
@@ -256,6 +269,10 @@
                     </div>
                 </div>
             </div>
+
+            @if($product->offersSupportAddon())
+            <x-support-addon :product="$product" :license="$ownedLicense ?? null" />
+            @endif
 
             @if($bundles->isNotEmpty())
             <!-- Bundle cross-sell: this product ships inside these bundles -->

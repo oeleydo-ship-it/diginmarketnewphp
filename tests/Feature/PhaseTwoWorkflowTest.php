@@ -19,12 +19,21 @@ class PhaseTwoWorkflowTest extends TestCase
  {
   $customer=$this->role('customer');$sellerRole=$this->role('seller');$adminRole=$this->role('administrator');
   $applicant=User::factory()->create();$applicant->roles()->attach($customer);
-  $this->actingAs($applicant)->post('/sell/apply',['display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','biography'=>'We build production-ready Laravel applications.'])->assertSessionHasErrors(['full_name','address','city','business_name']);
+  $this->actingAs($applicant)->post('/sell/apply',['display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','biography'=>'We build production-ready Laravel applications.'])->assertSessionHasErrors(['full_name','address','city']);
   $this->actingAs($applicant)->post('/sell/apply',['full_name'=>'Alice Acme','display_name'=>'Acme Studio','username'=>'acme-studio','country'=>'AE','address'=>'12 Harbour Road','city'=>'Dubai','postal_code'=>'00000','business_name'=>'Acme Digital FZ-LLC','biography'=>'We build production-ready Laravel applications.'])->assertRedirect('/dashboard');
   $profile=$applicant->sellerProfile()->firstOrFail();$this->assertSame(SellerStatus::Pending,$profile->status);
   $admin=User::factory()->create();$admin->roles()->attach($adminRole);
   $this->actingAs($admin)->post("/admin/sellers/{$profile->id}/approve")->assertRedirect();
   $this->assertSame(SellerStatus::Approved,$profile->fresh()->status);$this->assertTrue($applicant->hasRole('seller'));
+ }
+ public function test_seller_application_succeeds_without_a_business_name(): void
+ {
+  $this->role('customer');
+  $applicant=User::factory()->create();$applicant->roles()->attach(Role::where('slug','customer')->firstOrFail());
+  $this->actingAs($applicant)->post('/sell/apply',['full_name'=>'Jordan Freelance','display_name'=>'Jordan Codes','username'=>'jordan-codes','country'=>'AE','address'=>'9 Maker Lane','city'=>'Dubai','postal_code'=>'00000','business_name'=>'','biography'=>'Independent developer shipping Laravel products.'])->assertRedirect('/dashboard');
+  $profile=$applicant->sellerProfile()->firstOrFail();
+  $this->assertNull($profile->business_name);
+  $this->assertSame(SellerStatus::Pending,$profile->status);
  }
  public function test_apply_page_redirects_users_who_already_applied(): void
  {

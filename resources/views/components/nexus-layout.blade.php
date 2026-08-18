@@ -4,14 +4,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ $title ?? config('marketplace.seo_meta_title', config('app.name', 'DiginMarket').' — Premium Digital Assets') }}</title>
-<meta name="description" content="{{ $description ?? config('marketplace.seo_meta_description', 'Discover reviewed digital products from independent creators.') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="rich-editor-upload-url" content="{{ route('editor.images.store') }}">
+@php
+    $defaultMetaTitle = \App\Models\Setting::get('seo.meta_title');
+    $defaultMetaDescription = \App\Models\Setting::get('seo.meta_description');
+@endphp
+<title>{{ $title ?? $defaultMetaTitle ?? config('marketplace.seo_meta_title', config('app.name', 'DiginMarket').' — Premium Digital Assets') }}</title>
+<meta name="description" content="{{ $description ?? $defaultMetaDescription ?? config('marketplace.seo_meta_description', 'Discover reviewed digital products from independent creators.') }}">
 @if(config('marketplace.seo_meta_keywords'))<meta name="keywords" content="{{ config('marketplace.seo_meta_keywords') }}">@endif
 <link rel="canonical" href="{{ url()->current() }}">
 <meta property="og:title" content="{{ $title ?? 'DiginMarket — Premium Digital Assets' }}">
 <meta property="og:description" content="{{ $description ?? 'A curated marketplace for digital products.' }}">
 <meta property="og:url" content="{{ url()->current() }}">
 <meta property="og:type" content="website">
+@php
+    $gscToken = \App\Models\Setting::get('seo.google_site_verification');
+    $gaMeasurementId = \App\Models\Setting::get('seo.google_analytics_measurement_id');
+@endphp
+@if(!empty($gscToken))
+    <meta name="google-site-verification" content="{{ $gscToken }}">
+@endif
+@if(!empty($gaMeasurementId))
+    <meta name="google-analytics-measurement-id" content="{{ $gaMeasurementId }}">
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaMeasurementId }}"></script>
+@endif
 <script>{!! \App\Http\Middleware\SecurityHeaders::THEME_BOOTSTRAP !!}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +46,7 @@
 </div>
 @endif
 @php
-    $cartCount = auth()->check() ? (auth()->user()->cart()->first()?->items()->count() ?? 0) : 0;
+    $cartCount = auth()->check() ? auth()->user()->cartItemCount() : 0;
     $isSeller = auth()->check() && auth()->user()->hasRole('seller');
     // Guests are sent to register normally, or to login when registration is disabled.
     $guestSellUrl = \App\Models\Setting::enabled('features.registration') ? route('register') : route('login');
@@ -60,13 +77,14 @@
             </nav>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
-            <form action="{{ route('products.index') }}" method="GET" class="relative hidden lg:block">
+            <form action="{{ route('products.index') }}" method="GET" data-live-search data-suggest-url="{{ route('products.suggest') }}" class="relative hidden lg:block">
                 <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
-                <input name="q" value="{{ request('q') }}" type="text" placeholder="{{ __('messages.nav.search') }}" aria-label="{{ __('messages.nav.search') }}"
+                <input name="q" value="{{ request('q') }}" type="search" autocomplete="off" placeholder="{{ __('messages.nav.search') }}" aria-label="{{ __('messages.nav.search') }}"
                     class="w-64 rounded-xl border border-outline-variant bg-surface-container-low py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20">
+                <div data-search-results hidden class="absolute end-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl"></div>
             </form>
             <a href="{{ auth()->check() ? ($isSeller ? route('seller.dashboard') : route('seller.apply')) : $guestSellUrl }}"
-                class="hidden rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95 sm:block">{{ __('messages.nav.sell') }}</a>
+                class="hidden shrink-0 items-center whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-sm font-semibold leading-none text-on-primary transition-all hover:opacity-90 active:scale-95 sm:inline-flex">{{ __('messages.nav.sell') }}</a>
             @php($locales = (array) config('locales.available'))
             @if(count($locales) > 1)
                 <details class="group relative">
@@ -111,6 +129,9 @@
         </div>
     </div>
     <nav data-nav-menu class="hidden border-t border-outline-variant bg-surface px-6 py-4 md:hidden">
+        <form action="{{ route('products.index') }}" method="GET" class="mb-4">
+            <input name="q" value="{{ request('q') }}" type="search" placeholder="{{ __('messages.nav.search') }}" class="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+        </form>
         <div class="flex flex-col gap-3 text-sm font-semibold text-on-surface-variant">
             @php($mobileHeaderMenu = \App\Models\MenuItem::forLocation('header'))
             @if($mobileHeaderMenu->isNotEmpty())

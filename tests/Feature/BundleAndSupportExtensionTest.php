@@ -118,6 +118,58 @@ class BundleAndSupportExtensionTest extends TestCase
   app(DirectCheckoutService::class)->startSupportExtension($license, $buyer);
  }
 
+ public function test_product_page_offers_six_month_addon_when_seller_sets_a_price(): void
+ {
+  $product = $this->product('Alpha', '60.00', ['support_extension_price' => '18.00']);
+  $this->get('/products/'.$product->slug)
+   ->assertOk()
+   ->assertSee('6 months extra updates & support')
+   ->assertSee('$18.00')
+   ->assertSee('Sign in and buy the product first to purchase this addon')
+   ->assertDontSee('Buy 6-month addon');
+ }
+
+ public function test_product_page_hides_addon_when_extension_price_is_null(): void
+ {
+  $product = $this->product('Alpha', '60.00');
+  $this->get('/products/'.$product->slug)
+   ->assertOk()
+   ->assertDontSee('extra updates &amp; support', false)
+   ->assertDontSee('Buy 6-month addon');
+ }
+
+ public function test_license_owner_can_buy_addon_from_product_purchases_and_downloads(): void
+ {
+  $product = $this->product('Alpha', '60.00', ['support_extension_price' => '18.00', 'support_extension_months' => 6]);
+  $buyer = User::factory()->create();
+  $license = $this->licenseFor($product, $buyer, ['support_expires_at' => now()->addMonth()]);
+  $this->actingAs($buyer);
+  $this->get('/products/'.$product->slug)->assertOk()->assertSee('Buy 6-month addon')->assertSee('Additional payment on your existing license');
+  $this->get(route('purchases.show', $license->orderItem->order))->assertOk()->assertSee('Buy 6-month addon');
+  $this->get(route('downloads.index'))->assertOk()->assertSee('Buy 6-month addon');
+  $this->post(route('licenses.extend-support', $license))->assertRedirectContains('checkout.stripe.test');
+  $order = $buyer->orders()->latest('id')->first();
+  $this->assertEquals(18.00, (float) $order->total);
+  $this->assertSame('support_extension', $order->items->first()->item_type);
+  $this->assertSame($license->id, $order->items->first()->license_id);
+ }
+
+ public function test_support_addon_defaults_to_six_months_and_stacks(): void
+ {
+  $product = $this->product('Alpha', '60.00', ['support_extension_price' => '12.00', 'support_extension_months' => 0]);
+  $buyer = User::factory()->create();
+  $license = $this->licenseFor($product, $buyer, ['support_expires_at' => now()->addMonth()]);
+  $originalExpiry = $license->support_expires_at->copy();
+  $this->actingAs($buyer);
+  $first = app(DirectCheckoutService::class)->startSupportExtension($license, $buyer);
+  $this->assertStringContainsString('+6 months of updates & support', $first['order']->items->first()->license_name);
+  app(PaymentFulfillmentService::class)->fulfill($first['order']->id, 'pi_support_1');
+  $second = app(DirectCheckoutService::class)->startSupportExtension($license->fresh(), $buyer);
+  app(PaymentFulfillmentService::class)->fulfill($second['order']->id, 'pi_support_2');
+  $this->assertTrue($license->fresh()->support_expires_at->equalTo($originalExpiry->addMonths(12)));
+  $this->assertSame(1, License::count());
+ }
+
  public function test_bundles_index_lists_purchasable_bundles_and_hides_broken_ones(): void
  {
   // Two purchasable bundles (≥2 models so the lazy-load guard is armed) and one with a draft product.

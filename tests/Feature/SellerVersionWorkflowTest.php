@@ -68,7 +68,14 @@ class SellerVersionWorkflowTest extends TestCase
  {
   $d=$this->publishedProduct();
   $version=$d['product']->versions()->create(['version_number'=>'2.0.0','release_title'=>'Major','status'=>ProductVersionStatus::PendingReview]);
-  $d['seller']->roles()->attach($this->role('administrator'));
   $this->actingAs($d['seller'])->post('/admin/versions/'.$version->id.'/approve')->assertForbidden();
+ }
+ public function test_administrator_who_owns_the_product_can_approve_a_version(): void
+ {
+  $d=$this->publishedProduct();
+  $version=$d['product']->versions()->create(['version_number'=>'2.0.0','release_title'=>'Major','status'=>ProductVersionStatus::PendingReview]);
+  $d['seller']->roles()->attach($this->role('administrator'));
+  $this->actingAs($d['seller'])->post('/admin/versions/'.$version->id.'/approve',['notes'=>'Self-review for local testing'])->assertRedirect();
+  $this->assertSame(ProductVersionStatus::Published,$version->fresh()->status);
  }
 }

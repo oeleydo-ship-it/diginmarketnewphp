@@ -3,21 +3,53 @@
  <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h1 class="text-3xl font-extrabold tracking-tight md:text-4xl">Product Review</h1><p class="mt-2 text-[#626576]">Validate submitted assets before they enter the marketplace.</p></div><span class="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">{{ $products->total() }} awaiting review</span></div>
  @if($errors->any())<div class="mt-5 flex gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"><span class="material-symbols-outlined">error</span>{{ $errors->first() }}</div>@endif
  <div class="mt-8 space-y-4">@forelse($products as $product)
-  <article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6"><div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between"><div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><h2 class="text-xl font-bold">{{ $product->title }}</h2><span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold capitalize text-amber-800">{{ str($product->status->value ?? $product->status)->replace('_',' ') }}</span></div><div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#626576]"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">person</span>{{ $product->seller->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">category</span>{{ $product->category->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">schedule</span>{{ $product->submitted_at?->diffForHumans() }}</span></div></div>
+  @php($reviewVersion = $product->reviewVersion())
+  @php($reviewFile = $reviewVersion?->downloadableFile())
+  <article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6"><div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between"><div class="min-w-0">
+   <div class="flex flex-wrap items-center gap-2"><h2 class="text-xl font-bold">{{ $product->title }}</h2><span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold capitalize text-amber-800">{{ str($product->status->value ?? $product->status)->replace('_',' ') }}</span></div>
+   <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#626576]"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">person</span>{{ $product->seller->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">category</span>{{ $product->category->name }}</span><span class="flex items-center gap-1"><span class="material-symbols-outlined text-lg">schedule</span>{{ $product->submitted_at?->diffForHumans() }}</span></div>
+   <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">
+    @if($product->demo_url)<a href="{{ $product->demo_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">open_in_new</span>Live preview</a>@endif
+    <a href="{{ route('admin.products.review.show', $product) }}" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">preview</span>Admin preview</a>
+    @if($reviewFile)<a href="{{ route('admin.products.archive', $product) }}" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">download</span>Download zip</a>@endif
+   </div>
+   <p class="mt-2 text-xs text-[#777a8a]">Public listing appears after approve.</p>
+   @if($product->images->isNotEmpty())
+    <div class="mt-4 flex flex-wrap gap-2">
+     @foreach($product->images as $image)
+      <a href="{{ $image->url() }}" target="_blank" rel="noopener" class="block h-16 w-24 overflow-hidden rounded-lg border border-[#d7d9e5] bg-[#f6f7fb]"><img src="{{ $image->url() }}" alt="{{ $image->original_name ?: $product->title }}" class="h-full w-full object-cover"></a>
+     @endforeach
+    </div>
+   @endif
+  </div>
    <div class="grid gap-3 lg:grid-cols-2 xl:min-w-[650px]"><form method="POST" action="{{ route('admin.products.approve',$product) }}" class="flex gap-2">@csrf<input name="notes" placeholder="Optional review notes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Approve</button></form><form method="POST" action="{{ route('admin.products.request-changes',$product) }}" class="flex gap-2">@csrf<input name="notes" required placeholder="Describe required changes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50">Request changes</button></form></div></div></article>
  @empty<div class="rounded-xl border border-[#d7d9e5] bg-white px-6 py-16 text-center text-[#626576]"><span class="material-symbols-outlined mb-3 block text-5xl text-emerald-600">task_alt</span><h2 class="font-bold text-[#111827]">Review queue is clear</h2><p class="mt-1 text-sm">There are no submitted products awaiting a decision.</p></div>@endforelse</div>
  <div class="mt-6">{{ $products->links() }}</div>
- @isset($versions)
+    @isset($versions)
  <div class="mt-12">
   <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><h2 class="text-2xl font-extrabold tracking-tight">Version Updates</h2><p class="mt-1 text-[#626576]">New releases for already-published products.</p></div><span class="rounded-full bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700">{{ $versions->count() }} pending versions</span></div>
   <div class="mt-6 space-y-4">
   @forelse($versions as $version)
+   @php($versionFile = $version->downloadableFile())
    <article class="rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm md:p-6">
     <div class="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
      <div class="min-w-0">
       <div class="flex flex-wrap items-center gap-2"><h3 class="text-lg font-bold">{{ $version->product->title }}</h3><span class="rounded-full bg-violet-50 px-2.5 py-1 font-mono text-xs font-bold text-violet-700">v{{ $version->version_number }}</span></div>
       <p class="mt-2 text-sm text-[#626576]">{{ $version->product->seller->name }} · {{ $version->release_title }} · submitted {{ $version->created_at->diffForHumans() }}</p>
       @if($version->release_notes)<p class="mt-3 max-w-2xl rounded-lg bg-[#f6f7fb] p-4 text-sm leading-6 text-[#525565]">{{ $version->release_notes }}</p>@endif
+      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">
+       @if($version->product->demo_url)<a href="{{ $version->product->demo_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">open_in_new</span>Live preview</a>@endif
+       <a href="{{ route('products.show', $version->product->slug) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">storefront</span>Public listing</a>
+       <a href="{{ route('admin.products.review.show', $version->product) }}" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">preview</span>Admin preview</a>
+       @if($versionFile)<a href="{{ route('admin.versions.archive', $version) }}" class="inline-flex items-center gap-1 text-[#3525cd] hover:underline"><span class="material-symbols-outlined text-[18px]">download</span>Download zip</a>@endif
+      </div>
+      @if($version->product->images->isNotEmpty())
+       <div class="mt-4 flex flex-wrap gap-2">
+        @foreach($version->product->images as $image)
+         <a href="{{ $image->url() }}" target="_blank" rel="noopener" class="block h-16 w-24 overflow-hidden rounded-lg border border-[#d7d9e5] bg-[#f6f7fb]"><img src="{{ $image->url() }}" alt="{{ $image->original_name ?: $version->product->title }}" class="h-full w-full object-cover"></a>
+        @endforeach
+       </div>
+      @endif
      </div>
      <div class="grid gap-3 lg:grid-cols-2 xl:min-w-[650px]">
       <form method="POST" action="{{ route('admin.versions.approve',$version) }}" class="flex gap-2">@csrf<input name="notes" placeholder="Optional review notes" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-[#fafbff] px-3 py-2 text-sm"><button class="whitespace-nowrap rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">Publish version</button></form>

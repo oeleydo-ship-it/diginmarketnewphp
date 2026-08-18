@@ -28,7 +28,7 @@ class CommerceWorkflowTest extends TestCase
  }
  public function test_fulfilment_is_idempotent_and_issues_one_license(): void
  {
-  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);$this->post('/checkout');$order=$customer->orders()->firstOrFail();$service=app(PaymentFulfillmentService::class);$service->fulfill($order->id,'pi_unique');$service->fulfill($order->id,'pi_unique');$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('licenses',1);$this->assertSame('paid',$order->fresh()->payment_status);$this->assertSame(1,$data['product']->fresh()->sales_count);
+  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);$this->post('/checkout');$order=$customer->orders()->firstOrFail();$service=app(PaymentFulfillmentService::class);$service->fulfill($order->id,'pi_unique');$service->fulfill($order->id,'pi_unique');  $this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('licenses',1);$this->assertDatabaseCount('cart_items',0);$this->assertSame('paid',$order->fresh()->payment_status);$this->assertSame(1,$data['product']->fresh()->sales_count);
  }
  public function test_signed_download_requires_paid_active_license_and_is_logged(): void
  {
@@ -36,6 +36,44 @@ class CommerceWorkflowTest extends TestCase
  }
  public function test_signed_stripe_webhook_is_stored_and_replay_safe(): void
  {
-  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);$this->post('/checkout');$order=$customer->orders()->firstOrFail();config(['services.stripe.webhook_secret'=>'whsec_test']);$payload=json_encode(['id'=>'evt_checkout_1','object'=>'event','type'=>'checkout.session.completed','data'=>['object'=>['id'=>'cs_test','object'=>'checkout.session','payment_intent'=>'pi_webhook','metadata'=>['order_id'=>(string)$order->id]]]]);$timestamp=time();$signature='t='.$timestamp.',v1='.hash_hmac('sha256',$timestamp.'.'.$payload,'whsec_test');$server=['HTTP_STRIPE_SIGNATURE'=>$signature,'CONTENT_TYPE'=>'application/json'];$this->call('POST','/stripe/webhook',[],[],[],$server,$payload)->assertOk();$this->call('POST','/stripe/webhook',[],[],[],$server,$payload)->assertOk();$this->assertDatabaseCount('payment_webhook_events',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('licenses',1);
+  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();$this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);$this->post('/checkout');$order=$customer->orders()->firstOrFail();config(['services.stripe.webhook_secret'=>'whsec_test']);$payload=json_encode(['id'=>'evt_checkout_1','object'=>'event','type'=>'checkout.session.completed','data'=>['object'=>['id'=>'cs_test','object'=>'checkout.session','payment_intent'=>'pi_webhook','metadata'=>['order_id'=>(string)$order->id]]]]);$timestamp=time();$signature='t='.$timestamp.',v1='.hash_hmac('sha256',$timestamp.'.'.$payload,'whsec_test');$server=['HTTP_STRIPE_SIGNATURE'=>$signature,'CONTENT_TYPE'=>'application/json'];  $this->call('POST','/stripe/webhook',[],[],[],$server,$payload)->assertOk();$this->call('POST','/stripe/webhook',[],[],[],$server,$payload)->assertOk();$this->assertDatabaseCount('payment_webhook_events',1);$this->assertDatabaseCount('payments',1);$this->assertDatabaseCount('licenses',1);$this->assertDatabaseCount('cart_items',0);
+ }
+ public function test_fulfilment_clears_cart_and_owner_can_buy_another_license(): void
+ {
+  $data=$this->catalog();$this->fakeGateway();$customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);
+  $this->assertDatabaseCount('cart_items',1);
+  $this->post('/checkout');
+  $this->assertDatabaseCount('cart_items',1);
+  app(PaymentFulfillmentService::class)->fulfill($customer->orders()->firstOrFail()->id,'pi_cart_clear');
+  $this->assertDatabaseCount('cart_items',0);
+  $this->get('/cart')->assertOk()->assertSee('Your cart is empty.')->assertDontSee('Proceed to Payment');
+  $this->get('/products/project-manager')->assertOk()
+   ->assertSee('You already have a license')
+   ->assertSee('Buy another license')
+   ->assertSee('Regular License')
+   ->assertSee('name="license_type_id"', false);
+  $this->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id])->assertRedirect('/cart');
+  $this->assertDatabaseCount('cart_items',1);
+  $this->get('/cart')->assertOk()->assertSee('Project Manager')->assertSee('You already own a license for this product')->assertSee('Proceed to Payment');
+  $this->post('/cart/'.$data['product']->id,['license_type_id'=>$data['extended']->id])->assertRedirect('/cart');
+  $this->assertDatabaseCount('cart_items',1);
+  $this->assertDatabaseHas('cart_items',['product_id'=>$data['product']->id,'license_type_id'=>$data['extended']->id]);
+ }
+ public function test_owned_product_stays_in_cart_until_paid(): void
+ {
+  $data=$this->catalog();$this->fakeGateway();
+  $other=Product::create(['seller_id'=>$data['seller']->id,'category_id'=>$data['product']->category_id,'title'=>'Other App','slug'=>'other-app','short_description'=>'Other.','description'=>str_repeat('Other product details. ',4),'regular_price'=>'15.00','status'=>ProductStatus::Published,'published_at'=>now()]);
+  $customer=User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$data['product']->id,['license_type_id'=>$data['regular']->id]);
+  $this->post('/checkout');
+  app(PaymentFulfillmentService::class)->fulfill($customer->orders()->firstOrFail()->id,'pi_owned_stale');
+  $cart=$customer->cart()->firstOrFail();
+  $cart->items()->create(['product_id'=>$data['product']->id,'license_type_id'=>$data['regular']->id,'unit_price'=>40,'tax'=>0,'discount'=>0,'total'=>40]);
+  $this->post('/cart/'.$other->id,['license_type_id'=>$data['regular']->id])->assertRedirect('/cart');
+  $this->get('/cart')->assertOk()->assertSee('Other App')->assertSee('Project Manager')->assertSee('You already own a license for this product')->assertSee('Proceed to Payment');
+  $this->assertDatabaseCount('cart_items',2);
+  $this->get('/')->assertOk();
+  $this->assertSame(2,$customer->fresh()->cartItemCount());
  }
 }

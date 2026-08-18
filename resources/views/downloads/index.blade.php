@@ -51,6 +51,11 @@
                 @else
                     <p class="border-t border-outline-variant bg-surface px-6 py-4 text-sm text-on-surface-variant">Downloads are disabled for this licence.</p>
                 @endif
+                @if($license->status === 'active' && $license->product?->offersSupportAddon())
+                    <div class="border-t border-outline-variant p-4">
+                        <x-support-addon :product="$license->product" :license="$license" compact />
+                    </div>
+                @endif
             </article>
         @empty
             <div class="rounded-xl border border-outline-variant bg-surface-container-lowest px-6 py-16 text-center">

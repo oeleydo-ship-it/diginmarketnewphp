@@ -17,7 +17,7 @@ class PurchaseController extends Controller
     public function show(Order $order): View
     {
         abort_unless($order->user_id === auth()->id(), 403);
-        $order->load(['items.license.product', 'items.product']);
+        $order->load(['items.license.product', 'items.product', 'items.extendedLicense']);
         foreach ($order->items as $item) {
             if (! $item->license) {
                 continue;

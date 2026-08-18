@@ -78,5 +78,27 @@ class SellerStorefrontTest extends TestCase
   $user=User::factory()->create();
   $profile=SellerProfile::create(['user_id'=>$user->id,'display_name'=>'Pending','username'=>'pending-x','country'=>'AE','biography'=>'x','status'=>SellerStatus::Pending]);
   $this->actingAs($admin)->put('/admin/sellers/'.$profile->id.'/feature')->assertStatus(422);
- }
+    }
+
+    public function test_customer_can_follow_seller_from_storefront_form(): void
+    {
+        $profile = $this->seller();
+        $customer = User::factory()->create();
+
+        // Storefront renders the follow form that posts to the follow toggle endpoint.
+        $this->actingAs($customer)
+            ->get('/authors/' . $profile->username)
+            ->assertOk()
+            ->assertSee('/authors/' . $profile->id . '/follow');
+
+        // POSTing Follow should insert the pivot row and redirect back to the storefront.
+        $this->actingAs($customer)
+            ->post('/authors/' . $profile->id . '/follow')
+            ->assertRedirect('/authors/' . $profile->username);
+
+        $this->assertDatabaseHas('seller_followers', [
+            'seller_id' => $profile->user_id,
+            'follower_id' => $customer->id,
+        ]);
+    }
 }

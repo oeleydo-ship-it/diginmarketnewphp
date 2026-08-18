@@ -18,4 +18,27 @@ class ProductSearchService
   match($filters['sort']??'newest'){'price_low'=>$query->orderBy('regular_price'),'price_high'=>$query->orderByDesc('regular_price'),'popular'=>$query->orderByDesc('sales_count'),'rated'=>$query->orderByDesc('average_rating'),'title'=>$query->orderBy('title'),default=>$query->latest('published_at')};
   return $query->paginate(18)->withQueryString();
  }
+
+ public function suggest(string $term, int $limit = 6): \Illuminate\Support\Collection
+ {
+  $term = trim($term);
+  if (mb_strlen($term) < 2) {
+   return collect();
+  }
+  $like = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $term).'%';
+
+  return Product::published()
+   ->with(['category', 'seller.sellerProfile'])
+   ->where(fn (Builder $q) => $q->where('title', 'like', $like)->orWhere('short_description', 'like', $like))
+   ->orderByDesc('sales_count')
+   ->limit($limit)
+   ->get()
+   ->map(fn (Product $product) => [
+    'title' => $product->title,
+    'url' => route('products.show', $product->slug),
+    'price' => number_format((float) $product->regular_price, 2),
+    'category' => $product->category?->name,
+    'seller' => $product->seller->sellerProfile?->display_name ?? $product->seller->name,
+   ]);
+ }
 }

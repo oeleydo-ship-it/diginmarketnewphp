@@ -58,8 +58,8 @@
                     @error('username')<p class="text-sm text-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <label for="business_name" class="{{ $labelCls }}">Business name *</label>
-                    <input id="business_name" name="business_name" required value="{{ old('business_name') }}" placeholder="Registered company or trading name" class="{{ $input }}">
+                    <label for="business_name" class="{{ $labelCls }}">Business name</label>
+                    <input id="business_name" name="business_name" value="{{ old('business_name') }}" placeholder="Optional — registered company or trading name" class="{{ $input }}">
                     @error('business_name')<p class="text-sm text-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="flex flex-col gap-1.5">
@@ -76,7 +76,7 @@
         </section>
         <div class="flex items-start gap-3 rounded-lg border border-outline-variant/50 bg-surface p-4 text-sm text-on-surface-variant">
             <span class="material-symbols-outlined text-primary">verified_user</span>
-            <p>Applications are manually verified. Your legal name and address are kept private and only your vendor and business name appear publicly once approved.</p>
+            <p>Applications are manually verified. Your legal name and address are kept private. Once approved, buyers see your vendor name, and your business name if you provide one.</p>
         </div>
         <button class="w-full rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">Submit for verification</button>
     </form>

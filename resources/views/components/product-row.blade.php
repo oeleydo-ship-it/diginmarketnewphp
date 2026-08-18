@@ -35,9 +35,30 @@
         </div>
     </div>
     <div class="flex shrink-0 items-center gap-2 sm:flex-col">
-        <a href="{{ route('products.show', $product->slug) }}" class="flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">
-            View <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </a>
+        @auth
+            @php
+                $regularLicenseId = \App\Models\LicenseType::regularId();
+                $ownsThis = in_array((int) $product->id, once(fn () => auth()->user()->licenses()->where('status', 'active')->pluck('product_id')->map(fn ($id) => (int) $id)->all()), true);
+            @endphp
+            @if($regularLicenseId && $product->seller_id !== auth()->id())
+                <form method="POST" action="{{ route('cart.add', $product) }}">
+                    @csrf
+                    <input type="hidden" name="license_type_id" value="{{ $regularLicenseId }}">
+                    <button class="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">{{ $ownsThis ? 'Buy another license' : 'Add to cart' }}</button>
+                </form>
+                @if($ownsThis)
+                    <a href="{{ route('downloads.index') }}" class="flex items-center justify-center gap-1.5 rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface-variant transition-all hover:border-primary hover:text-primary">Download</a>
+                @endif
+            @else
+                <a href="{{ route('products.show', $product->slug) }}" class="flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">
+                    View <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </a>
+            @endif
+        @else
+            <a href="{{ route('products.show', $product->slug) }}" class="flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition-all hover:opacity-90 active:scale-95">
+                View <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+        @endauth
         @auth
             <form method="POST" action="{{ route('wishlist.toggle', $product) }}">
                 @csrf

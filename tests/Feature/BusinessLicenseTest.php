@@ -2,7 +2,9 @@
 namespace Tests\Feature;
 use App\Enums\ProductStatus;
 use App\Models\Category;
+use App\Models\License;
 use App\Models\LicenseType;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,6 +35,23 @@ class BusinessLicenseTest extends TestCase
   $data=$this->catalog(false);
   $this->actingAs(User::factory()->create())->post('/cart/'.$data['product']->id,['license_type_id'=>$data['business']->id])->assertStatus(422);
   $this->assertDatabaseCount('cart_items',0);
+ }
+ public function test_owner_can_add_another_regular_or_business_license(): void
+ {
+  $data=$this->catalog();
+  $regular=LicenseType::where('slug','regular')->firstOrFail();
+  $buyer=User::factory()->create();
+  $order=Order::create(['number'=>'DM-OWN-1','user_id'=>$buyer->id,'currency'=>'USD','subtotal'=>50,'total'=>50,'payment_status'=>'paid','status'=>'completed','paid_at'=>now()]);
+  $item=$order->items()->create(['product_id'=>$data['product']->id,'seller_id'=>$data['seller']->id,'license_type_id'=>$regular->id,'product_title'=>'License App','seller_name'=>$data['seller']->name,'license_name'=>'Regular License','unit_price'=>50,'platform_commission'=>10,'seller_earning'=>40,'total'=>50]);
+  License::create(['license_key'=>'DM-OWN-LICENSE','product_id'=>$data['product']->id,'user_id'=>$buyer->id,'order_item_id'=>$item->id,'license_type_id'=>$regular->id,'status'=>'active']);
+  $this->actingAs($buyer)->get('/products/license-app')->assertOk()
+   ->assertSee('You already have a license')
+   ->assertSee('Buy another license')
+   ->assertSee('Regular License')
+   ->assertSee('Business License');
+  $this->post('/cart/'.$data['product']->id,['license_type_id'=>$regular->id])->assertRedirect('/cart');
+  $this->post('/cart/'.$data['product']->id,['license_type_id'=>$data['business']->id])->assertRedirect('/cart');
+  $this->assertDatabaseHas('cart_items',['product_id'=>$data['product']->id,'license_type_id'=>$data['business']->id]);
  }
  public function test_seller_can_toggle_business_license_from_edit_form(): void
  {

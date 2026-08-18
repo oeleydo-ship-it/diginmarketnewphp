@@ -37,6 +37,30 @@ php artisan queue:work
 php artisan schedule:work
 ```
 
+### Redis, Horizon, and Reverb
+
+The app still defaults to SQLite-friendly `database` queue / cache / session drivers so a fresh local clone works without Redis. To enable real-time notifications and Redis-backed workers, set:
+
+```bash
+QUEUE_CONNECTION=redis
+BROADCAST_CONNECTION=reverb
+# Optional once Redis is available:
+# CACHE_STORE=redis
+# SESSION_DRIVER=redis
+```
+
+Then start the supporting processes:
+
+```bash
+redis-server
+php artisan reverb:start
+php artisan horizon
+```
+
+Admins will then see the existing admin notification bell update in real time for new marketplace alerts (orders, seller applications, reviews, refunds, disputes, withdrawals, subscriptions).
+
+Horizon requires the `pcntl` and `posix` PHP extensions, so it typically runs on Linux/macOS servers. On Windows, keep using `php artisan queue:work` locally unless your PHP runtime provides those extensions.
+
 ## Testing
 
 ```bash

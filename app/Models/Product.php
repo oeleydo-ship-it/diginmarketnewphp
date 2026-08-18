@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 use App\Enums\ProductStatus;
+use App\Enums\ProductVersionStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,10 +11,30 @@ class Product extends Model
 {
  use \Illuminate\Database\Eloquent\SoftDeletes;
  protected $fillable=['seller_id','category_id','title','slug','short_description','description','cover_image_path','demo_url','video_url','regular_price','extended_price','support_extension_price','support_extension_months','business_license_enabled','status','submitted_at','published_at','views_count','sales_count','average_rating','is_featured','is_trending','seo_title','seo_description'];
- protected function casts(): array { return ['status'=>ProductStatus::class,'regular_price'=>'decimal:2','extended_price'=>'decimal:2','business_license_enabled'=>'boolean','average_rating'=>'decimal:2','is_featured'=>'boolean','is_trending'=>'boolean','submitted_at'=>'datetime','published_at'=>'datetime']; }
+ protected function casts(): array { return ['status'=>ProductStatus::class,'regular_price'=>'decimal:2','extended_price'=>'decimal:2','support_extension_price'=>'decimal:2','business_license_enabled'=>'boolean','average_rating'=>'decimal:2','is_featured'=>'boolean','is_trending'=>'boolean','submitted_at'=>'datetime','published_at'=>'datetime']; }
+ /** Seller-priced addon for extra updates & support; omitted when no price is set. */
+ public function offersSupportAddon(): bool
+ {
+  return $this->support_extension_price !== null && (float) $this->support_extension_price > 0;
+ }
+ /** Addon term in months; empty or zero falls back to 6. */
+ public function supportExtensionMonths(): int
+ {
+  $months = (int) $this->support_extension_months;
+
+  return $months > 0 ? $months : 6;
+ }
  public function seller(): BelongsTo { return $this->belongsTo(User::class,'seller_id'); }
  public function category(): BelongsTo { return $this->belongsTo(Category::class); }
  public function versions(): HasMany { return $this->hasMany(ProductVersion::class); }
+ /** Newest version waiting in the review queue, else the latest version with an archive. */
+ public function reviewVersion(): ?ProductVersion
+ {
+  $versions = $this->relationLoaded('versions') ? $this->versions : $this->versions()->with('files')->latest('id')->get();
+
+  return $versions->filter(fn (ProductVersion $version) => $version->status === ProductVersionStatus::PendingReview)->sortByDesc('id')->first()
+   ?? $versions->sortByDesc('id')->first(fn (ProductVersion $version) => $version->downloadableFile());
+ }
  public function images(): HasMany { return $this->hasMany(ProductImage::class)->orderBy('sort_order')->orderBy('id'); }
  /** Keep the denormalized cover in sync so listing pages never need the images relation. */
  public function refreshCoverImage(): void { $this->update(['cover_image_path'=>$this->images()->value('path')]); }

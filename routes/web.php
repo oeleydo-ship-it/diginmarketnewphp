@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MarketplaceProductController;
+use App\Http\Controllers\RichTextImageController;
 use App\Http\Controllers\SellerApplicationController;
 use App\Http\Controllers\SellerProductController;
 use App\Http\Controllers\SellerCouponController;
@@ -45,12 +46,14 @@ use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\InstallController;
+use App\Http\Controllers\RobotsController;
 use Illuminate\Support\Facades\Route;
 Route::get('/install', [InstallController::class, 'show'])->name('install.show');
 Route::post('/install', [InstallController::class, 'store'])->middleware('throttle:6,1')->name('install.store');
 Route::post('/install/database', [InstallController::class, 'database'])->middleware('throttle:6,1')->name('install.database');
 Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [MarketplaceProductController::class, 'index'])->name('products.index');
+Route::get('/products/suggest', [MarketplaceProductController::class, 'suggest'])->middleware('throttle:30,1')->name('products.suggest');
 Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->name('products.show');
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
@@ -58,6 +61,7 @@ Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index'])
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show'])->name('bundles.show');
 Route::get('/collections/{slug}', [\App\Http\Controllers\CollectionController::class, 'show'])->name('collections.show');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class);
 Route::post('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 Route::get('/pages/{slug}', [PageController::class, 'show'])->name('pages.show');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
@@ -90,12 +94,26 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::view('/verify-email', 'auth.verify-email')->name('verification.notice');
+    Route::get('/verify-email', function () {
+        if (! \App\Models\Setting::enabled('features.email_verification', true)) {
+            return redirect()->route('dashboard');
+        }
+
+        return view('auth.verify-email');
+    })->name('verification.notice');
     Route::get('/verify-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        if (! \App\Models\Setting::enabled('features.email_verification', true)) {
+            return redirect()->route('dashboard');
+        }
+
         $request->fulfill();
         return redirect()->route('dashboard')->with('status', 'Email verified — welcome aboard!');
     })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
     Route::post('/verify-email/resend', function () {
+        if (! \App\Models\Setting::enabled('features.email_verification', true)) {
+            return redirect()->route('dashboard');
+        }
+
         request()->user()->sendEmailVerificationNotification();
         return back()->with('status', 'verification-link-sent');
     })->middleware('throttle:6,1')->name('verification.send');
@@ -103,6 +121,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post('/editor/images', [RichTextImageController::class, 'store'])->name('editor.images.store');
     Route::post('/impersonation/stop', [\App\Http\Controllers\ImpersonationController::class, 'stop'])->name('impersonation.stop');
     Route::get('/account/security', [\App\Http\Controllers\TwoFactorController::class, 'show'])->name('account.security');
     Route::post('/account/two-factor', [\App\Http\Controllers\TwoFactorController::class, 'enable'])->name('two-factor.enable');
@@ -197,9 +216,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/sellers/{sellerProfile}/feature', [SellerReviewController::class, 'feature'])->name('sellers.feature');
         Route::get('/products', [\App\Http\Controllers\Admin\ProductDirectoryController::class, 'index'])->name('products.index');
         Route::get('/products/review', [ProductReviewController::class, 'index'])->name('products.review');
+        Route::get('/products/{product}/review', [ProductReviewController::class, 'show'])->name('products.review.show');
+        Route::get('/products/{product}/archive', [ProductReviewController::class, 'download'])->name('products.archive');
+        Route::get('/versions/{version}/archive', [ProductReviewController::class, 'downloadVersion'])->name('versions.archive');
+        Route::get('/products/{product}/approve', fn () => redirect()->route('admin.products.review'))->name('products.approve.form');
         Route::post('/products/{product}/approve', [ProductReviewController::class, 'approve'])->name('products.approve');
+        Route::get('/products/{product}/request-changes', fn () => redirect()->route('admin.products.review'));
         Route::post('/products/{product}/request-changes', [ProductReviewController::class, 'requestChanges'])->name('products.request-changes');
+        Route::get('/versions/{version}/approve', fn () => redirect()->route('admin.products.review'));
         Route::post('/versions/{version}/approve', [ProductReviewController::class, 'approveVersion'])->name('versions.approve');
+        Route::get('/versions/{version}/reject', fn () => redirect()->route('admin.products.review'));
         Route::post('/versions/{version}/reject', [ProductReviewController::class, 'rejectVersion'])->name('versions.reject');
         Route::get('/users', [UserDirectoryController::class, 'index'])->name('users.index');
         Route::put('/users/{user}/status', [UserDirectoryController::class, 'updateStatus'])->name('users.status');
@@ -242,6 +268,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
         Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
         Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+        Route::get('/pages/homepage/edit', [AdminPageController::class, 'editHomepage'])->name('pages.homepage.edit');
+        Route::put('/pages/homepage', [AdminPageController::class, 'updateHomepage'])->name('pages.homepage.update');
         Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
         Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
         Route::get('/blog', [BlogPostController::class, 'index'])->name('blog.index');

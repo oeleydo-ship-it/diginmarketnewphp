@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Cart;
 use App\Models\License;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -33,12 +34,23 @@ class PaymentFulfillmentService
 
             return $order->fresh(['items.license']);
         });
+        $this->removePurchasedCartItems($order);
         if (! $wasPaid && $order->payment_status === 'paid') {
             $this->mailer->orderPaid($order);
             app(AdminNotifier::class)->notify('order', 'New paid order '.$order->number.' — $'.number_format((float) $order->total, 2), route('admin.orders.index'));
         }
 
         return $order;
+    }
+
+    /** Drop fulfilled products from the buyer's cart even when the webhook never arrives and only return-URL fulfilment ran. */
+    private function removePurchasedCartItems(Order $order): void
+    {
+        $productIds = $order->items->pluck('product_id')->unique()->filter()->all();
+        if ($productIds === []) {
+            return;
+        }
+        Cart::query()->where('user_id', $order->user_id)->first()?->removeProducts($productIds);
     }
 
     /** Lengthen the referenced license from whichever is later: its current expiry or now. */
@@ -48,7 +60,7 @@ class PaymentFulfillmentService
         if (! $license) {
             return;
         }
-        $months = (int) ($item->product()->value('support_extension_months') ?: 6);
+        $months = $item->product?->supportExtensionMonths() ?? 6;
         $base = $license->support_expires_at && $license->support_expires_at->isFuture() ? $license->support_expires_at : now();
         $license->update(['support_expires_at' => $base->copy()->addMonths($months)]);
     }

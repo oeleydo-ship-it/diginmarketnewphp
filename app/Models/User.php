@@ -117,6 +117,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function cart(): HasOne { return $this->hasOne(Cart::class); }
     public function orders(): HasMany { return $this->hasMany(Order::class); }
     public function licenses(): HasMany { return $this->hasMany(License::class); }
+
+    public function hasActiveLicenseFor(int $productId): bool
+    {
+        return $this->licenses()->where('product_id', $productId)->where('status', 'active')->exists();
+    }
+
+    /** Badge count: every line currently in the cart. */
+    public function cartItemCount(): int
+    {
+        return (int) ($this->cart()->first()?->items()->count() ?? 0);
+    }
+
     public function sellerWallets(): HasMany { return $this->hasMany(SellerWallet::class, 'seller_id'); }
     public function withdrawals(): HasMany { return $this->hasMany(WithdrawalRequest::class, 'seller_id'); }
     public function stripeConnectedAccount(): HasOne { return $this->hasOne(StripeConnectedAccount::class, 'seller_id'); }

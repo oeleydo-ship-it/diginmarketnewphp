@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['middleware' => ['web', 'auth']]
+    )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: ['stripe/webhook', 'payments/*/webhook']);
         // Set by plain JS in the consent banner, so it cannot be an encrypted Laravel cookie.
@@ -19,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [\App\Http\Middleware\SetLocale::class, \App\Http\Middleware\HandleImpersonationExpiry::class, \App\Http\Middleware\SecurityHeaders::class, \App\Http\Middleware\TrackAffiliateReferral::class]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RequireRole::class,
+            'verified' => \App\Http\Middleware\EnsureEmailVerificationIsEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

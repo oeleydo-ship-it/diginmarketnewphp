@@ -9,7 +9,7 @@
   <div><label class="{{ $label }}">Title</label><input name="title" required value="{{ old('title',$post->title) }}" class="{{ $input }}"></div>
   <div><label class="{{ $label }}">Slug</label><input name="slug" required value="{{ old('slug',$post->slug) }}" class="{{ $input }} font-mono"></div>
   <div><label class="{{ $label }}">Excerpt</label><input name="excerpt" value="{{ old('excerpt',$post->excerpt) }}" class="{{ $input }}"></div>
-  <div><label class="{{ $label }}">Body</label><textarea name="body" required rows="16" class="{{ $input }}">{{ old('body',$post->body) }}</textarea></div>
+  <div><label class="{{ $label }}">Body</label><textarea name="body" required rows="16" class="{{ $input }}" data-rich-editor>{{ old('body',$post->body) }}</textarea></div>
   <div class="grid gap-4 sm:grid-cols-2">
    <div><label class="{{ $label }}">Meta title</label><input name="meta_title" value="{{ old('meta_title',$post->meta_title) }}" class="{{ $input }}"></div>
    <div><label class="{{ $label }}">Meta description</label><input name="meta_description" value="{{ old('meta_description',$post->meta_description) }}" class="{{ $input }}"></div>

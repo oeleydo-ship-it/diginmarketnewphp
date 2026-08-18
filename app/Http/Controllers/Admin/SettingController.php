@@ -19,6 +19,10 @@ class SettingController extends Controller
    'seo.meta_title'=>['label'=>'Default meta title','group'=>'seo','type'=>'text'],
    'seo.meta_description'=>['label'=>'Default meta description','group'=>'seo','type'=>'text'],
    'seo.meta_keywords'=>['label'=>'Meta keywords','group'=>'seo','type'=>'text'],
+    'seo.google_analytics_measurement_id'=>['label'=>'Google Analytics measurement ID','group'=>'seo','type'=>'text','hint'=>'Examples: G-XXXX or UA-XXXX'],
+    'seo.google_site_verification'=>['label'=>'Google Search Console verification value','group'=>'seo','type'=>'text','hint'=>'Value for the content attribute of: <meta name="google-site-verification" content="...">'],
+    'seo.robots_extra'=>['label'=>'robots.txt extra directives (optional)','group'=>'seo','type'=>'textarea','hint'=>'Plain text directives appended after the defaults.'],
+    'seo.sitemap_in_robots'=>['label'=>'Include Sitemap line in robots.txt','group'=>'seo','type'=>'toggle','default'=>'1','hint'=>'Recommended for SEO.'],
   ]],
   'smtp'=>['title'=>'SMTP / Mail','icon'=>'mail','fields'=>[
    'mail.host'=>['label'=>'SMTP host','group'=>'smtp','type'=>'text'],
@@ -107,6 +111,7 @@ class SettingController extends Controller
   ]],
   'features'=>['title'=>'Features','icon'=>'toggle_on','fields'=>[
    'features.registration'=>['label'=>'Customer registration','group'=>'features','type'=>'toggle'],
+   'features.email_verification'=>['label'=>'Email verification','group'=>'features','type'=>'toggle','default'=>'1','hint'=>'When enabled, new email/password accounts must verify before checkout, bundle purchases, support extensions, and seller application submission.'],
    'features.seller_applications'=>['label'=>'Seller applications','group'=>'features','type'=>'toggle'],
    'features.reviews'=>['label'=>'Product reviews','group'=>'features','type'=>'toggle'],
    'features.comments'=>['label'=>'Product comments','group'=>'features','type'=>'toggle'],
@@ -137,7 +142,11 @@ class SettingController extends Controller
  {
   abort_unless(array_key_exists($section,self::SECTIONS),404);
   $fields=self::SECTIONS[$section]['fields'];
-  $data=request()->validate(collect($fields)->mapWithKeys(fn(array $field,string $key)=>[str_replace('.','__',$key)=>match($field['type']){'email'=>['nullable','email','max:255'],'url'=>['nullable','url:http,https','max:500'],'number'=>['nullable','integer','between:'.($field['min']??1).','.($field['max']??65535)],'decimal'=>['nullable','numeric','between:'.($field['min']??0).','.($field['max']??1000000)],'toggle'=>['nullable','in:1,0'],'select'=>['nullable','in:'.implode(',',$field['options'])],'textarea'=>['nullable','string','max:5000'],default=>['nullable','string','max:2000']}])->all());
+  $data=request()->validate(
+   collect($fields)->mapWithKeys(function(array $field,string $key){
+    return [str_replace('.','__',$key)=>match($field['type']){'email'=>['nullable','email','max:255'],'url'=>['nullable','url:http,https','max:500'],'number'=>['nullable','integer','between:'.($field['min']??1).','.($field['max']??65535)],'decimal'=>['nullable','numeric','between:'.($field['min']??0).','.($field['max']??1000000)],'toggle'=>['nullable','in:1,0'],'select'=>['nullable','in:'.implode(',',$field['options'])],'textarea'=>['nullable','string','max:5000'],default=>match($key){'seo.google_analytics_measurement_id'=>['nullable','string','max:50','regex:/^(G-[A-Za-z0-9-]+|UA-[0-9]+-[0-9]+)$/'],'seo.google_site_verification'=>['nullable','string','max:255'],default=>['nullable','string','max:2000']}}];
+   })->all()
+  );
   $changed=[];
   foreach($fields as $key=>$field){
    $input=$data[str_replace('.','__',$key)]??null;

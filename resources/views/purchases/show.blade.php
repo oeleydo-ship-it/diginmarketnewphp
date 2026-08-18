@@ -96,14 +96,12 @@
                         @if($item->license->support_expires_at)
                             <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
                                 <span class="material-symbols-outlined text-[18px]">support_agent</span>
-                                Support {{ $item->license->support_expires_at->isFuture() ? 'until '.$item->license->support_expires_at->toFormattedDateString() : 'expired '.$item->license->support_expires_at->toFormattedDateString() }}
-                                @if($item->license->status === 'active' && $item->product?->support_extension_price !== null)
-                                    <form method="POST" action="{{ route('licenses.extend-support', $item->license) }}">@csrf
-                                        <button class="rounded-lg border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/5">
-                                            Extend {{ $item->product->support_extension_months }} months — ${{ number_format((float) $item->product->support_extension_price, 2) }}
-                                        </button>
-                                    </form>
-                                @endif
+                                Support &amp; updates {{ $item->license->support_expires_at->isFuture() ? 'until '.$item->license->support_expires_at->toFormattedDateString() : 'expired '.$item->license->support_expires_at->toFormattedDateString() }}
+                            </div>
+                        @endif
+                        @if($item->license->status === 'active' && $item->product?->offersSupportAddon())
+                            <div class="mt-4">
+                                <x-support-addon :product="$item->product" :license="$item->license" compact />
                             </div>
                         @endif
                         @if($item->license->status === 'active')
@@ -144,6 +142,18 @@
                                     <textarea name="description" required class="w-full rounded-lg border border-outline-variant bg-surface p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Explain the issue"></textarea>
                                     <button class="text-sm font-semibold text-error hover:underline">Submit request</button>
                                 </form>
+                            </div>
+                        @endif
+                    </div>
+                @elseif($item->item_type === 'support_extension')
+                    <div class="border-t border-outline-variant bg-surface px-6 py-5">
+                        <p class="text-sm text-on-surface-variant">This was an addon purchase for extra updates &amp; support — your original license was extended, not replaced.</p>
+                        @if($item->extendedLicense?->support_expires_at)
+                            <p class="mt-2 text-sm font-medium text-on-surface">Coverage until {{ $item->extendedLicense->support_expires_at->toFormattedDateString() }}</p>
+                        @endif
+                        @if($item->extendedLicense?->status === 'active' && $item->product?->offersSupportAddon())
+                            <div class="mt-4">
+                                <x-support-addon :product="$item->product" :license="$item->extendedLicense" compact />
                             </div>
                         @endif
                     </div>

@@ -56,10 +56,41 @@ class MarketplaceDiscoveryTest extends TestCase
  }
  public function test_sitemap_excludes_unpublished_products(): void
  {
-  $this->catalog();$this->get('/sitemap.xml')->assertOk()->assertHeader('Content-Type','application/xml')->assertSee('laravel-crm')->assertDontSee('secret-draft');
+    $this->catalog();
+
+    $response = $this->get('/sitemap.xml')
+      ->assertOk()
+      ->assertHeader('Content-Type', 'application/xml')
+      ->assertSee('laravel-crm')
+      ->assertDontSee('secret-draft');
+
+    // SitemapController now outputs absolute URLs.
+    $response->assertSee(url('/'));
+    $response->assertSee(url('/products/laravel-crm'));
  }
  public function test_product_views_are_counted_once_per_session(): void
  {
   $data=$this->catalog();$this->get('/products/laravel-crm')->assertOk();$this->get('/products/laravel-crm')->assertOk();$this->assertSame(1,$data['published']->fresh()->views_count);
+ }
+ public function test_search_suggests_published_products_only(): void
+ {
+  $this->catalog();
+  $this->getJson('/products/suggest?q=CRM')->assertOk()->assertJsonFragment(['title'=>'Laravel CRM'])->assertJsonMissing(['title'=>'Secret Draft']);
+  $this->getJson('/products/suggest?q=Secret')->assertOk()->assertJsonPath('products', []);
+  $this->getJson('/products/suggest?q=x')->assertOk()->assertJsonPath('products', []);
+ }
+ public function test_recently_viewed_products_appear_on_the_homepage(): void
+ {
+  $this->catalog();
+  $this->get('/products/laravel-crm')->assertOk();
+  $this->get('/')->assertOk()->assertSee('Recently viewed')->assertSee('Laravel CRM');
+ }
+ public function test_guest_can_add_published_product_to_cart_with_default_license_after_login(): void
+ {
+  $data=$this->catalog();
+  \App\Models\LicenseType::create(['name'=>'Regular License','slug'=>'regular','description'=>'Regular']);
+  $customer=\App\Models\User::factory()->create();
+  $this->actingAs($customer)->post('/cart/'.$data['published']->id)->assertRedirect('/cart');
+  $this->get('/cart')->assertOk()->assertSee('Laravel CRM');
  }
 }

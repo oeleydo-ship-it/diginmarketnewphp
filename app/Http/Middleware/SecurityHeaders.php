@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -31,8 +32,14 @@ class SecurityHeaders
         $tawkConnect = config('services.tawk.property_id') ? ' https://*.tawk.to wss://*.tawk.to' : '';
         $tawkFrame = config('services.tawk.property_id') ? ' https://tawk.to https://*.tawk.to' : '';
 
+        // Google Analytics (gtag.js) loads scripts from googletagmanager.com and
+        // sends requests to google-analytics.com.
+        $gaId = Setting::get('seo.google_analytics_measurement_id');
+        $gaScript = $gaId ? ' https://www.googletagmanager.com https://www.google-analytics.com' : '';
+        $gaConnect = $gaId ? ' https://www.google-analytics.com' : '';
+
         // Google Fonts serves the marketplace typefaces (Inter, Geist, JetBrains Mono, Material Symbols).
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}{$tawkScript}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}{$tawkScript}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com{$tawkScript}; connect-src 'self'{$vite}{$ws}{$tawkConnect}; frame-src https://www.youtube-nocookie.com https://player.vimeo.com{$tawkFrame}; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' {$themeHash}{$vite}{$tawkScript}{$gaScript}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}{$tawkScript}; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com{$tawkScript}; connect-src 'self'{$vite}{$ws}{$tawkConnect}{$gaConnect}; frame-src https://www.youtube-nocookie.com https://player.vimeo.com{$tawkFrame}; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; base-uri 'self'; object-src 'none'");
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

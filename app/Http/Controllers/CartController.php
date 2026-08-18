@@ -20,16 +20,19 @@ class CartController extends Controller
         $totals = $pricing->reprice($cart);
         $cart->load('items.product.seller', 'items.product.category', 'items.licenseType', 'coupon.seller');
         $methods = $gateways->availableFor($cart->currency);
+        $ownedProductIds = auth()->user()->licenses()->where('status', 'active')->pluck('product_id')->map(fn ($id) => (int) $id)->all();
 
-        return view('cart.index', compact('cart', 'totals', 'methods'));
+        return view('cart.index', compact('cart', 'totals', 'methods', 'ownedProductIds'));
     }
 
     public function add(Product $product, CartPricingService $pricing): RedirectResponse
     {
         abort_unless($product->status->value === 'published', 404);
         abort_if($product->seller_id === auth()->id(), 422, 'You cannot purchase your own product.');
-        $data = request()->validate(['license_type_id' => ['required', 'exists:license_types,id']]);
-        $license = LicenseType::where('is_active', true)->findOrFail($data['license_type_id']);
+        $data = request()->validate(['license_type_id' => ['nullable', 'exists:license_types,id']]);
+        $license = ! empty($data['license_type_id'])
+            ? LicenseType::where('is_active', true)->findOrFail($data['license_type_id'])
+            : LicenseType::where('is_active', true)->where('slug', 'regular')->firstOrFail();
         abort_if($license->slug === 'extended' && ! $product->business_license_enabled, 422, 'The business license is not offered for this product.');
         $cart = auth()->user()->cart()->firstOrCreate([], ['currency' => 'USD']);
         $price = $pricing->unitPrice($product, $license);

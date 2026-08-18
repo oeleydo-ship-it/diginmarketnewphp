@@ -113,7 +113,9 @@
             @if($products->isEmpty())
                 <div class="rounded-xl border border-dashed border-outline-variant p-14 text-center">
                     <span class="material-symbols-outlined mb-3 text-[40px] text-outline">search_off</span>
-                    <p class="text-on-surface-variant">No products match these filters.</p>
+                    <p class="font-semibold">No products match these filters.</p>
+                    <p class="mt-1 text-sm text-on-surface-variant">Try a broader keyword or clear the sidebar filters.</p>
+                    <a href="{{ route('products.index', ['view' => $view]) }}" class="mt-5 inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary">Clear filters</a>
                 </div>
             @elseif($view === 'list')
                 <div class="flex flex-col gap-4">

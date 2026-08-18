@@ -54,16 +54,18 @@ class DirectCheckoutService
     {
         abort_unless($license->user_id === $buyer->id, 403);
         abort_unless($license->status === 'active', 422, 'Support can only be extended on an active license.');
-        $product = $license->product()->firstOrFail();
-        abort_if($product->support_extension_price === null, 422, 'This product does not offer support extensions.');
+        $product = $license->product()->with('seller.sellerProfile')->firstOrFail();
+        abort_unless($product->offersSupportAddon(), 422, 'This product does not offer a support and updates addon.');
         $currency = strtoupper((string) config('marketplace.currency', 'USD'));
         $provider = $this->resolveProvider($provider, $currency);
         $order = DB::transaction(function () use ($license, $buyer, $product, $currency, $provider) {
             $price = (float) $product->support_extension_price;
+            $months = $product->supportExtensionMonths();
             $commission = $this->commissions->resolve($product, $price);
             $tax = round($price * max(0.0, (float) config('marketplace.tax_rate', 0)) / 100, 2);
             $order = Order::create(['number' => 'DM-'.now()->format('Ymd').'-'.str()->upper(str()->random(10)), 'user_id' => $buyer->id, 'payment_provider' => $provider, 'currency' => $currency, 'subtotal' => $price, 'discount' => 0, 'tax' => $tax, 'fees' => 0, 'total' => $price + $tax, 'customer_ip' => request()->ip(), 'user_agent' => request()->userAgent()]);
-            $order->items()->create(['product_id' => $product->id, 'seller_id' => $product->seller_id, 'product_version_id' => $license->product_version_id, 'license_type_id' => $license->license_type_id, 'item_type' => 'support_extension', 'license_id' => $license->id, 'product_title' => $product->title, 'seller_name' => $product->seller()->value('name'), 'license_name' => 'Support extension +'.$product->support_extension_months.' months', 'unit_price' => $price, 'platform_commission' => $commission['commission'], 'seller_earning' => $commission['seller_earning'], 'total' => $price]);
+            $sellerName = $product->seller->sellerProfile?->display_name ?? $product->seller()->value('name');
+            $order->items()->create(['product_id' => $product->id, 'seller_id' => $product->seller_id, 'product_version_id' => $license->product_version_id, 'license_type_id' => $license->license_type_id, 'item_type' => 'support_extension', 'license_id' => $license->id, 'product_title' => $product->title, 'seller_name' => $sellerName, 'license_name' => 'Addon: +'.$months.' months of updates & support', 'unit_price' => $price, 'platform_commission' => $commission['commission'], 'seller_earning' => $commission['seller_earning'], 'total' => $price]);
 
             return $order->load(['user', 'items']);
         });

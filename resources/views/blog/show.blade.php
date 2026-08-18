@@ -4,7 +4,7 @@
  <p class="mt-6 font-mono text-xs uppercase tracking-widest text-on-surface-variant">{{ $post->published_at->format('F j, Y') }}@if($post->author) · {{ $post->author->name }}@endif</p>
  <h1 class="mt-3 font-display text-4xl font-semibold tracking-tight">{{ $post->title }}</h1>
  @if($post->excerpt)<p class="mt-4 text-lg text-on-surface-variant">{{ $post->excerpt }}</p>@endif
- <div class="mt-8 max-w-none whitespace-pre-line text-[15px] leading-relaxed text-on-surface">{{ $post->body }}</div>
+ <x-rich-content :html="$post->body" class="mt-8 max-w-none text-[15px] leading-relaxed text-on-surface" />
  @if($more->isNotEmpty())
  <div class="mt-14 border-t border-outline-variant pt-8">
   <h2 class="font-display text-xl font-semibold">More from the blog</h2>

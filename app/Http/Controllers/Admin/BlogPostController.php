@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\BlogPost;
+use App\Support\RichText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,8 @@ class BlogPostController extends Controller
  }
  private function validated(?BlogPost $post=null): array
  {
-  return request()->validate(['title'=>['required','string','max:200'],'slug'=>['required','string','max:200','alpha_dash',Rule::unique('blog_posts','slug')->ignore($post?->id)],'excerpt'=>['nullable','string','max:500'],'body'=>['required','string','max:100000'],'meta_title'=>['nullable','string','max:200'],'meta_description'=>['nullable','string','max:500'],'status'=>['required','in:draft,published']]);
+  $data=request()->validate(['title'=>['required','string','max:200'],'slug'=>['required','string','max:200','alpha_dash',Rule::unique('blog_posts','slug')->ignore($post?->id)],'excerpt'=>['nullable','string','max:500'],'body'=>['required','string','max:100000'],'meta_title'=>['nullable','string','max:200'],'meta_description'=>['nullable','string','max:500'],'status'=>['required','in:draft,published']]);
+  $data['body']=RichText::sanitize($data['body']);
+  return $data;
  }
 }

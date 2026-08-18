@@ -39,6 +39,9 @@
                                             <span class="material-symbols-outlined text-[16px]">verified</span>
                                             {{ $item->product->seller->name }}
                                         </p>
+                                        @if(in_array((int) $item->product_id, $ownedProductIds ?? [], true))
+                                            <p class="mt-1 text-xs text-on-surface-variant">You already own a license for this product</p>
+                                        @endif
                                     </div>
                                     <span class="font-display text-xl font-bold">${{ number_format($item->total, 2) }}</span>
                                 </div>
@@ -58,7 +61,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-lg border border-dashed border-outline-variant p-12 text-center">
+                        <div class="flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed border-outline-variant p-12 text-center">
                             <span class="material-symbols-outlined mb-3 text-[40px] text-outline">remove_shopping_cart</span>
                             <p class="text-on-surface-variant">Your cart is empty.</p>
                             <a href="{{ route('products.index') }}" class="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition-all hover:opacity-90">Browse assets</a>

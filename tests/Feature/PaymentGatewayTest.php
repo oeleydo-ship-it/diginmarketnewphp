@@ -90,7 +90,7 @@ class PaymentGatewayTest extends TestCase
   $this->post('/checkout',['payment_provider'=>'stripe']);
   $order=$customer->orders()->firstOrFail();
   app(PaymentFulfillmentService::class)->fulfill($order->id,'pi_multi');
-  $this->get('/purchases/'.$order->id)->assertOk()->assertSee('Extend 6 months');
+  $this->get('/purchases/'.$order->id)->assertOk()->assertSee('Buy 6-month addon')->assertSee('6 months extra updates & support');
  }
 
  public function test_admin_orders_directory_lists_ordered_product_titles(): void

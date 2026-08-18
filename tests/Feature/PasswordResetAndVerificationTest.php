@@ -48,12 +48,39 @@ class PasswordResetAndVerificationTest extends TestCase
  {
   Notification::fake();
   \App\Models\Role::firstOrCreate(['slug' => 'customer'], ['name' => 'Customer']);
+  \App\Models\Setting::put('features.email_verification', '1', 'features');
   $this->post('/register', ['name' => 'New Buyer', 'email' => 'new@example.com', 'password' => 'Password-123456', 'password_confirmation' => 'Password-123456'])->assertRedirect();
   Notification::assertSentTo(User::where('email', 'new@example.com')->firstOrFail(), VerifyEmail::class);
  }
 
+ public function test_registration_skips_verification_email_when_feature_is_disabled(): void
+ {
+  Notification::fake();
+  \App\Models\Role::firstOrCreate(['slug' => 'customer'], ['name' => 'Customer']);
+  \App\Models\Setting::put('features.email_verification', '0', 'features');
+
+  $this->post('/register', ['name' => 'Fast Buyer', 'email' => 'fast@example.com', 'password' => 'Password-123456', 'password_confirmation' => 'Password-123456'])->assertRedirect(route('dashboard'));
+
+  $user = User::where('email', 'fast@example.com')->firstOrFail();
+  Notification::assertNotSentTo($user, VerifyEmail::class);
+  $this->assertNotNull($user->email_verified_at);
+ }
+
+ public function test_verification_notice_is_reachable_and_resend_works(): void
+ {
+  Notification::fake();
+  \App\Models\Setting::put('features.email_verification', '1', 'features');
+  $user = User::factory()->unverified()->create();
+
+  $this->actingAs($user)->get('/verify-email')->assertOk()->assertSee('Verify your email address');
+  $this->actingAs($user)->post('/verify-email/resend')->assertRedirect();
+
+  Notification::assertSentTo($user, VerifyEmail::class);
+ }
+
  public function test_unverified_user_cannot_checkout_until_verified(): void
  {
+  \App\Models\Setting::put('features.email_verification', '1', 'features');
   $user = User::factory()->unverified()->create();
   $this->actingAs($user)->post('/checkout')->assertRedirect(route('verification.notice'));
   $this->get('/verify-email')->assertOk()->assertSee('Verify your email address');
@@ -67,7 +94,35 @@ class PasswordResetAndVerificationTest extends TestCase
 
  public function test_unverified_user_cannot_apply_to_sell(): void
  {
+  \App\Models\Setting::put('features.email_verification', '1', 'features');
   $user = User::factory()->unverified()->create();
   $this->actingAs($user)->post('/sell/apply', [])->assertRedirect(route('verification.notice'));
+ }
+
+ public function test_unverified_user_can_checkout_when_verification_is_disabled(): void
+ {
+  \App\Models\Setting::put('features.email_verification', '0', 'features');
+  $user = User::factory()->unverified()->create();
+
+  $this->actingAs($user)->post('/checkout')->assertStatus(422);
+  $this->actingAs($user)->get('/verify-email')->assertRedirect(route('dashboard'));
+ }
+
+ public function test_unverified_user_can_apply_to_sell_when_verification_is_disabled(): void
+ {
+  \App\Models\Setting::put('features.email_verification', '0', 'features');
+  $user = User::factory()->unverified()->create();
+
+  $this->actingAs($user)->post('/sell/apply', [
+   'full_name' => 'Studio One Owner',
+   'display_name' => 'Studio One',
+   'username' => 'studio-one',
+   'country' => 'AE',
+   'address' => '123 Market Street',
+   'city' => 'Dubai',
+   'biography' => 'Long enough biography text for a seller application.',
+  ])->assertRedirect(route('dashboard'));
+
+  $this->assertDatabaseHas('seller_profiles', ['user_id' => $user->id, 'username' => 'studio-one']);
  }
 }

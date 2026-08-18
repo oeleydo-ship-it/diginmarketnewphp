@@ -5,6 +5,31 @@
   <a href="{{ route('admin.pages.create') }}" class="flex items-center gap-2 rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]"><span class="material-symbols-outlined text-[18px]">add</span>New page</a>
  </div>
  <form method="GET" class="mt-8 flex flex-col gap-3 rounded-xl border border-[#d7d9e5] bg-white p-4 shadow-sm sm:flex-row"><label class="relative flex-1"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777a8a]">search</span><input name="q" value="{{ request('q') }}" placeholder="Search page title or slug" class="w-full rounded-lg border border-[#d7d9e5] bg-[#fafbff] py-2.5 pl-10 pr-4 text-sm"></label><select name="status" class="rounded-lg border border-[#d7d9e5] px-4 py-2.5 text-sm"><option value="">All statuses</option><option value="draft" @selected(request('status')==='draft')>Draft</option><option value="published" @selected(request('status')==='published')>Published</option></select><button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white">Filter</button>@if(request()->hasAny(['q','status']))<a href="{{ route('admin.pages.index') }}" class="self-center text-sm font-semibold text-[#3525cd]">Clear</a>@endif</form>
+ <div class="mt-5 rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+   <div>
+    <p class="font-semibold">Homepage</p>
+    <p class="mt-0.5 text-sm text-[#626576]">Edit homepage hero copy, CTA buttons, section headings, SEO, and extra rich content.</p>
+   </div>
+   <div class="flex items-center gap-3">
+    <span class="rounded-full px-3 py-1 text-xs font-bold capitalize {{ $homepage->status==='published' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800' }}">{{ $homepage->status ?: 'draft' }}</span>
+    <a class="text-sm font-semibold text-[#3525cd]" href="{{ route('admin.pages.homepage.edit') }}">Edit Homepage</a>
+   </div>
+  </div>
+ </div>
+ <div class="mt-5 rounded-xl border border-[#d7d9e5] bg-white p-5 shadow-sm">
+  <p class="text-sm font-semibold text-[#1f2233]">Suggested legal pages</p>
+  <div class="mt-4 grid gap-3 md:grid-cols-3">
+   @foreach(['privacy-policy'=>'Privacy Policy','terms-of-service'=>'Terms of Service','seller-agreement'=>'Seller Agreement'] as $slug => $label)
+    @php($suggested = $suggestedPages->get($slug))
+    <div class="rounded-lg border border-[#e2e4ec] bg-[#fafbff] p-4">
+     <p class="font-semibold">{{ $label }}</p>
+     <p class="mt-1 font-mono text-xs text-[#777a8a]">/pages/{{ $slug }}</p>
+     <a href="{{ $suggested ? route('admin.pages.edit',$suggested) : route('admin.pages.create', ['slug' => $slug, 'title' => $label]) }}" class="mt-3 inline-flex text-sm font-semibold text-[#3525cd]">{{ $suggested ? 'Edit page' : 'Create page' }}</a>
+    </div>
+   @endforeach
+  </div>
+ </div>
  <div class="mt-5 overflow-hidden rounded-xl border border-[#d7d9e5] bg-white shadow-sm">
   <div class="divide-y divide-[#e2e4ec]">
   @forelse($pages as $page)

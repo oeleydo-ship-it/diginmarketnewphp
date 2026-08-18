@@ -36,6 +36,20 @@ class AdminOperationsTest extends TestCase
   $profile->refresh();$this->assertSame(SellerStatus::Rejected,$profile->status);$this->assertSame('Identity documents unreadable.',$profile->rejection_reason);
   $this->assertDatabaseHas('audit_logs',['action'=>'seller.rejected','entity_id'=>$profile->id]);
  }
+ public function test_seller_review_index_displays_pending_and_approved_lists(): void
+ {
+  $pendingUser=User::factory()->create(['email'=>'pending@example.test']);$approvedUser=User::factory()->create(['email'=>'approved@example.test']);
+  SellerProfile::create(['user_id'=>$pendingUser->id,'display_name'=>'Pending Studio','username'=>'pending-studio','full_name'=>'Pending Legal Name','business_name'=>'Pending Business','country'=>'AE','city'=>'Dubai','biography'=>'Pending biography','status'=>SellerStatus::Pending]);
+  SellerProfile::create(['user_id'=>$approvedUser->id,'display_name'=>'Approved Studio','username'=>'approved-studio','business_name'=>'Approved Business','country'=>'US','biography'=>'Approved biography','status'=>SellerStatus::Approved,'is_featured'=>true]);
+  $this->actingAs($this->admin())->get('/admin/sellers')
+   ->assertOk()
+   ->assertSee('Pending applications')
+   ->assertSee('Avatar / Author')
+   ->assertSee('Full legal name')
+   ->assertSee('Reason for rejection', false)
+   ->assertSee('Approved authors')
+   ->assertSee('Feature');
+ }
  public function test_product_changes_request_returns_product_to_seller(): void
  {
   $seller=User::factory()->create();$category=Category::create(['name'=>'Apps','slug'=>'admin-apps']);
