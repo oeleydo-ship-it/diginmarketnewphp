@@ -7,6 +7,13 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="rich-editor-upload-url" content="{{ route('editor.images.store') }}">
 @php
+    $brandLogo = \App\Models\Setting::get('branding.logo_path');
+    $brandIcon = \App\Models\Setting::get('branding.favicon_path') ?: $brandLogo;
+@endphp
+@if($brandIcon)
+<link rel="icon" href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandIcon) }}">
+@endif
+@php
     $defaultMetaTitle = \App\Models\Setting::get('seo.meta_title');
     $defaultMetaDescription = \App\Models\Setting::get('seo.meta_description');
 @endphp
@@ -56,7 +63,7 @@
     <div class="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-6">
         <div class="flex items-center gap-10">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-primary">
-                @if($brandLogo = config('marketplace.logo_path'))
+                @if($brandLogo)
                     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandLogo) }}" alt="{{ config('app.name', 'DiginMarket') }}" class="h-10 w-auto">
                 @else
                     {{ config('app.name', 'DiginMarket') }}

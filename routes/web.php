@@ -263,6 +263,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::post('/settings/sections/{section}', [SettingController::class, 'updateSection'])->name('settings.sections.update');
         Route::post('/settings/branding', [SettingController::class, 'updateBranding'])->name('settings.branding.update');
+        Route::post('/settings/favicon', [SettingController::class, 'updateFavicon'])->name('settings.favicon.update');
         Route::get('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])->name('categories.index');
         Route::post('/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])->name('categories.store');
         Route::put('/categories/{category}', [\App\Http\Controllers\Admin\CategoryController::class, 'update'])->name('categories.update');

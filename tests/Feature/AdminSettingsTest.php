@@ -5,6 +5,8 @@ use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\DatabaseSettings;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 class AdminSettingsTest extends TestCase
@@ -16,6 +18,24 @@ class AdminSettingsTest extends TestCase
   $this->actingAs($this->admin())->get('/admin/settings')->assertOk()
    ->assertSee('Commerce & Finance')->assertSee('Features')->assertSee('Social Links')
    ->assertSee('Default commission %')->assertSee('Customer registration')->assertSee('Email verification');
+ }
+ public function test_uploaded_branding_appears_in_admin_storefront_and_browser_icon(): void
+ {
+  Storage::fake('public');
+  $this->actingAs($this->admin());
+  $this->post('/admin/settings/branding',['logo'=>UploadedFile::fake()->image('logo.png')])->assertRedirect();
+  $logo=Setting::get('branding.logo_path');
+  Storage::disk('public')->assertExists($logo);
+  $logoUrl=Storage::disk('public')->url($logo);
+  $this->get('/admin/settings')->assertOk()->assertSee('src="'.$logoUrl.'"',false)->assertSee('rel="icon" href="'.$logoUrl.'"',false);
+  $this->get('/')->assertOk()->assertSee('src="'.$logoUrl.'"',false)->assertSee('rel="icon" href="'.$logoUrl.'"',false);
+
+  $this->post('/admin/settings/favicon',['favicon'=>UploadedFile::fake()->image('icon.png')])->assertRedirect();
+  $icon=Setting::get('branding.favicon_path');
+  Storage::disk('public')->assertExists($icon);
+  $iconUrl=Storage::disk('public')->url($icon);
+  $this->get('/')->assertOk()->assertSee('rel="icon" href="'.$iconUrl.'"',false);
+  $this->get('/admin/settings')->assertOk()->assertSee('rel="icon" href="'.$iconUrl.'"',false);
  }
  public function test_commerce_section_persists_and_applies_to_config(): void
  {

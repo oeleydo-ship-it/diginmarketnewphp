@@ -18,14 +18,26 @@
   <div class="min-w-0 flex-1">
   <div data-tab-panel="branding" class="rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
    <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">image</span>Branding</h2>
-   <div class="mt-4 flex flex-wrap items-center gap-6">
+   <h3 class="mt-5 text-sm font-semibold">Marketplace and admin logo</h3>
+   <div class="mt-3 flex flex-wrap items-center gap-6">
     <div class="flex h-20 w-44 items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#d7d9e5] bg-[#fafbff]">
      @if($logo)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current logo" class="max-h-16 w-auto">@else<span class="text-sm text-[#777a8a]">No logo uploaded</span>@endif
     </div>
     <form method="POST" action="{{ route('admin.settings.branding.update') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">@csrf
      <input type="file" name="logo" accept=".png,.jpg,.jpeg,.webp,.svg" required class="text-sm">
      <button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Upload logo</button>
-     <span class="text-xs text-[#777a8a]">PNG, JPG, WebP, or SVG · max 2 MB · shown in the marketplace header</span>
+     <span class="text-xs text-[#777a8a]">PNG, JPG, WebP, or SVG · max 2 MB · shown in the marketplace header and admin sidebar</span>
+    </form>
+   </div>
+   <h3 class="mt-8 text-sm font-semibold">Site icon</h3>
+   <div class="mt-3 flex flex-wrap items-center gap-6">
+    <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#d7d9e5] bg-[#fafbff]">
+     @if($favicon)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" alt="Current site icon" class="max-h-12 max-w-12 object-contain">@elseif($logo)<img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Logo used as site icon" class="max-h-12 max-w-12 object-contain">@else<span class="text-xs text-[#777a8a]">No icon</span>@endif
+    </div>
+    <form method="POST" action="{{ route('admin.settings.favicon.update') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">@csrf
+     <input type="file" name="favicon" accept=".ico,.png,.svg,.webp" required class="text-sm">
+     <button class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Upload site icon</button>
+     <span class="text-xs text-[#777a8a]">ICO, PNG, SVG, or WebP · max 512 KB · shown in browser tabs on the storefront and admin pages</span>
     </form>
    </div>
   </div>

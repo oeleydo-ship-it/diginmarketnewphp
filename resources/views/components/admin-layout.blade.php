@@ -5,6 +5,13 @@
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="csrf-token" content="{{ csrf_token() }}">
  <meta name="rich-editor-upload-url" content="{{ route('editor.images.store') }}">
+ @php
+  $brandLogo = \App\Models\Setting::get('branding.logo_path');
+  $brandIcon = \App\Models\Setting::get('branding.favicon_path') ?: $brandLogo;
+ @endphp
+ @if($brandIcon)
+ <link rel="icon" href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandIcon) }}">
+ @endif
  <title>{{ $title }} · DiginMarket</title>
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
@@ -13,9 +20,13 @@
 <body class="bg-[#f8f9ff] font-sans text-[#111827] antialiased">
  <div class="min-h-screen lg:grid lg:grid-cols-[280px_1fr]">
   <aside data-admin-sidebar class="fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col border-r border-[#d7d9e5] bg-[#f8f9ff] p-5 lg:flex">
-   <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-4 px-2 py-3">
-    <span class="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-[#4338db] text-white">storefront</span>
-    <span><strong class="block text-lg text-[#251bd5]">{{ config('app.name', 'DiginMarket') }}</strong><small class="text-[#555868]">Admin Management · <span class="font-mono">v{{ \App\Support\AppVersion::current() }}</span></small></span>
+   <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-start gap-2 px-2 py-3">
+    @if($brandLogo)
+     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandLogo) }}" alt="{{ config('app.name', 'DiginMarket') }}" class="max-h-14 max-w-full object-contain">
+    @else
+     <span class="flex items-center gap-4"><span class="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-[#4338db] text-white">storefront</span><strong class="text-lg text-[#251bd5]">{{ config('app.name', 'DiginMarket') }}</strong></span>
+    @endif
+    <small class="text-[#555868]">Admin Management · <span class="font-mono">v{{ \App\Support\AppVersion::current() }}</span></small>
    </a>
    <nav class="mt-10 flex-1 space-y-1 overflow-y-auto text-[14px] font-medium">
     @php($links=[['admin.dashboard','dashboard','Dashboard'],['admin.orders.index','shopping_cart','Orders'],['admin.reports.index','monitoring','Reports'],['admin.products.index','inventory_2','Products'],['admin.products.review','rate_review','Product review'],['admin.categories.index','category','Categories'],['admin.sellers.index','store','Seller applications'],['admin.users.index','group','Customers'],['admin.support.index','support_agent','Support'],['admin.refunds.index','assignment_return','Refunds'],['admin.disputes.index','gavel','Disputes'],['admin.withdrawals.index','payments','Withdrawals'],['admin.earnings.index','schedule','Pending earnings'],['admin.coupons.index','sell','Coupons'],['admin.subscription-plans.index','workspace_premium','Subscription plans'],['admin.pages.index','article','Content pages'],['admin.blog.index','rss_feed','Blog'],['admin.menus.index','list','Menus'],['admin.audits.index','history','Audit log'],['admin.system','monitor_heart','System health'],['admin.settings.index','settings','Settings']])

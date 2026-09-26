@@ -136,7 +136,8 @@ class SettingController extends Controller
    return $section;
   })->all();
   $logo=Setting::get('branding.logo_path');
-  return view('admin.settings.index',compact('settings','sections','logo'));
+  $favicon=Setting::get('branding.favicon_path');
+  return view('admin.settings.index',compact('settings','sections','logo','favicon'));
  }
  public function updateSection(string $section): RedirectResponse
  {
@@ -166,6 +167,16 @@ class SettingController extends Controller
   if($old&&$old!==$path)\Illuminate\Support\Facades\Storage::disk('public')->delete($old);
   AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.logo_updated','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>['logo'=>$old],'new_values'=>['logo'=>$path],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
   return back()->with('status','Logo updated.');
+ }
+ public function updateFavicon(): RedirectResponse
+ {
+  request()->validate(['favicon'=>['required','file','mimes:ico,png,svg,webp','max:512']]);
+  $path=request()->file('favicon')->store('branding','public');
+  $old=Setting::get('branding.favicon_path');
+  Setting::put('branding.favicon_path',$path,'branding');
+  if($old&&$old!==$path)\Illuminate\Support\Facades\Storage::disk('public')->delete($old);
+  AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.favicon_updated','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>['favicon'=>$old],'new_values'=>['favicon'=>$path],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
+  return back()->with('status','Site icon updated.');
  }
  public function update(): RedirectResponse
  {
