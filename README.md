@@ -100,13 +100,22 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 6. **Storage**: product archives live on the private local disk (or S3 via `FILESYSTEM_DISK`); they are only ever served through signed, license-checked download routes. Run `php artisan storage:link` for public branding uploads.
 7. **Security**: HTTPS is required (HSTS is emitted on secure responses); a CSP and hardened headers are applied by `App\Http\Middleware\SecurityHeaders`.
 
-### Web installer
+### First visit after a Git deployment
 
-Fresh deployments without shell access can install from the browser: visiting any page
-before installation redirects to `/install`. If `.env` is absent, the installer copies
-`.env.example`, switches to production mode with debug disabled, and generates a unique
-application key. Step 1 configures the database (MySQL/MariaDB credentials are verified
-with a live connection before being written to `.env`, or SQLite for small sites);
+With `MARKETPLACE_SETUP_MODE=admin` (the default), the first visit goes directly to
+`/setup-admin`. The page only asks for the administrator's name, email, and password.
+The deployment must provide a working database connection; the setup page runs migrations,
+creates the administrator, and records completion. Later deployments recognize the
+administrator in the database even if local storage was replaced, so setup is not repeated.
+Set a stable `APP_KEY` in the deployment environment so encrypted data survives redeploys.
+
+### Manual cPanel or CloudPanel installer
+
+Copy `.env.example` to `.env` and set `MARKETPLACE_SETUP_MODE=manual` before opening
+the site. Visiting any page then redirects to `/install`. If the application key is
+empty, setup generates a unique key. Step 1 configures the database (MySQL/MariaDB
+credentials are verified with a live connection before being written to `.env`, or SQLite
+for small sites);
 step 2 creates the marketplace name and superadmin account, runs migrations, seeds
 roles/license types, and writes the install lock (`storage/app/installed.lock`). Point
 the web server at `public/` and make `.env`, `storage/`, and `bootstrap/cache/` writable.

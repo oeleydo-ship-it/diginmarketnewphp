@@ -61,7 +61,7 @@ class InstallController extends Controller
         // (which runs migrations via show()) reads the fresh .env.
         rescue(fn () => Artisan::call('config:clear'), report: false);
 
-        return redirect()->route('install.show')->with('db_status', 'Database connection saved. Create your administrator account below.');
+        return redirect()->route('install.show')->with('db_status', 'Database connection saved. Create your superadmin account below.');
     }
 
     public function store(): RedirectResponse

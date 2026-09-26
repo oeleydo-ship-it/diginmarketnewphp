@@ -14,7 +14,7 @@ class InstallerAndBackupTest extends TestCase
   parent::setUp();
   $this->lock=sys_get_temp_dir().DIRECTORY_SEPARATOR.'dm-install-'.uniqid().'.lock';
   $this->backups=sys_get_temp_dir().DIRECTORY_SEPARATOR.'dm-backups-'.uniqid();
-  config(['marketplace.install_lock'=>$this->lock,'marketplace.backup_path'=>$this->backups]);
+  config(['marketplace.install_lock'=>$this->lock,'marketplace.backup_path'=>$this->backups,'marketplace.setup_mode'=>'manual']);
  }
  protected function tearDown(): void
  {

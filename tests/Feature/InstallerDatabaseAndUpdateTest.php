@@ -22,7 +22,7 @@ class InstallerDatabaseAndUpdateTest extends TestCase
   $this->updateTarget = sys_get_temp_dir().DIRECTORY_SEPARATOR.'dm-update-'.uniqid();
   mkdir($this->updateTarget);
   $this->lock = sys_get_temp_dir().DIRECTORY_SEPARATOR.'dm-lock-'.uniqid();
-  config(['marketplace.env_path' => $this->envFile, 'marketplace.update_target' => $this->updateTarget, 'marketplace.install_lock' => $this->lock, 'marketplace.backup_path' => sys_get_temp_dir()]);
+  config(['marketplace.env_path' => $this->envFile, 'marketplace.update_target' => $this->updateTarget, 'marketplace.install_lock' => $this->lock, 'marketplace.backup_path' => sys_get_temp_dir(), 'marketplace.setup_mode' => 'manual']);
  }
 
  protected function tearDown(): void

@@ -4,7 +4,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Support\EnvWriter;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureInstalled
@@ -28,7 +31,7 @@ class EnsureInstalled
         }
 
         if (static::installed()) {
-            if ($request->routeIs('install.*')) {
+            if ($request->routeIs('install.*', 'admin-setup.*')) {
                 return redirect()->route('home');
             }
             return $next($request);
@@ -36,11 +39,63 @@ class EnsureInstalled
 
         $this->prepareAppKey();
 
+        if ($this->useAdministratorSetup()) {
+            // A Git deployment may replace storage while keeping its database. An
+            // existing administrator means setup is already complete in that case.
+            if ($this->administratorExists()) {
+                $this->writeLock();
+                return $request->routeIs('install.*', 'admin-setup.*')
+                    ? redirect()->route('home')
+                    : $next($request);
+            }
+
+            return $request->routeIs('admin-setup.*')
+                ? $next($request)
+                : redirect()->route('admin-setup.show');
+        }
+
         if ($request->routeIs('install.*')) {
             return $next($request);
         }
 
         return redirect()->route('install.show');
+    }
+
+    private function useAdministratorSetup(): bool
+    {
+        $mode = config('marketplace.setup_mode', 'admin');
+        if ($mode === 'admin') {
+            return true;
+        }
+        if ($mode === 'manual') {
+            return false;
+        }
+
+        try {
+            DB::connection()->getPdo();
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private function administratorExists(): bool
+    {
+        try {
+            return Schema::hasTable('users') && Schema::hasTable('roles')
+                && User::whereHas('roles', fn ($query) => $query->where('slug', 'administrator'))->exists();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    public static function writeLock(?string $email = null): void
+    {
+        file_put_contents(static::lockPath(), json_encode([
+            'installed_at' => now()->toIso8601String(),
+            'admin' => $email,
+            'version' => app()->version(),
+        ]));
     }
 
     private function prepareAppKey(): void
