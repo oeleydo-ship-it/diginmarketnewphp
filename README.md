@@ -92,7 +92,7 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 
 ## Production deployment
 
-1. **Build**: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+1. **Build**: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`. The Git repository also includes the generated `public/build` assets so styles load on the first request when a Git deployment does not run Node.
 2. **Configure** `.env`: `APP_ENV=production`, `APP_DEBUG=false`, MySQL credentials, real mail transport, Stripe live keys. Then `php artisan config:cache route:cache view:cache`.
 3. **Migrate**: `php artisan migrate --force`
 4. **Queue worker** (required — emails and jobs are queued): run `php artisan queue:work --tries=3` under a supervisor (systemd/Supervisor), restart on deploy with `php artisan queue:restart`.
