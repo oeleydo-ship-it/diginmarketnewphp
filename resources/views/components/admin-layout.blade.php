@@ -14,7 +14,8 @@
  @endif
  <title>{{ $title }} · DiginMarket</title>
  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+ <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
  @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
 <body class="bg-[#f8f9ff] font-sans text-[#111827] antialiased">
@@ -22,7 +23,7 @@
   <aside data-admin-sidebar class="fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col border-r border-[#d7d9e5] bg-[#f8f9ff] p-5 lg:flex">
    <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-start gap-2 px-2 py-3">
     @if($brandLogo)
-     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandLogo) }}" alt="{{ config('app.name', 'DiginMarket') }}" class="max-h-14 max-w-full object-contain">
+     <span class="flex h-14 w-full items-center"><img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($brandLogo) }}" alt="{{ config('app.name', 'DiginMarket') }}" class="max-h-full max-w-full object-contain"></span>
     @else
      <span class="flex items-center gap-4"><span class="material-symbols-outlined flex h-12 w-12 items-center justify-center rounded-xl bg-[#4338db] text-white">storefront</span><strong class="text-lg text-[#251bd5]">{{ config('app.name', 'DiginMarket') }}</strong></span>
     @endif
