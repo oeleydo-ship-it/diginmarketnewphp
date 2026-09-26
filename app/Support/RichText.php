@@ -91,7 +91,11 @@ class RichText
             ->dropElement('video')
             ->dropElement('audio');
 
-        return self::$sanitizer = new HtmlSanitizer($config);
+        // PHP < 8.4 lacks \Dom\HTMLDocument, which Symfony's default NativeParser
+        // requires. Fall back to a classic DOMDocument parser on those runtimes.
+        $parser = class_exists(\Dom\HTMLDocument::class) ? null : new LegacyDomParser;
+
+        return self::$sanitizer = new HtmlSanitizer($config, $parser);
     }
 
     private static function sanitizeImages(string $html): string

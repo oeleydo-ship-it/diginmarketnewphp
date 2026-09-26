@@ -103,10 +103,15 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 ### Web installer
 
 Fresh deployments without shell access can install from the browser: visiting any page
-before installation redirects to `/install`. Step 1 configures the database (MySQL/MariaDB
-credentials are verified with a live connection before being written to `.env`, or SQLite for
-small sites); step 2 creates the marketplace name and administrator account, runs migrations,
-seeds roles/license types, and writes the install lock (`storage/app/installed.lock`).
+before installation redirects to `/install`. If `.env` is absent, the installer copies
+`.env.example`, switches to production mode with debug disabled, and generates a unique
+application key. Step 1 configures the database (MySQL/MariaDB credentials are verified
+with a live connection before being written to `.env`, or SQLite for small sites);
+step 2 creates the marketplace name and superadmin account, runs migrations, seeds
+roles/license types, and writes the install lock (`storage/app/installed.lock`). Point
+the web server at `public/` and make `.env`, `storage/`, and `bootstrap/cache/` writable.
+Keep the install lock across deployments; if it is lost, the installer refuses to create
+another superadmin in a database that already contains users.
 
 ### Updating (upload a release zip)
 

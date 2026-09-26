@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Support\EnvWriter;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,10 +34,35 @@ class EnsureInstalled
             return $next($request);
         }
 
+        $this->prepareAppKey();
+
         if ($request->routeIs('install.*')) {
             return $next($request);
         }
 
         return redirect()->route('install.show');
+    }
+
+    private function prepareAppKey(): void
+    {
+        if (config('app.key')) {
+            return;
+        }
+
+        $envPath = config('marketplace.env_path') ?: base_path('.env');
+        if (! is_file($envPath)) {
+            $example = base_path('.env.example');
+            if (! is_file($example) || ! copy($example, $envPath)) {
+                abort(503, 'Create a writable .env file from .env.example to start installation.');
+            }
+            app(EnvWriter::class)->set(['APP_ENV' => 'production', 'APP_DEBUG' => 'false']);
+        }
+
+        $key = 'base64:'.base64_encode(random_bytes(32));
+        app(EnvWriter::class)->set(['APP_KEY' => $key]);
+        config(['app.key' => $key]);
+        if (app()->configurationIsCached()) {
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+        }
     }
 }

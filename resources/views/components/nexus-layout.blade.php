@@ -70,7 +70,7 @@
                     @endforeach
                 @else
                     <a href="{{ route('products.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('products.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.browse') }}</a>
-                    <a href="{{ route('home') }}#categories" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.categories') }}</a>
+                    <a href="{{ route('categories.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.categories') }}</a>
                     <a href="{{ route('bundles.index') }}" class="text-[15px] font-semibold {{ request()->routeIs('bundles.*') ? 'border-b-2 border-primary pb-1 text-primary' : 'text-on-surface-variant transition-colors hover:text-primary' }}">{{ __('messages.nav.bundles') }}</a>
                     <a href="{{ route('support.index') }}" class="text-[15px] font-semibold text-on-surface-variant transition-colors hover:text-primary">{{ __('messages.nav.support') }}</a>
                 @endif
@@ -138,7 +138,7 @@
                 @foreach($mobileHeaderMenu as $item)<a href="{{ $item->url }}">{{ $item->label }}</a>@endforeach
             @else
                 <a href="{{ route('products.index') }}">{{ __('messages.nav.browse') }}</a>
-                <a href="{{ route('home') }}#categories">{{ __('messages.nav.categories') }}</a>
+                <a href="{{ route('categories.index') }}">{{ __('messages.nav.categories') }}</a>
                 <a href="{{ route('bundles.index') }}">{{ __('messages.nav.bundles') }}</a>
                 <a href="{{ route('support.index') }}">{{ __('messages.nav.support') }}</a>
             @endif
@@ -179,7 +179,7 @@
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('products.index') }}">All Assets</a></li>
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('products.index', ['sort' => 'newest']) }}">New Releases</a></li>
                     <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('products.index', ['sort' => 'popular']) }}">Best Sellers</a></li>
-                    <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('home') }}#categories">Categories</a></li>
+                    <li><a class="text-sm text-on-surface-variant transition-colors hover:text-primary" href="{{ route('categories.index') }}">Categories</a></li>
                 </ul>
             </div>
             <div>

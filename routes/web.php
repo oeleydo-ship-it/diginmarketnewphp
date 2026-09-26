@@ -55,6 +55,7 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [MarketplaceProductController::class, 'index'])->name('products.index');
 Route::get('/products/suggest', [MarketplaceProductController::class, 'suggest'])->middleware('throttle:30,1')->name('products.suggest');
 Route::get('/products/{slug}', [MarketplaceProductController::class, 'show'])->name('products.show');
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/authors/{username}', [SellerStorefrontController::class, 'show'])->name('sellers.show');
 Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index'])->name('bundles.index');

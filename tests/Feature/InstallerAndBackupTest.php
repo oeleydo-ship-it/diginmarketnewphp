@@ -27,7 +27,15 @@ class InstallerAndBackupTest extends TestCase
  {
   config(['marketplace.enforce_installer'=>true]);
   $this->get('/')->assertRedirect(route('install.show'));
-  $this->get('/install')->assertOk()->assertSee('Install your marketplace')->assertSee('Server requirements');
+  $this->get('/install')->assertOk()->assertSee('Set up your marketplace')->assertSee('Superadmin account')->assertSee('Server requirements');
+ }
+ public function test_missing_lock_does_not_allow_takeover_of_an_existing_database(): void
+ {
+  config(['marketplace.enforce_installer'=>true]);
+  User::factory()->create();
+  $this->post('/install',['site_name'=>'Taken Over','admin_name'=>'Attacker','admin_email'=>'attacker@example.com','admin_password'=>'Sup3rSecret!!','admin_password_confirmation'=>'Sup3rSecret!!'])->assertStatus(409);
+  $this->assertDatabaseMissing('users',['email'=>'attacker@example.com']);
+  $this->assertFileDoesNotExist($this->lock);
  }
  public function test_installation_creates_admin_and_lock_then_disables_installer(): void
  {

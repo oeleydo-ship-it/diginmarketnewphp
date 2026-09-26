@@ -70,6 +70,8 @@ class InstallController extends Controller
         abort_if(collect($this->requirements())->contains(fn ($ok) => ! $ok), 422, 'Server requirements are not met.');
         $data = request()->validate(['site_name' => ['required', 'string', 'max:100'], 'admin_name' => ['required', 'string', 'max:100'], 'admin_email' => ['required', 'email', 'max:255'], 'admin_password' => ['required', 'string', 'min:10', 'confirmed']]);
         Artisan::call('migrate', ['--force' => true]);
+        // A missing lock on an existing installation must not allow a visitor to take it over.
+        abort_if(User::query()->exists(), 409, 'This database already contains users. Restore the installation lock or use a fresh database.');
         foreach ([['Administrator', 'administrator', 'Full marketplace operations'], ['Seller', 'seller', 'Product publishing and sales'], ['Customer', 'customer', 'Purchasing and licensing']] as [$name,$slug,$description]) {
             Role::updateOrCreate(['slug' => $slug], ['name' => $name, 'description' => $description]);
         }
@@ -78,11 +80,11 @@ class InstallController extends Controller
         Setting::updateOrCreate(['key' => 'marketplace.name'], ['group' => 'general', 'value' => $data['site_name'], 'is_public' => true]);
         // Stamp the shipped baseline so the System Health page reports a real version from day one.
         Setting::put('system.version', (string) config('marketplace.version', '1.0.0'), 'system');
-        $admin = User::updateOrCreate(['email' => $data['admin_email']], ['name' => $data['admin_name'], 'password' => bcrypt($data['admin_password']), 'status' => 'active', 'email_verified_at' => now()]);
+        $admin = User::create(['email' => $data['admin_email'], 'name' => $data['admin_name'], 'password' => $data['admin_password'], 'status' => 'active', 'email_verified_at' => now()]);
         $admin->roles()->syncWithoutDetaching([Role::where('slug', 'administrator')->firstOrFail()->id]);
         file_put_contents(EnsureInstalled::lockPath(), json_encode(['installed_at' => now()->toIso8601String(), 'admin' => $admin->email, 'version' => app()->version()]));
 
-        return redirect()->route('login')->with('status', 'Installation complete. Sign in with your administrator account.');
+        return redirect()->route('login')->with('status', 'Installation complete. Sign in with your superadmin account.');
     }
 
     private function requirements(): array

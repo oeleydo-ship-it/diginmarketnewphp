@@ -15,9 +15,9 @@
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
     /* Nexus Marketplace design tokens (Material-inspired light palette) */
-    --color-primary: #3525cd;
+    --color-primary: #1050f0;
     --color-on-primary: #ffffff;
-    --color-primary-container: #4f46e5;
+    --color-primary-container: #2f6bff;
     --color-on-primary-container: #dad7ff;
     --color-surface: #f8f9ff;
     --color-on-surface: #0b1c30;
@@ -64,9 +64,9 @@ html {
 html.dark {
     color-scheme: dark;
 
-    --color-primary: #c3bcff;
+    --color-primary: #8fb3ff;
     --color-on-primary: #221377;
-    --color-primary-container: #4f46e5;
+    --color-primary-container: #2f6bff;
     --color-on-primary-container: #e4e0ff;
     --color-surface: #0e1116;
     --color-on-surface: #e3e5ef;

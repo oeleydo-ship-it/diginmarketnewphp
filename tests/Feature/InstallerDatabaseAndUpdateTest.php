@@ -73,6 +73,15 @@ class InstallerDatabaseAndUpdateTest extends TestCase
   $this->assertStringContainsString('DB_DATABASE=', $env);
  }
 
+ public function test_first_visit_generates_and_persists_an_application_key(): void
+ {
+  config(['marketplace.enforce_installer' => true, 'app.key' => null]);
+  $this->get('/')->assertRedirect(route('install.show'));
+  $env = file_get_contents($this->envFile);
+  $this->assertMatchesRegularExpression('/^APP_KEY=base64:[A-Za-z0-9+\/=]+\r?$/m', $env);
+  $this->assertSame(trim(substr($env, strpos($env, 'APP_KEY=') + 8)), config('app.key'));
+ }
+
  public function test_env_writer_replaces_commented_and_existing_keys_and_quotes_values(): void
  {
   app(\App\Support\EnvWriter::class)->set(['DB_CONNECTION' => 'mysql', 'DB_HOST' => '127.0.0.1', 'DB_PASSWORD' => 'p@ss word#1']);

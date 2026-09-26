@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     server: {
         host: '127.0.0.1',
-        port: 5173,
+        port: process.env.PORT ? Number(process.env.PORT) : 5173,
         strictPort: true,
     },
     plugins: [

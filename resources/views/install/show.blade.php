@@ -25,8 +25,8 @@ button:disabled{background:#a9a6d8;cursor:not-allowed}
 <body>
 <div class="wrap">
  <span class="badge">DiginMarket Setup</span>
- <h1>Install your marketplace</h1>
- <p class="lead">Verify the server requirements, connect your database, then create the administrator account.</p>
+ <h1>Set up your marketplace</h1>
+ <p class="lead">On this first visit, verify the server requirements, connect your database, then create your superadmin account.</p>
  <div class="card">
   <h2>Server requirements</h2>
   <ul class="reqs">
@@ -58,14 +58,14 @@ button:disabled{background:#a9a6d8;cursor:not-allowed}
   </form>
  </div>
  <div class="card">
-  <h2>Step 2 — Administrator account</h2>
+  <h2>Step 2 — Superadmin account</h2>
   @if($errors->any() && !$errors->has('database'))<div class="errors">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
   <form method="POST" action="{{ route('install.store') }}">
    @csrf
    <label for="site_name">Marketplace name</label><input id="site_name" name="site_name" required value="{{ old('site_name','DiginMarket') }}">
-   <label for="admin_name">Admin name</label><input id="admin_name" name="admin_name" required value="{{ old('admin_name') }}">
-   <label for="admin_email">Admin email</label><input id="admin_email" type="email" name="admin_email" required value="{{ old('admin_email') }}">
-   <label for="admin_password">Admin password (min 10 characters)</label><input id="admin_password" type="password" name="admin_password" required minlength="10">
+   <label for="admin_name">Superadmin name</label><input id="admin_name" name="admin_name" required value="{{ old('admin_name') }}">
+   <label for="admin_email">Superadmin email</label><input id="admin_email" type="email" name="admin_email" required value="{{ old('admin_email') }}">
+   <label for="admin_password">Superadmin password (min 10 characters)</label><input id="admin_password" type="password" name="admin_password" required minlength="10">
    <label for="admin_password_confirmation">Confirm password</label><input id="admin_password_confirmation" type="password" name="admin_password_confirmation" required minlength="10">
    <button type="submit" @disabled(collect($requirements)->contains(fn($ok)=>!$ok))>Install marketplace</button>
   </form>

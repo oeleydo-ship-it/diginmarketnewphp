@@ -14,6 +14,8 @@ class SuperAdminSeederTest extends TestCase
 
     public function test_it_seeds_an_active_verified_administrator_idempotently(): void
     {
+        \Illuminate\Support\Env::getRepository()->set('SUPERADMIN_EMAIL', 'superadmin@diginmarket.test');
+        \Illuminate\Support\Env::getRepository()->set('SUPERADMIN_PASSWORD', 'Admin@12345');
         $this->seed(SuperAdminSeeder::class);
         $this->seed(SuperAdminSeeder::class);
 
