@@ -42,9 +42,9 @@ class MarketplaceDiscoveryTest extends TestCase
  {
   $data=$this->catalog();
   // List is the default view: product-row layout renders.
-  $this->get('/categories/laravel-apps')->assertOk()->assertSee('Laravel CRM')->assertSee('sm:h-36 sm:w-52',false);
+  $this->get('/categories/laravel-apps')->assertOk()->assertSee('Laravel CRM')->assertSee('sm:w-64',false);
   // Grid view switches to product-card thumbnails (no list rows).
-  $this->get('/categories/laravel-apps?view=grid')->assertOk()->assertSee('Laravel CRM')->assertDontSee('sm:h-36 sm:w-52',false);
+  $this->get('/categories/laravel-apps?view=grid')->assertOk()->assertSee('Laravel CRM')->assertDontSee('sm:w-64',false);
  }
  public function test_approved_seller_has_public_storefront(): void
  {

@@ -1,7 +1,7 @@
-@props(['product'])
+@props(['product', 'fit' => 'cover'])
 @if($product->cover_image_path)
     <img src="{{ str_starts_with($product->cover_image_path, 'http') ? $product->cover_image_path : \Illuminate\Support\Facades\Storage::disk('public')->url($product->cover_image_path) }}" alt="{{ $product->title }}"
-        {{ $attributes->merge(['class' => 'object-cover']) }} loading="lazy">
+        {{ $attributes->merge(['class' => $fit === 'contain' ? 'object-contain' : 'object-cover']) }} loading="lazy">
 @else
 @php
     // Fall back to a deterministic branded placeholder for products without artwork.

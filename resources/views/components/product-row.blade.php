@@ -1,7 +1,7 @@
 @props(['product'])
 <div class="group flex flex-col gap-5 rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 transition-all hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center">
-    <a href="{{ route('products.show', $product->slug) }}" class="relative block aspect-video shrink-0 overflow-hidden rounded-xl sm:h-36 sm:w-52">
-        <x-product-thumb :product="$product" class="h-full w-full transition-transform duration-500 group-hover:scale-105" />
+    <a href="{{ route('products.show', $product->slug) }}" class="relative block aspect-video w-full shrink-0 overflow-hidden rounded-xl border border-outline-variant/50 bg-surface-container sm:w-64">
+        <x-product-thumb :product="$product" fit="contain" class="h-full w-full" />
     </a>
     <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-4">
