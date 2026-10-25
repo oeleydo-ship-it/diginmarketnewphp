@@ -3,8 +3,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Setting;
+use App\Mail\SmtpTestMail;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 class SettingController extends Controller
 {
  /** Section definitions: key => [label, group, type(text|email|number|password|select), options?, hint?] */
@@ -157,6 +159,21 @@ class SettingController extends Controller
   }
   AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.section_updated','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>null,'new_values'=>['section'=>$section,'keys'=>$changed],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
   return back()->with('status',self::SECTIONS[$section]['title'].' settings saved.');
+ }
+ public function sendTestMail(): RedirectResponse
+ {
+  $data=request()->validate(['recipient'=>['required','email','max:255']]);
+  if(!Setting::get('mail.host')||!Setting::get('mail.from_address')){
+   return redirect()->route('admin.settings.index',['tab'=>'smtp'])->withErrors(['recipient'=>'Save an SMTP host and From address before sending a test email.'])->withInput();
+  }
+  try{
+   Mail::mailer('smtp')->to($data['recipient'])->send(new SmtpTestMail);
+  }catch(\Throwable $e){
+   report($e);
+   return redirect()->route('admin.settings.index',['tab'=>'smtp'])->withErrors(['recipient'=>'The test email could not be sent. Check your SMTP settings and server logs.'])->withInput();
+  }
+  AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.test_mail_sent','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>null,'new_values'=>['recipient'=>$data['recipient']],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
+  return redirect()->route('admin.settings.index',['tab'=>'smtp'])->with('status','Test email sent to '.$data['recipient'].'.');
  }
  public function updateBranding(): RedirectResponse
  {

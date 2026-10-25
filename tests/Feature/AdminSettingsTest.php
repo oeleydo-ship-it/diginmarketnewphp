@@ -1,12 +1,14 @@
 <?php
 namespace Tests\Feature;
 use App\Models\BlogPost;
+use App\Mail\SmtpTestMail;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\DatabaseSettings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 class AdminSettingsTest extends TestCase
@@ -20,6 +22,27 @@ class AdminSettingsTest extends TestCase
    ->assertSee('Default commission %')->assertSee('Customer registration')->assertSee('Email verification')
    ->assertSee(route('payments.webhook', ['provider' => 'stripe']))
    ->assertSee('checkout.session.completed');
+ }
+ public function test_administrator_can_send_a_synchronous_smtp_test_email(): void
+ {
+  Mail::fake();
+  Setting::put('mail.host','smtp.example.test','smtp');
+  Setting::put('mail.from_address','sender@example.test','smtp');
+  $this->actingAs($this->admin())->get('/admin/settings?tab=smtp')->assertOk()->assertSee('Send test email');
+  $this->post('/admin/settings/test-mail',['recipient'=>'owner@example.test'])
+   ->assertRedirect(route('admin.settings.index',['tab'=>'smtp']))->assertSessionHas('status');
+  Mail::assertSent(SmtpTestMail::class,fn($mail)=>$mail->hasTo('owner@example.test')&&$mail->mailer==='smtp');
+  Mail::assertNothingQueued();
+  $this->assertDatabaseHas('audit_logs',['action'=>'settings.test_mail_sent']);
+ }
+ public function test_test_email_requires_saved_smtp_settings_and_admin_access(): void
+ {
+  Mail::fake();
+  $admin=$this->admin();
+  $this->actingAs($admin)->post('/admin/settings/test-mail',['recipient'=>'owner@example.test'])
+   ->assertRedirect(route('admin.settings.index',['tab'=>'smtp']))->assertSessionHasErrors('recipient');
+  Mail::assertNothingSent();
+  $this->actingAs(User::factory()->create())->post('/admin/settings/test-mail',['recipient'=>'owner@example.test'])->assertForbidden();
  }
  public function test_uploaded_branding_appears_in_admin_storefront_and_browser_icon(): void
  {

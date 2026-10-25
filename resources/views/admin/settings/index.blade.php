@@ -84,6 +84,19 @@
      </div>
      <button class="mt-6 rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Save {{ $section['title'] }}</button>
     </form>
+    @if($sectionKey === 'smtp')
+     <div class="mt-8 border-t border-[#e2e4ec] pt-6">
+      <h3 class="text-base font-semibold">Send test email</h3>
+      <p class="mt-1 text-sm text-[#626576]">Save the SMTP settings above first. This sends immediately through your SMTP server.</p>
+      <form method="POST" action="{{ route('admin.settings.test-mail') }}" class="mt-4 flex flex-wrap items-end gap-3">@csrf
+       <div class="min-w-0 flex-1 sm:max-w-sm">
+        <label for="test-mail-recipient" class="{{ $labelCls }}">Send to</label>
+        <input id="test-mail-recipient" type="email" name="recipient" value="{{ old('recipient', auth()->user()->email) }}" required class="{{ $input }} mt-1">
+       </div>
+       <button type="submit" class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Send test email</button>
+      </form>
+     </div>
+    @endif
    </div>
   @endforeach
 
