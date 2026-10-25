@@ -6,6 +6,12 @@ use Tests\TestCase;
 class LocalizationTest extends TestCase
 {
  use RefreshDatabase;
+ protected function setUp(): void
+ {
+  parent::setUp();
+  // The live config is English-only; these tests exercise the switcher with the shipped translations.
+  config(['locales.available'=>['en'=>['name'=>'English','native'=>'English','dir'=>'ltr'],'ar'=>['name'=>'Arabic','native'=>'العربية','dir'=>'rtl'],'es'=>['name'=>'Spanish','native'=>'Español','dir'=>'ltr'],'fr'=>['name'=>'French','native'=>'Français','dir'=>'ltr']]]);
+ }
  public function test_switching_locale_persists_and_renders_rtl(): void
  {
   $this->post('/locale/ar')->assertRedirect();

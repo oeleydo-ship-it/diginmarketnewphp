@@ -8,6 +8,12 @@ use Tests\TestCase;
 class PolishPhaseTest extends TestCase
 {
  use RefreshDatabase;
+ protected function setUp(): void
+ {
+  parent::setUp();
+  // The live config is English-only; these tests exercise the switcher with the shipped translations.
+  config(['locales.available'=>['en'=>['name'=>'English','native'=>'English','dir'=>'ltr'],'ar'=>['name'=>'Arabic','native'=>'العربية','dir'=>'rtl'],'es'=>['name'=>'Spanish','native'=>'Español','dir'=>'ltr'],'fr'=>['name'=>'French','native'=>'Français','dir'=>'ltr']]]);
+ }
 
  public function test_spanish_and_french_translations_resolve(): void
  {
