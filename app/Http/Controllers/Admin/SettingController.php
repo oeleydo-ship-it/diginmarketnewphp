@@ -175,6 +175,14 @@ class SettingController extends Controller
   AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.test_mail_sent','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>null,'new_values'=>['recipient'=>$data['recipient']],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
   return redirect()->route('admin.settings.index',['tab'=>'smtp'])->with('status','Test email sent to '.$data['recipient'].'.');
  }
+ public function updateEmailVerification(): RedirectResponse
+ {
+  $data=request()->validate(['enabled'=>['required','in:1,0']]);
+  $old=Setting::enabled('features.email_verification',true);
+  Setting::put('features.email_verification',$data['enabled'],'features');
+  AuditLog::create(['user_id'=>auth()->id(),'action'=>'settings.email_verification_updated','entity_type'=>Setting::class,'entity_id'=>null,'old_values'=>['enabled'=>$old],'new_values'=>['enabled'=>$data['enabled']==='1'],'ip_address'=>request()->ip(),'user_agent'=>request()->userAgent()]);
+  return redirect()->route('admin.settings.index',['tab'=>'smtp'])->with('status','Email verification '.($data['enabled']==='1'?'enabled.':'disabled.'));
+ }
  public function updateBranding(): RedirectResponse
  {
   request()->validate(['logo'=>['required','image','mimes:png,jpg,jpeg,webp,svg','max:2048']]);

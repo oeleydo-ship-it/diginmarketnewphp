@@ -3,7 +3,6 @@
     <div class="w-full max-w-md rounded-2xl border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
         <h1 class="font-display text-2xl font-bold">Forgot your password?</h1>
         <p class="mt-2 text-sm text-on-surface-variant">Enter your account email and we'll send a link to choose a new one.</p>
-        @if(session('status'))<div class="mt-5 rounded-lg border border-secondary-fixed-dim/60 bg-secondary-container/20 px-4 py-3 text-sm font-medium text-on-secondary-container">{{ session('status') }}</div>@endif
         @error('email')<div class="mt-5 rounded-lg border border-error/30 bg-error-container/40 px-4 py-3 text-sm font-medium text-on-error-container">{{ $message }}</div>@enderror
         <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-5">
             @csrf

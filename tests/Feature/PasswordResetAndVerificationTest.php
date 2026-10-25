@@ -40,7 +40,8 @@ class PasswordResetAndVerificationTest extends TestCase
  public function test_reset_does_not_reveal_whether_an_email_exists(): void
  {
   Notification::fake();
-  $this->post('/forgot-password', ['email' => 'ghost@example.com'])->assertRedirect()->assertSessionHas('status');
+  $response=$this->followingRedirects()->post('/forgot-password', ['email' => 'ghost@example.com'])->assertOk();
+  $this->assertSame(1,substr_count($response->getContent(),'If that email belongs to an account, a reset link is on its way.'));
   Notification::assertNothingSent();
  }
 
@@ -73,7 +74,9 @@ class PasswordResetAndVerificationTest extends TestCase
   $user = User::factory()->unverified()->create();
 
   $this->actingAs($user)->get('/verify-email')->assertOk()->assertSee('Verify your email address');
-  $this->actingAs($user)->post('/verify-email/resend')->assertRedirect();
+  $this->actingAs($user)->followingRedirects()->post('/verify-email/resend')->assertOk()
+   ->assertSee('A fresh verification link is on its way.')
+   ->assertDontSee('verification-link-sent');
 
   Notification::assertSentTo($user, VerifyEmail::class);
  }

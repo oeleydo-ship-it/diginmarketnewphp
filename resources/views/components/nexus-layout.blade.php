@@ -154,7 +154,7 @@
     </nav>
 </header>
 <main id="main-content" class="pt-20">
-    @if(session('status'))
+    @if(session('status') && session('status') !== 'verification-link-sent')
         <div class="mx-auto mt-6 max-w-7xl px-6">
             <div class="flex items-center gap-3 rounded-xl border border-secondary-fixed-dim/60 bg-secondary-container/20 px-4 py-3 text-sm font-medium text-on-secondary-container">
                 <span class="material-symbols-outlined text-[20px]">check_circle</span>

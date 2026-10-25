@@ -31,10 +31,13 @@ class DatabaseSettings
         foreach (['seo.meta_title', 'seo.meta_description', 'seo.meta_keywords'] as $key) {
             if ($v = $value($key)) config([str_replace('seo.', 'marketplace.seo_', $key) => $v]);
         }
+        // Admin SMTP settings must also become the default for framework notifications
+        // (password reset and email verification), not only explicit test emails.
+        if ($value('mail.host')) config(['mail.default' => 'smtp', 'mail.mailers.smtp.url' => null]);
         foreach (['host' => 'mail.mailers.smtp.host', 'port' => 'mail.mailers.smtp.port', 'username' => 'mail.mailers.smtp.username', 'password' => 'mail.mailers.smtp.password'] as $key => $config) {
             if ($v = $value('mail.'.$key)) config([$config => $key === 'port' ? (int) $v : $v]);
         }
-        if ($value('mail.encryption') === 'ssl') config(['mail.mailers.smtp.scheme' => 'smtps']);
+        if ($encryption = $value('mail.encryption')) config(['mail.mailers.smtp.scheme' => $encryption === 'ssl' ? 'smtps' : 'smtp']);
         if ($from = $value('mail.from_address')) config(['mail.from.address' => $from]);
         if ($fromName = $value('mail.from_name')) config(['mail.from.name' => $fromName]);
         // Gateway credentials: admin-managed values win over env so a marketplace can be

@@ -86,6 +86,20 @@
     </form>
     @if($sectionKey === 'smtp')
      <div class="mt-8 border-t border-[#e2e4ec] pt-6">
+      <h3 class="text-base font-semibold">Email verification</h3>
+      <p class="mt-1 text-sm text-[#626576]">When enabled, new accounts receive a verification email and must verify before checkout or applying to sell. Disable this to let new and existing unverified customers continue without verification.</p>
+      <form method="POST" action="{{ route('admin.settings.email-verification.update') }}" class="mt-4 flex flex-wrap items-end gap-3">@csrf
+       <div class="min-w-0 flex-1 sm:max-w-sm">
+        <label for="email-verification-enabled" class="{{ $labelCls }}">Require email verification</label>
+        <select id="email-verification-enabled" name="enabled" class="{{ $input }} mt-1">
+         <option value="1" @selected(\App\Models\Setting::enabled('features.email_verification', true))>Enabled</option>
+         <option value="0" @selected(!\App\Models\Setting::enabled('features.email_verification', true))>Disabled</option>
+        </select>
+       </div>
+       <button type="submit" class="rounded-lg bg-[#3525cd] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2a1da8]">Save email verification</button>
+      </form>
+     </div>
+     <div class="mt-8 border-t border-[#e2e4ec] pt-6">
       <h3 class="text-base font-semibold">Send test email</h3>
       <p class="mt-1 text-sm text-[#626576]">Save the SMTP settings above first. This sends immediately through your SMTP server.</p>
       <form method="POST" action="{{ route('admin.settings.test-mail') }}" class="mt-4 flex flex-wrap items-end gap-3">@csrf

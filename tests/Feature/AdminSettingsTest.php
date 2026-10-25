@@ -35,6 +35,20 @@ class AdminSettingsTest extends TestCase
   Mail::assertNothingQueued();
   $this->assertDatabaseHas('audit_logs',['action'=>'settings.test_mail_sent']);
  }
+ public function test_saved_smtp_becomes_the_default_mailer_for_account_emails(): void
+ {
+  config(['mail.default'=>'log','mail.mailers.smtp.url'=>'smtp://old.example.test']);
+  Setting::put('mail.host','smtp.example.test','smtp');
+  Setting::put('mail.port','465','smtp');
+  Setting::put('mail.encryption','ssl','smtp');
+  DatabaseSettings::apply();
+
+  $this->assertSame('smtp',config('mail.default'));
+  $this->assertSame('smtp.example.test',config('mail.mailers.smtp.host'));
+  $this->assertSame(465,config('mail.mailers.smtp.port'));
+  $this->assertSame('smtps',config('mail.mailers.smtp.scheme'));
+  $this->assertNull(config('mail.mailers.smtp.url'));
+ }
  public function test_test_email_requires_saved_smtp_settings_and_admin_access(): void
  {
   Mail::fake();
@@ -147,5 +161,23 @@ class AdminSettingsTest extends TestCase
   ])->assertRedirect()->assertSessionHas('status');
 
   $this->assertDatabaseHas('settings',['key'=>'features.email_verification','value'=>'0']);
+ }
+ public function test_admin_can_change_email_verification_from_mail_settings(): void
+ {
+  $admin=$this->admin();
+  $this->actingAs($admin)->get('/admin/settings?tab=smtp')->assertOk()
+   ->assertSee('Require email verification')->assertSee('Save email verification');
+
+  $this->post('/admin/settings/email-verification',['enabled'=>'0'])
+   ->assertRedirect(route('admin.settings.index',['tab'=>'smtp']))->assertSessionHas('status','Email verification disabled.');
+  $this->assertFalse(Setting::enabled('features.email_verification'));
+  $this->assertDatabaseHas('audit_logs',['action'=>'settings.email_verification_updated']);
+
+  $this->post('/admin/settings/email-verification',['enabled'=>'1'])
+   ->assertRedirect(route('admin.settings.index',['tab'=>'smtp']))->assertSessionHas('status','Email verification enabled.');
+  $this->assertTrue(Setting::enabled('features.email_verification'));
+
+  $this->actingAs(User::factory()->create())->post('/admin/settings/email-verification',['enabled'=>'0'])->assertForbidden();
+  $this->assertTrue(Setting::enabled('features.email_verification'));
  }
 }
