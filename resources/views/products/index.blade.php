@@ -34,8 +34,15 @@
                         </div>
                     </div>
                     <div>
-                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Categories</span>
-                        <ul class="space-y-1 text-sm">
+                        <label for="category-picker" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Categories</label>
+                        {{-- Phones: a compact dropdown that navigates on change; the full list returns at lg. --}}
+                        <select id="category-picker" data-navigate-select class="{{ $field }} lg:hidden">
+                            <option value="{{ route('products.index', $keep(['category' => null])) }}" @selected(! request('category'))>All categories</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ route('products.index', $keep(['category' => $cat->slug])) }}" @selected(request('category') === $cat->slug)>{{ $cat->name }} ({{ $cat->products_count }})</option>
+                            @endforeach
+                        </select>
+                        <ul class="hidden space-y-1 text-sm lg:block">
                             <li>
                                 <a href="{{ route('products.index', $keep(['category' => null])) }}"
                                     class="flex items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors {{ ! request('category') ? 'bg-primary/10 font-semibold text-primary' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface' }}">

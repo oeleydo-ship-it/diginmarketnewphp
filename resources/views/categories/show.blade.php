@@ -38,8 +38,14 @@
                         </div>
                     </div>
                     <div>
-                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Categories</span>
-                        <ul class="space-y-1 text-sm">
+                        <label for="category-picker" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Categories</label>
+                        {{-- Phones: a compact dropdown that navigates on change; the full list returns at lg. --}}
+                        <select id="category-picker" data-navigate-select class="{{ $field }} lg:hidden">
+                            @foreach($categories as $cat)
+                                <option value="{{ route('categories.show', [$cat->slug, 'view' => $view]) }}" @selected($cat->id === $category->id)>{{ $cat->name }} ({{ $cat->products_count }})</option>
+                            @endforeach
+                        </select>
+                        <ul class="hidden space-y-1 text-sm lg:block">
                             @foreach($categories as $cat)
                                 <li>
                                     <a href="{{ route('categories.show', [$cat->slug, 'view' => $view]) }}"

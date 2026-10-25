@@ -78,6 +78,14 @@ document.addEventListener('submit', (event) => {
     }
 });
 
+// Selects marked data-navigate-select hold URLs as option values (e.g. the phone category
+// picker) and go there on change. They have no name, so they never ride along in a form.
+document.querySelectorAll('select[data-navigate-select]').forEach((select) => {
+    select.addEventListener('change', () => {
+        if (select.value) window.location.assign(select.value);
+    });
+});
+
 // File inputs marked data-auto-submit upload as soon as files are chosen
 // (sellers otherwise miss the section-local submit button).
 document.querySelectorAll('input[type="file"][data-auto-submit]').forEach((input) => {
