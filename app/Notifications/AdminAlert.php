@@ -6,7 +6,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * One generic database notification for the admin bell. `kind` picks the icon,
+ * One generic database notification for marketplace and admin bells. `kind` picks the icon,
  * `url` is where opening the notification lands.
  */
 class AdminAlert extends Notification

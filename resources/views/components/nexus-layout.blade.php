@@ -115,6 +115,31 @@
                 <span data-theme-icon class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
             </button>
             @auth
+                @php($unreadNotifications = auth()->user()->unreadNotifications()->count())
+                @php($recentNotifications = auth()->user()->notifications()->latest()->limit(10)->get())
+                <details class="relative" data-user-notifications data-user-id="{{ auth()->id() }}" data-open-url="{{ route('notifications.open', ['id' => '__ID__']) }}">
+                    <summary class="relative flex cursor-pointer list-none items-center p-2 text-on-surface-variant transition-colors hover:text-primary [&::-webkit-details-marker]:hidden" aria-label="Notifications">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span data-notification-badge data-count="{{ $unreadNotifications }}" class="absolute right-0 top-0 {{ $unreadNotifications > 0 ? 'flex' : 'hidden' }} h-5 min-w-5 items-center justify-center rounded-full bg-error px-1 text-[11px] font-bold text-on-error">{{ $unreadNotifications > 9 ? '9+' : $unreadNotifications }}</span>
+                    </summary>
+                    <div class="absolute right-0 z-50 mt-2 w-[min(92vw,380px)] overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl">
+                        <div class="flex items-center justify-between border-b border-outline-variant px-4 py-3">
+                            <p class="text-sm font-bold">Notifications</p>
+                            @if($unreadNotifications > 0)<form method="POST" action="{{ route('notifications.read-all') }}">@csrf<button class="text-xs font-semibold text-primary hover:underline">Mark all read</button></form>@endif
+                        </div>
+                        <div data-notification-list class="max-h-[420px] divide-y divide-outline-variant overflow-y-auto">
+                            @forelse($recentNotifications as $notification)
+                                <a href="{{ route('notifications.open', $notification->id) }}" class="flex items-start gap-3 px-4 py-3 hover:bg-surface-container-low {{ $notification->read_at ? 'opacity-60' : '' }}">
+                                    <span class="material-symbols-outlined mt-0.5 text-[20px] text-primary">{{ ($notification->data['kind'] ?? '') === 'order' ? 'shopping_cart' : 'notifications' }}</span>
+                                    <span class="min-w-0 flex-1"><span class="block text-sm {{ $notification->read_at ? '' : 'font-semibold' }}">{{ $notification->data['title'] ?? 'Notification' }}</span><span class="text-xs text-on-surface-variant">{{ $notification->created_at->diffForHumans() }}</span></span>
+                                    @unless($notification->read_at)<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"></span>@endunless
+                                </a>
+                            @empty
+                                <p data-notification-empty class="px-4 py-10 text-center text-sm text-on-surface-variant">No notifications yet.</p>
+                            @endforelse
+                        </div>
+                    </div>
+                </details>
                 <a href="{{ route('cart.index') }}" class="relative p-2 text-on-surface-variant transition-colors hover:text-primary" aria-label="Cart">
                     <span class="material-symbols-outlined">shopping_cart</span>
                     @if($cartCount > 0)

@@ -33,7 +33,7 @@ npm run dev              # Vite assets on http://127.0.0.1:5173
 Process queued work (emails, jobs) and the scheduler locally:
 
 ```bash
-php artisan queue:work
+php artisan queue:work --queue=default,broadcasts
 php artisan schedule:work
 ```
 
@@ -57,9 +57,9 @@ php artisan reverb:start
 php artisan horizon
 ```
 
-Admins will then see the existing admin notification bell update in real time for new marketplace alerts (orders, seller applications, reviews, refunds, disputes, withdrawals, subscriptions).
+Admins, sellers, and customers will see order alerts in their notification bells. With Reverb running, new alerts appear without a page reload.
 
-Horizon requires the `pcntl` and `posix` PHP extensions, so it typically runs on Linux/macOS servers. On Windows, keep using `php artisan queue:work` locally unless your PHP runtime provides those extensions.
+Horizon requires the `pcntl` and `posix` PHP extensions, so it typically runs on Linux/macOS servers. On Windows, keep using `php artisan queue:work --queue=default,broadcasts` locally unless your PHP runtime provides those extensions.
 
 ## Testing
 
@@ -95,7 +95,7 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 1. **Build**: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`. The Git repository also includes the generated `public/build` assets so styles load on the first request when a Git deployment does not run Node.
 2. **Configure** `.env`: `APP_ENV=production`, `APP_DEBUG=false`, MySQL credentials, real mail transport, Stripe live keys. Then `php artisan config:cache route:cache view:cache`.
 3. **Migrate**: `php artisan migrate --force`
-4. **Queue worker** (required — emails and jobs are queued): run `php artisan queue:work --tries=3` under a supervisor (systemd/Supervisor), restart on deploy with `php artisan queue:restart`.
+4. **Queue worker** (required — emails and broadcasts are queued): run `php artisan queue:work --queue=default,broadcasts --tries=3` under a supervisor (systemd/Supervisor), restart on deploy with `php artisan queue:restart`.
 5. **Scheduler** (required — earnings clearance runs daily): add the cron entry `* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1`.
 6. **Storage**: product archives live on the private local disk (or S3 via `FILESYSTEM_DISK`); they are only ever served through signed, license-checked download routes. Run `php artisan storage:link` for public branding uploads.
 7. **Security**: HTTPS is required (HSTS is emitted on secure responses); a CSP and hardened headers are applied by `App\Http\Middleware\SecurityHeaders`.

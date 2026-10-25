@@ -171,6 +171,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/affiliates', [\App\Http\Controllers\AffiliateController::class, 'store'])->name('affiliates.store');
     Route::get('/notification-preferences', [NotificationPreferenceController::class, 'edit'])->name('notifications.preferences');
     Route::put('/notification-preferences', [NotificationPreferenceController::class, 'update'])->name('notifications.preferences.update');
+    Route::get('/notifications/{id}/open', [\App\Http\Controllers\Admin\NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/sell/apply', [SellerApplicationController::class, 'create'])->name('seller.apply');
     Route::post('/sell/apply', [SellerApplicationController::class, 'store'])->middleware('verified')->name('seller.apply.store');
     Route::middleware('role:seller')->prefix('seller')->name('seller.')->group(function () {

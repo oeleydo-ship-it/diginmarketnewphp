@@ -10,16 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentFulfillmentService
 {
-    public function __construct(private SellerWalletService $wallets, private AffiliateService $affiliates, private MarketplaceMailer $mailer, private CouponService $coupons) {}
+    public function __construct(private SellerWalletService $wallets, private AffiliateService $affiliates, private MarketplaceMailer $mailer, private CouponService $coupons, private OrderNotifier $notifier) {}
 
     /** @param string|null $provider Falls back to the gateway the order was started with. */
     public function fulfill(int $orderId, string $paymentId, ?string $provider = null, array $payload = []): Order
     {
-        $wasPaid = Order::whereKey($orderId)->value('payment_status') === 'paid';
-        $order = DB::transaction(function () use ($orderId, $paymentId, $provider, $payload) {
+        [$order, $newlyPaid] = DB::transaction(function () use ($orderId, $paymentId, $provider, $payload) {
             $order = Order::query()->lockForUpdate()->with('items')->findOrFail($orderId);
             if ($order->payment_status === 'paid') {
-                return $order;
+                return [$order, false];
             }$order->payments()->create(['provider' => $provider ?? $order->payment_provider ?? 'stripe', 'provider_payment_id' => $paymentId, 'amount' => $order->total, 'currency' => $order->currency, 'status' => 'succeeded', 'payload' => $payload, 'paid_at' => now()]);
             $order->update(['payment_status' => 'paid', 'status' => 'completed', 'paid_at' => now()]);
             foreach ($order->items as $item) {
@@ -32,12 +31,12 @@ class PaymentFulfillmentService
             }$this->affiliates->creditReferral($order);
             $this->coupons->redeem($order);
 
-            return $order->fresh(['items.license']);
+            return [$order->fresh(['items.license']), true];
         });
         $this->removePurchasedCartItems($order);
-        if (! $wasPaid && $order->payment_status === 'paid') {
-            $this->mailer->orderPaid($order);
-            app(AdminNotifier::class)->notify('order', 'New paid order '.$order->number.' — $'.number_format((float) $order->total, 2), route('admin.orders.index'));
+        if ($newlyPaid) {
+            $this->notifier->orderPaid($order);
+            rescue(fn () => $this->mailer->orderPaid($order), report: true);
         }
 
         return $order;

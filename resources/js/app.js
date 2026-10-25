@@ -415,15 +415,14 @@ document.querySelectorAll('textarea[data-rich-editor]').forEach((textarea) => {
     sync();
 });
 
-// Admin bell: if Reverb / Echo is configured, patch new database notifications into
-// the existing dropdown so admins see fresh orders / reviews without reloading.
-const adminNotifications = document.querySelector('[data-admin-notifications]');
+// Keep both marketplace and admin bells current when realtime broadcasting is available.
+const notificationBell = document.querySelector('[data-admin-notifications], [data-user-notifications]');
 
-if (adminNotifications && window.Echo) {
-    const userId = adminNotifications.dataset.userId;
-    const list = adminNotifications.querySelector('[data-admin-notification-list]');
-    const badge = adminNotifications.querySelector('[data-admin-notification-badge]');
-    const empty = adminNotifications.querySelector('[data-admin-notification-empty]');
+if (notificationBell && window.Echo) {
+    const userId = notificationBell.dataset.userId;
+    const list = notificationBell.querySelector('[data-admin-notification-list], [data-notification-list]');
+    const badge = notificationBell.querySelector('[data-admin-notification-badge], [data-notification-badge]');
+    const empty = notificationBell.querySelector('[data-admin-notification-empty], [data-notification-empty]');
     const iconMap = {
         order: 'shopping_cart',
         seller: 'store',
@@ -437,8 +436,10 @@ if (adminNotifications && window.Echo) {
     const syncBadge = (nextCount) => {
         if (!badge) return;
         const count = Math.max(0, Number(nextCount || 0));
+        badge.dataset.count = String(count);
         badge.textContent = count > 9 ? '9+' : String(count);
         badge.classList.toggle('hidden', count === 0);
+        badge.classList.toggle('flex', count > 0);
     };
 
     if (userId && list) {
@@ -446,16 +447,23 @@ if (adminNotifications && window.Echo) {
             empty?.remove();
 
             const item = document.createElement('a');
-            item.href = notification.url || '#';
+            item.href = notification.id ? notificationBell.dataset.openUrl.replace('__ID__', encodeURIComponent(notification.id)) : (notification.url || '#');
             item.className = 'flex items-start gap-3 px-4 py-3 transition hover:bg-[#f6f8ff]';
-            item.innerHTML = `
-                <span class="material-symbols-outlined mt-0.5 text-[20px] text-[#3525cd]">${iconMap[notification.kind] || 'notifications'}</span>
-                <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-semibold">${notification.title || 'Notification'}</span>
-                    <span class="text-xs text-[#777a8a]">Just now</span>
-                </span>
-                <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#3525cd]"></span>
-            `;
+            const icon = document.createElement('span');
+            icon.className = 'material-symbols-outlined mt-0.5 text-[20px] text-[#3525cd]';
+            icon.textContent = iconMap[notification.kind] || 'notifications';
+            const body = document.createElement('span');
+            body.className = 'min-w-0 flex-1';
+            const title = document.createElement('span');
+            title.className = 'block truncate text-sm font-semibold';
+            title.textContent = notification.title || 'Notification';
+            const when = document.createElement('span');
+            when.className = 'text-xs text-[#777a8a]';
+            when.textContent = 'Just now';
+            body.append(title, when);
+            const unread = document.createElement('span');
+            unread.className = 'mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#3525cd]';
+            item.append(icon, body, unread);
 
             list.prepend(item);
 

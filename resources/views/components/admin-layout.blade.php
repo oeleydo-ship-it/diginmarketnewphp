@@ -48,7 +48,7 @@
      @php($unreadCount = auth()->user()->unreadNotifications()->count())
      @php($recentNotifications = auth()->user()->notifications()->latest()->limit(10)->get())
      @php($kindIcons = ['order' => 'shopping_cart', 'seller' => 'store', 'review' => 'rate_review', 'withdrawal' => 'payments', 'refund' => 'assignment_return', 'dispute' => 'gavel', 'subscription' => 'workspace_premium'])
-     <details class="relative" data-admin-notifications data-user-id="{{ auth()->id() }}">
+     <details class="relative" data-admin-notifications data-user-id="{{ auth()->id() }}" data-open-url="{{ route('admin.notifications.open', ['id' => '__ID__']) }}">
       <summary class="relative flex cursor-pointer list-none items-center rounded-lg p-2 hover:bg-[#eef1fa] [&::-webkit-details-marker]:hidden" aria-label="Notifications">
        <span class="material-symbols-outlined">notifications</span>
        <span data-admin-notification-badge data-count="{{ $unreadCount }}" class="absolute -right-0.5 -top-0.5 {{ $unreadCount > 0 ? 'flex' : 'hidden' }} h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
