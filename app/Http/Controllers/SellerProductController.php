@@ -28,7 +28,7 @@ class SellerProductController extends Controller
  public function storeImages(Product $product): RedirectResponse
  {
   $this->authorize('editAny',$product);
-  $data=request()->validate(['images'=>['nullable','required_without:image_urls','array','max:6'],'images.*'=>['image','mimes:jpg,jpeg,png,webp','max:5120'],'image_urls'=>['nullable','required_without:images','string','max:2000']]);
+  $data=request()->validate(['images'=>['nullable','required_without:image_urls','array','max:6'],'images.*'=>['image','mimes:jpg,jpeg,png,webp','max:'.\App\Support\UploadLimits::imageKb()],'image_urls'=>['nullable','required_without:images','string','max:2000']]);
   abort_if($product->images()->count()+count(request()->file('images')??[])>6,422,'A product can have at most 6 images.');
   $this->attachImages(request(),$product);
   $this->attachImageUrls($data['image_urls']??null,$product);

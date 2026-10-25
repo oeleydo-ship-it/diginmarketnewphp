@@ -27,5 +27,17 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // A body over post_max_size arrives empty (no session, no CSRF token), so the
+        // form can't be re-validated; send the seller back to it with a readable notice.
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson()) {
+                return null;
+            }
+            $back = (string) $request->headers->get('referer');
+            if (! str_starts_with($back, url('/').'/')) {
+                $back = url('/');
+            }
+
+            return redirect()->to($back.(str_contains($back, '?') ? '&' : '?').'upload_too_large=1');
+        });
     })->create();

@@ -5,7 +5,8 @@
         <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight md:text-4xl">Create a Product</h1>
         <p class="mt-3 text-on-surface-variant">The uploaded ZIP is stored privately and must pass review before publication.</p>
     </header>
-    <form method="POST" action="{{ route('seller.products.store') }}" enctype="multipart/form-data" class="grid gap-5 rounded-xl border border-outline-variant bg-surface-container-lowest p-8 sm:grid-cols-2">
+    @include('seller.products._upload-too-large')
+    <form method="POST" action="{{ route('seller.products.store') }}" enctype="multipart/form-data" data-max-post-bytes="{{ \App\Support\UploadLimits::postMaxBytes() }}" class="grid gap-5 rounded-xl border border-outline-variant bg-surface-container-lowest p-8 sm:grid-cols-2">
         @csrf
         @php($input = 'w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20')
         @php($label = 'font-mono text-[11px] font-medium uppercase tracking-wider text-on-surface-variant')
@@ -21,7 +22,7 @@
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="{{ $label }}">Short description</label>
-            <textarea name="short_description" required class="{{ $input }}"></textarea>
+            <textarea name="short_description" required maxlength="2000" class="{{ $input }}">{{ old('short_description') }}</textarea>
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="{{ $label }}">Full description</label>
@@ -62,8 +63,8 @@
             <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
                 <span class="material-symbols-outlined text-[32px] text-primary" aria-hidden="true">upload_file</span>
                 <span class="text-sm text-on-surface-variant" data-file-label>Drop your ZIP here or click to browse</span>
-                <span class="text-xs text-on-surface-variant/70">ZIP only · up to 100 MB</span>
-                <input name="archive" type="file" accept=".zip" required class="sr-only" data-file-input>
+                <span class="text-xs text-on-surface-variant/70">ZIP only · up to {{ \App\Support\UploadLimits::archiveMb() }} MB</span>
+                <input name="archive" type="file" accept=".zip" required class="sr-only" data-file-input data-max-kb="{{ \App\Support\UploadLimits::archiveKb() }}">
             </label>
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">
@@ -71,8 +72,8 @@
             <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-8 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
                 <span class="material-symbols-outlined text-[32px] text-primary" aria-hidden="true">add_photo_alternate</span>
                 <span class="text-sm text-on-surface-variant" data-file-label>Add screenshots or cover art</span>
-                <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · 5 MB each · recommended 1280×720 px (16:9) or larger — covers are displayed cropped to 16:9</span>
-                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" data-file-input>
+                <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · {{ \App\Support\UploadLimits::imageMb() }} MB each · recommended 1280×720 px (16:9) or larger — covers are displayed cropped to 16:9</span>
+                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only" data-file-input data-max-kb="{{ \App\Support\UploadLimits::imageKb() }}">
             </label>
         </div>
         <div class="flex flex-col gap-1.5 sm:col-span-2">

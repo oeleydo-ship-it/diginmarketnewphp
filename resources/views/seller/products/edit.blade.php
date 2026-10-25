@@ -13,6 +13,7 @@
             <span class="rounded px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider {{ in_array($status, ['approved', 'published'], true) ? 'bg-secondary-container/40 text-on-secondary-container' : ($status === 'rejected' ? 'bg-error-container text-on-error-container' : 'bg-primary-container/20 text-primary') }}">{{ str($status)->headline() }}</span>
         </div>
     </header>
+    @include('seller.products._upload-too-large')
     @php($input = 'w-full rounded-lg border border-outline-variant bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60')
     @php($labelCls = 'font-mono text-[11px] font-medium uppercase tracking-wider text-on-surface-variant')
     @php($isPublished = $product->status->value === 'published')
@@ -55,7 +56,7 @@
             </div>
             <div class="flex flex-col gap-1.5 sm:col-span-2">
                 <label class="{{ $labelCls }}">Short description</label>
-                <textarea name="short_description" required @disabled($locked) class="{{ $input }}">{{ old('short_description', $product->short_description) }}</textarea>
+                <textarea name="short_description" required maxlength="2000" @disabled($locked) class="{{ $input }}">{{ old('short_description', $product->short_description) }}</textarea>
             </div>
             <div class="flex flex-col gap-1.5 sm:col-span-2">
                 <label class="{{ $labelCls }}">Full description</label>
@@ -113,13 +114,13 @@
             </div>
         @endif
         @if($product->images->count() < 6)
-            <form method="POST" action="{{ route('seller.products.images.store', $product) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+            <form method="POST" action="{{ route('seller.products.images.store', $product) }}" enctype="multipart/form-data" data-max-post-bytes="{{ \App\Support\UploadLimits::postMaxBytes() }}" class="flex flex-wrap items-end gap-3">
                 @csrf
                 <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
                     <span class="material-symbols-outlined text-[28px] text-primary" aria-hidden="true">add_photo_alternate</span>
                     <span class="text-sm text-on-surface-variant" data-file-label>Add images — they upload as soon as you choose them</span>
-                    <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · 5 MB each · recommended 1280×720 px (16:9) or larger</span>
-                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple data-auto-submit data-file-input class="sr-only">
+                    <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · {{ \App\Support\UploadLimits::imageMb() }} MB each · recommended 1280×720 px (16:9) or larger</span>
+                    <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple data-auto-submit data-file-input data-max-kb="{{ \App\Support\UploadLimits::imageKb() }}" class="sr-only">
                 </label>
                 <div class="flex flex-1 flex-col gap-1.5">
                     <label class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Or paste image URLs (one per line)</label>
@@ -145,7 +146,7 @@
         </div>
         @can('addVersion', $product)
             <h3 class="mb-4 mt-8 font-display font-semibold">Release a new version</h3>
-            <form method="POST" action="{{ route('seller.products.versions.store', $product) }}" enctype="multipart/form-data" class="grid gap-4 sm:grid-cols-2">
+            <form method="POST" action="{{ route('seller.products.versions.store', $product) }}" enctype="multipart/form-data" data-max-post-bytes="{{ \App\Support\UploadLimits::postMaxBytes() }}" class="grid gap-4 sm:grid-cols-2">
                 @csrf
                 <div class="flex flex-col gap-1.5">
                     <label class="{{ $labelCls }}">Version number</label>
@@ -160,8 +161,8 @@
                     <textarea name="release_notes" class="{{ $input }}"></textarea>
                 </div>
                 <div class="flex flex-col gap-1.5 sm:col-span-2">
-                    <label class="{{ $labelCls }}">Updated ZIP</label>
-                    <input name="archive" type="file" accept=".zip" required class="{{ $input }}">
+                    <label class="{{ $labelCls }}">Updated ZIP <span class="font-normal normal-case text-on-surface-variant">(up to {{ \App\Support\UploadLimits::archiveMb() }} MB)</span></label>
+                    <input name="archive" type="file" accept=".zip" required data-max-kb="{{ \App\Support\UploadLimits::archiveKb() }}" class="{{ $input }}">
                 </div>
                 <button class="rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95 sm:col-span-2">Submit version for review</button>
             </form>

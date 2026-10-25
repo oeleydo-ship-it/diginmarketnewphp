@@ -47,11 +47,42 @@ document.querySelectorAll('[data-tabs]').forEach((root) => {
     }
 });
 
+// Upload size limits: inputs carry data-max-kb (per file) and forms data-max-post-bytes
+// (PHP's post_max_size). Checking before sending saves sellers a long upload that the
+// server would only answer with 413. Registered before auto-submit so it runs first.
+const formatMb = (bytes) => `${(bytes / 1048576).toFixed(1)} MB`;
+const fileTooLarge = (input) => {
+    const maxBytes = Number(input.dataset.maxKb) * 1024;
+    const file = Array.from(input.files).find((f) => f.size > maxBytes);
+    return file ? `${file.name} is ${formatMb(file.size)}; the limit is ${formatMb(maxBytes)} per file.` : '';
+};
+const formTooLarge = (form) => {
+    const limit = Number(form?.dataset.maxPostBytes || 0);
+    if (!limit) return '';
+    const total = Array.from(form.querySelectorAll('input[type="file"]'))
+        .flatMap((input) => Array.from(input.files))
+        .reduce((sum, file) => sum + file.size, 0);
+    return total > limit ? `These files add up to ${formatMb(total)}; the server accepts ${formatMb(limit)} per upload.` : '';
+};
+document.querySelectorAll('input[type="file"][data-max-kb]').forEach((input) => {
+    input.addEventListener('change', () => {
+        input.setCustomValidity(fileTooLarge(input) || formTooLarge(input.form));
+        if (!input.validity.valid) input.reportValidity();
+    });
+});
+document.addEventListener('submit', (event) => {
+    const message = formTooLarge(event.target);
+    if (message) {
+        event.preventDefault();
+        window.alert(message);
+    }
+});
+
 // File inputs marked data-auto-submit upload as soon as files are chosen
 // (sellers otherwise miss the section-local submit button).
 document.querySelectorAll('input[type="file"][data-auto-submit]').forEach((input) => {
     input.addEventListener('change', () => {
-        if (input.files.length) input.form?.submit();
+        if (input.files.length && input.checkValidity()) input.form?.submit();
     });
 });
 

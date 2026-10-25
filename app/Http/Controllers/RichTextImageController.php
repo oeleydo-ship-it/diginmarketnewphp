@@ -19,7 +19,7 @@ class RichTextImageController extends Controller
         );
 
         $data = $request->validate([
-            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:'.\App\Support\UploadLimits::imageKb()],
         ]);
 
         $path = $data['image']->store('editor/'.now()->format('Y/m'), 'public');

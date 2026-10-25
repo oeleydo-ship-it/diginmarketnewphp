@@ -79,7 +79,7 @@ class EditorImageUploadTest extends TestCase
             ->assertJsonValidationErrors('image');
 
         $this->actingAs($this->approvedSeller())
-            ->postJson(route('editor.images.store'), ['image' => UploadedFile::fake()->image('huge.png')->size(6000)])
+            ->postJson(route('editor.images.store'), ['image' => UploadedFile::fake()->image('huge.png')->size(11000)])
             ->assertStatus(422)
             ->assertJsonValidationErrors('image');
     }

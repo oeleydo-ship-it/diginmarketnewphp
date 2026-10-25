@@ -36,6 +36,24 @@ class ProductImageTest extends TestCase
   $this->assertSame($product->images()->orderBy('sort_order')->value('path'),$product->cover_image_path);
   foreach($product->images as $image)Storage::disk('public')->assertExists($image->path);
  }
+ public function test_images_up_to_the_configured_limit_are_accepted(): void
+ {
+  Storage::fake('local');Storage::fake('public');
+  config(['marketplace.max_image_mb'=>10]);
+  $this->actingAs($this->seller())->post('/seller/products',$this->payload()+['short_description'=>str_repeat('Long summary. ',100),'images'=>[UploadedFile::fake()->image('big.png',1280,720)->size(8000)]])->assertRedirect('/seller/products');
+  $this->assertSame(1,Product::firstOrFail()->images()->count());
+ }
+ public function test_request_over_post_max_size_redirects_back_with_notice(): void
+ {
+  $this->actingAs($this->seller())->call('POST','/seller/products',[],[],[],['CONTENT_LENGTH'=>PHP_INT_MAX,'HTTP_REFERER'=>url('/seller/products/create')])
+   ->assertRedirect(url('/seller/products/create').'?upload_too_large=1');
+  $this->get('/seller/products/create?upload_too_large=1')->assertOk()->assertSee('larger than the server accepts');
+ }
+ public function test_post_too_large_never_redirects_off_site(): void
+ {
+  $this->actingAs($this->seller())->call('POST','/seller/products',[],[],[],['CONTENT_LENGTH'=>PHP_INT_MAX,'HTTP_REFERER'=>'https://evil.example/'])
+   ->assertRedirect(url('/').'?upload_too_large=1');
+ }
  public function test_non_image_files_are_rejected(): void
  {
   Storage::fake('local');Storage::fake('public');
