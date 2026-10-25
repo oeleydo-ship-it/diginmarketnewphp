@@ -119,7 +119,7 @@
                 <label class="flex flex-1 cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant bg-surface p-6 text-center transition-colors hover:border-primary/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/40">
                     <span class="material-symbols-outlined text-[28px] text-primary" aria-hidden="true">add_photo_alternate</span>
                     <span class="text-sm text-on-surface-variant" data-file-label>Add images — they upload as soon as you choose them</span>
-                    <span class="text-xs text-on-surface-variant/70">JPG, PNG or WebP · {{ \App\Support\UploadLimits::imageMb() }} MB each · recommended 1280×720 px (16:9) or larger</span>
+                    <span class="text-xs text-on-surface-variant/70"><strong class="font-semibold">Up to 6 images · max {{ \App\Support\UploadLimits::imageMb() }} MB each</strong> · JPG, PNG or WebP · recommended 1280×720 px (16:9) or larger</span>
                     <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple data-auto-submit data-file-input data-max-kb="{{ \App\Support\UploadLimits::imageKb() }}" class="sr-only">
                 </label>
                 <div class="flex flex-1 flex-col gap-1.5">
@@ -161,7 +161,7 @@
                     <textarea name="release_notes" class="{{ $input }}"></textarea>
                 </div>
                 <div class="flex flex-col gap-1.5 sm:col-span-2">
-                    <label class="{{ $labelCls }}">Updated ZIP <span class="font-normal normal-case text-on-surface-variant">(up to {{ \App\Support\UploadLimits::archiveMb() }} MB)</span></label>
+                    <label class="{{ $labelCls }}">Updated ZIP <span class="font-normal normal-case text-on-surface-variant">(max file size: {{ \App\Support\UploadLimits::archiveMb() }} MB)</span></label>
                     <input name="archive" type="file" accept=".zip" required data-max-kb="{{ \App\Support\UploadLimits::archiveKb() }}" class="{{ $input }}">
                 </div>
                 <button class="rounded-xl bg-primary p-3.5 font-semibold text-on-primary shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95 sm:col-span-2">Submit version for review</button>
