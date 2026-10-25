@@ -44,6 +44,16 @@
 
   @foreach($sections as $sectionKey => $section)
    <div data-tab-panel="{{ $sectionKey }}" class="hidden rounded-xl border border-[#d7d9e5] bg-white p-6 shadow-sm">
+    @if($sectionKey === 'payments')
+     <div class="mb-6 rounded-lg border border-[#d7d9e5] bg-[#fafbff] p-4">
+      <label for="stripe-webhook-url" class="{{ $labelCls }}">Stripe webhook endpoint URL</label>
+      <div class="mt-2 flex flex-wrap gap-2">
+       <input id="stripe-webhook-url" type="url" readonly value="{{ route('payments.webhook', ['provider' => 'stripe']) }}" class="min-w-0 flex-1 rounded-lg border border-[#d7d9e5] bg-white px-3 py-2.5 font-mono text-sm" aria-label="Stripe webhook endpoint URL">
+       <button type="button" data-copy-input="stripe-webhook-url" class="rounded-lg border border-[#3525cd] px-4 py-2.5 text-sm font-semibold text-[#3525cd] hover:bg-[#eeecff]">Copy URL</button>
+      </div>
+      <p class="mt-2 text-xs text-[#626576]">In Stripe, choose events from your account and subscribe to <code>checkout.session.completed</code>. After creating the destination, paste its signing secret below and save Stripe.</p>
+     </div>
+    @endif
     <form method="POST" action="{{ route('admin.settings.sections.update', $sectionKey) }}">@csrf
      <h2 class="flex items-center gap-2 text-lg font-bold"><span class="material-symbols-outlined text-[#3525cd]">{{ $section['icon'] }}</span>{{ $section['title'] }}</h2>
      <div class="mt-5 grid content-start gap-4 sm:grid-cols-2 xl:grid-cols-3">

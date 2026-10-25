@@ -77,9 +77,9 @@ Tests run on in-memory SQLite (forced in `phpunit.xml` — do not remove those e
 | `STRIPE_SECRET` | Secret key (server-side API calls) |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret for the webhook endpoint |
 
-1. Create a webhook endpoint pointing at `POST /stripe/webhook` subscribed to `checkout.session.completed`. Events are persisted and processed idempotently — replays are safe.
+1. Create a webhook destination for your Stripe account using the URL shown in **Admin → Settings → Stripe** (`POST /payments/stripe/webhook`), subscribed to `checkout.session.completed`. Copy the destination's signing secret into **Webhook signing secret** and save Stripe. Events are persisted and processed idempotently — replays are safe.
 2. Enable Stripe Connect (Express). Sellers onboard from their dashboard; payouts to sellers are Stripe transfers created when an admin approves a withdrawal.
-3. Locally, forward events with `stripe listen --forward-to localhost:8000/stripe/webhook`.
+3. Locally, forward events with `stripe listen --forward-to localhost:8000/payments/stripe/webhook`.
 
 ## Marketplace tuning
 

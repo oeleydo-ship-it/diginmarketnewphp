@@ -2,6 +2,21 @@ import './bootstrap';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
+document.querySelectorAll('[data-copy-input]').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const input = document.getElementById(button.dataset.copyInput);
+        if (!input) return;
+        try {
+            await navigator.clipboard.writeText(input.value);
+            button.textContent = 'Copied';
+            window.setTimeout(() => { button.textContent = 'Copy URL'; }, 2000);
+        } catch {
+            input.focus();
+            input.select();
+        }
+    });
+});
+
 // Header: elevate with a shadow once the page scrolls (CSP forbids inline scripts).
 const header = document.querySelector('[data-header]');
 if (header) {

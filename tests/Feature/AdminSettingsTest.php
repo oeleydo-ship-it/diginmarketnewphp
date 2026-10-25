@@ -17,7 +17,9 @@ class AdminSettingsTest extends TestCase
  {
   $this->actingAs($this->admin())->get('/admin/settings')->assertOk()
    ->assertSee('Commerce & Finance')->assertSee('Features')->assertSee('Social Links')
-   ->assertSee('Default commission %')->assertSee('Customer registration')->assertSee('Email verification');
+   ->assertSee('Default commission %')->assertSee('Customer registration')->assertSee('Email verification')
+   ->assertSee(route('payments.webhook', ['provider' => 'stripe']))
+   ->assertSee('checkout.session.completed');
  }
  public function test_uploaded_branding_appears_in_admin_storefront_and_browser_icon(): void
  {
