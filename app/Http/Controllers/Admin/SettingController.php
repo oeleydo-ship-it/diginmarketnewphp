@@ -120,6 +120,18 @@ class SettingController extends Controller
    'features.blog'=>['label'=>'Public blog','group'=>'features','type'=>'toggle'],
    'features.cookie_consent'=>['label'=>'Cookie consent banner','group'=>'features','type'=>'toggle','default'=>'1'],
   ]],
+  'notifications'=>['title'=>'Notifications','icon'=>'notifications_active','fields'=>[
+   'notifications.seller_application.app'=>['label'=>'Seller application approved or rejected — bell notification','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.seller_application.mail'=>['label'=>'Seller application approved or rejected — email','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.product_submitted.app'=>['label'=>'Seller item or new version submitted for review — bell notification','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.product_submitted.mail'=>['label'=>'Seller item or new version submitted for review — email','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.product_reviewed.app'=>['label'=>'Seller item or version approved, rejected or sent back for changes — bell notification','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.product_reviewed.mail'=>['label'=>'Seller item or version approved, rejected or sent back for changes — email','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.order_buyer.app'=>['label'=>'Buyer order confirmed (email is the receipt) — bell notification','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.order_buyer.mail'=>['label'=>'Buyer order confirmed (email is the receipt) — email','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.order_seller.app'=>['label'=>'Seller new sale — bell notification','group'=>'notifications','type'=>'toggle','default'=>'1'],
+   'notifications.order_seller.mail'=>['label'=>'Seller new sale — email','group'=>'notifications','type'=>'toggle','default'=>'1'],
+  ]],
   'social'=>['title'=>'Social Links','icon'=>'share','fields'=>[
    'social.website'=>['label'=>'Website URL','group'=>'social','type'=>'url'],
    'social.twitter'=>['label'=>'X (Twitter) URL','group'=>'social','type'=>'url'],

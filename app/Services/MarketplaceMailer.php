@@ -9,6 +9,7 @@ use App\Models\NotificationPreference;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\RefundRequest;
+use App\Models\Setting;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
 use Illuminate\Support\Facades\Mail;
@@ -17,13 +18,14 @@ class MarketplaceMailer
  public function orderPaid(Order $order): void
  {
   $order->loadMissing(['user','items.license']);
-  if($order->user)Mail::to($order->user)->queue(new OrderReceiptMail($order));
+  if($order->user&&Setting::enabled('notifications.order_buyer.mail'))Mail::to($order->user)->queue(new OrderReceiptMail($order));
+  if(!Setting::enabled('notifications.order_seller.mail'))return;
   foreach($order->items as $item){$seller=User::find($item->seller_id);if($seller&&$this->wants($seller,'email_sales'))Mail::to($seller)->queue(new SellerSaleMail($item));}
  }
  public function productReviewed(Product $product,string $outcome,string $notes=''): void
  {
   $seller=$product->seller()->first();
-  if($seller)Mail::to($seller)->queue(new ProductReviewOutcomeMail($product,$outcome,$notes));
+  if($seller&&Setting::enabled('notifications.product_reviewed.mail'))Mail::to($seller)->queue(new ProductReviewOutcomeMail($product,$outcome,$notes));
  }
  public function refundDecided(RefundRequest $refund): void
  {

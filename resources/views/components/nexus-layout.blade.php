@@ -130,7 +130,7 @@
                         <div data-notification-list class="max-h-[420px] divide-y divide-outline-variant overflow-y-auto">
                             @forelse($recentNotifications as $notification)
                                 <a href="{{ route('notifications.open', $notification->id) }}" class="flex items-start gap-3 px-4 py-3 hover:bg-surface-container-low {{ $notification->read_at ? 'opacity-60' : '' }}">
-                                    <span class="material-symbols-outlined mt-0.5 text-[20px] text-primary">{{ ($notification->data['kind'] ?? '') === 'order' ? 'shopping_cart' : 'notifications' }}</span>
+                                    <span class="material-symbols-outlined mt-0.5 text-[20px] text-primary">{{ ['order' => 'shopping_cart', 'seller' => 'store', 'review' => 'rate_review'][$notification->data['kind'] ?? ''] ?? 'notifications' }}</span>
                                     <span class="min-w-0 flex-1"><span class="block text-sm {{ $notification->read_at ? '' : 'font-semibold' }}">{{ $notification->data['title'] ?? 'Notification' }}</span><span class="text-xs text-on-surface-variant">{{ $notification->created_at->diffForHumans() }}</span></span>
                                     @unless($notification->read_at)<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary"></span>@endunless
                                 </a>
