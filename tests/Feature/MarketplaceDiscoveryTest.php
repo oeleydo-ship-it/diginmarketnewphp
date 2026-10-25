@@ -93,4 +93,26 @@ class MarketplaceDiscoveryTest extends TestCase
   $this->actingAs($customer)->post('/cart/'.$data['published']->id)->assertRedirect('/cart');
   $this->get('/cart')->assertOk()->assertSee('Laravel CRM');
  }
+ public function test_catalog_cart_forms_are_not_nested_inside_filter_forms(): void
+ {
+  $data = $this->catalog();
+  $license = \App\Models\LicenseType::create(['name' => 'Regular License', 'slug' => 'regular', 'description' => 'Regular']);
+  $customer = User::factory()->create();
+  $this->actingAs($customer);
+
+  foreach (['/products?view=list&sort=popular', '/products?view=grid&sort=popular', '/categories/laravel-apps?view=list', '/categories/laravel-apps?view=grid'] as $url) {
+   $response = $this->get($url)->assertOk();
+   $document = new \DOMDocument;
+   @$document->loadHTML($response->getContent());
+   $xpath = new \DOMXPath($document);
+   $cartForms = $xpath->query('//form[@action="'.route('cart.add', $data['published']).'"]');
+   $this->assertCount(1, $cartForms);
+   $this->assertSame('post', strtolower($cartForms->item(0)->getAttribute('method')));
+   $this->assertSame(0, $xpath->query('ancestor::form', $cartForms->item(0))->length);
+  }
+
+  $this->post(route('cart.add', $data['published']), ['license_type_id' => $license->id])
+   ->assertRedirect(route('cart.index'));
+  $this->assertDatabaseHas('cart_items', ['product_id' => $data['published']->id, 'license_type_id' => $license->id]);
+ }
 }

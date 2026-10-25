@@ -17,11 +17,13 @@
         </div>
     </header>
 
-    <form method="GET" action="{{ route('categories.show', $category->slug) }}" class="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <input type="hidden" name="view" value="{{ $view }}">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
 
         <!-- Sidebar -->
         <aside class="w-full shrink-0 lg:sticky lg:top-6 lg:w-64">
+            <form method="GET" action="{{ route('categories.show', $category->slug) }}">
+            <input type="hidden" name="view" value="{{ $view }}">
+            <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">
             <details class="group rounded-xl border border-outline-variant bg-surface-container-lowest" open>
                 <summary class="flex cursor-pointer items-center justify-between p-4 font-semibold lg:cursor-default">
                     <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-primary">tune</span>Filters</span>
@@ -80,6 +82,7 @@
                     </button>
                 </div>
             </details>
+            </form>
         </aside>
 
         <!-- Results -->
@@ -87,14 +90,17 @@
             <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
                 <p class="text-sm text-on-surface-variant">{{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}{{ $hasFilters ? ' match your filters' : '' }}</p>
                 <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 text-sm text-on-surface-variant">
+                    <form method="GET" action="{{ route('categories.show', $category->slug) }}" class="flex items-center gap-2 text-sm text-on-surface-variant">
+                        @foreach(['view', 'q', 'min_price', 'max_price', 'min_rating', 'business'] as $filter)
+                            @if(request()->filled($filter))<input type="hidden" name="{{ $filter }}" value="{{ request($filter) }}">@endif
+                        @endforeach
                         <span class="hidden sm:inline">Sort</span>
                         <select name="sort" data-submit-on-change class="rounded-lg border border-outline-variant bg-surface p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
                             @foreach($sortLabels as $val => $lbl)
                                 <option value="{{ $val }}" @selected(request('sort', 'newest') === $val)>{{ $lbl }}</option>
                             @endforeach
                         </select>
-                    </label>
+                    </form>
                     <div class="flex items-center gap-1 rounded-lg border border-outline-variant bg-surface p-1">
                         <a href="{{ route('categories.show', [$category->slug, ...request()->except(['view', 'page']), 'view' => 'grid']) }}" aria-label="Grid view" title="Grid view"
                             class="flex h-8 w-8 items-center justify-center rounded-md transition-colors {{ $view === 'grid' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-primary' }}">
@@ -128,6 +134,6 @@
             @endif
             <div class="mt-10">{{ $products->links() }}</div>
         </div>
-    </form>
+    </div>
 </div>
 </x-marketplace-layout>
